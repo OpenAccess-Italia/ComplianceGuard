@@ -20,7 +20,7 @@ contenente già utente base admin per accesso iniziale
 
 
 Versione PHP da utilizzare è la 7.4, eventuali upgrade a php8 o successive richiedono
-L'upgrade dell'intero framework.
+L'upgrade dell'intero framework Laravel https://laravel.com/
 
 Il web server deve essere configurato con la DocumentRoot che deve essere la
 directory "public" dell'applicativo.
