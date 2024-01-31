@@ -223,4 +223,4 @@ alle 8 del mattino, la lista aggiornata di tutti i siti web inibiti dalle autori
 
 
 
-Il Team OpenAccessItalia
+Il Team di OpenAccess Italia
