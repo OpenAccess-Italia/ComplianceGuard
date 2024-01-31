@@ -171,7 +171,7 @@ GW di Default 10.255.255.254
 
 Accesso HTTP in porta TCP 55080
 
-Accesso SSH in porta TCP 55080
+Accesso SSH in porta TCP 55022
 
 Utenti Attivi:
 
