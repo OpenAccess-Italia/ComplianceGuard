@@ -1,7 +1,7 @@
 # ComplianceGuard
 
 
-# SORGENTI E COMPILATI APPLICATIVO ---------------------------------------------------------
+# SORGENTI E COMPILATI APPLICATIVO 
 
 *       installed_ps.openaccessitalia.org - instanza dell'applicativo
 ready to use (file ".env" già esistente e directories "vendor" e
