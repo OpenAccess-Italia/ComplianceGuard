@@ -1,0 +1,60 @@
+//
+// Wizard 5
+// Pages SASS files are compiled into separate css files
+//
+
+// Initialization of global variables, mixins and functions
+@import "../../init";
+
+// Base
+.wizard.wizard-5 {
+	display: flex;
+
+	// Steps
+	.wizard-steps {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		// Step
+		.wizard-step {
+			display: flex;
+			padding: 1rem 0.5rem;
+
+			.wizard-label {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				transition: $transition-link;
+				height: 40px;
+				width: 40px;
+				flex-shrink: 0;
+				margin-right: 1.5rem;
+				border-radius: 100%;
+				background-color: $secondary;
+				font-size: 1.25rem;
+				font-weight: 600;
+				color: $white;
+			}
+
+			// Current state
+			&[data-wizard-state="current"] {
+				.wizard-label {
+					background-color: $primary;
+					transition: $transition-link;
+					color: $primary-inverse;
+				}
+			}
+
+			// Done state
+			&[data-wizard-state="current"]:last-child,
+			&[data-wizard-state="done"] {
+				.wizard-label {
+					background-color: $success;
+					transition: $transition-link;
+					color: $success-inverse;
+				}
+			}
+		}
+	}
+}

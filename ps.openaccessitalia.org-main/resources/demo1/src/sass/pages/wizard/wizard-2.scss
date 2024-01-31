@@ -1,0 +1,141 @@
+//
+// Wizard 2
+// Pages SASS files are compiled into separate css files
+//
+
+// Initialization of global variables, mixins and functions
+@import "../../init";
+
+// Base
+.wizard.wizard-2 {
+	display: flex;
+
+	// Nav
+	.wizard-nav {
+		padding: 0;
+
+		// Steps
+		.wizard-steps {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+
+			// Step
+			.wizard-step {
+				display: flex;
+				padding: 1rem 1.5rem;
+
+				.wizard-icon {
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					transition: $transition-link;
+					height: 40px;
+					width: 40px;
+					flex-shrink: 0;
+					margin-right: 1.5rem;
+					border-radius: 100%;
+					background-color: $secondary;
+
+					.wizard-number {
+						font-size: 1.25rem;
+						font-weight: 600;
+						color: $white;
+					}
+
+					.wizard-check {
+						display: none;
+						flex-direction: column;
+						justify-content: center;
+					}
+				}
+
+				.wizard-label {
+					display: flex;
+					flex-direction: column;
+					justify-content: center;
+
+					.wizard-title {
+						color: $dark;
+						font-weight: 500;
+						font-size: 1.1rem;
+					}
+
+					.wizard-desc {
+						color: $dark-50;
+					}
+				}
+
+				// Current state
+				&[data-wizard-state="current"] {
+					.wizard-icon {
+						background-color: $primary;
+						transition: $transition-link;
+
+						.wizard-number {
+							color: $primary-inverse;
+						}
+					}
+				}
+
+				// Done state
+				&[data-wizard-state="current"]:last-child,
+				&[data-wizard-state="done"] {
+					.wizard-icon {
+						background-color: $success;
+						transition: $transition-link;
+
+						.wizard-number {
+							display: none;
+						}
+
+						.wizard-check {
+							display: flex;
+
+							i {
+								color: $success-inverse;
+							}
+
+							.svg-icon {
+								@include svg-icon-color($success-inverse);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// Body
+	.wizard-body {
+		width: 100%;
+	}
+}
+
+// Tablet & Mobile Modes
+@include media-breakpoint-down(md) {
+	.wizard.wizard-2 {
+		display: block;
+
+		// Nav
+		.wizard-nav {
+			width: 100%;
+			border-bottom: 1px solid $border-color;
+
+			.wizard-steps{
+				.wizard-step{
+					&[data-wizard-state="current"] {
+						&:after {
+							content: none;
+						}
+					}
+				}
+			}
+		}
+
+		// Body
+		.wizard-body {
+			width: 100%;
+		}
+	}
+}

@@ -1,0 +1,10 @@
+
+// base style
+@import "../demo1/src/sass/style";
+
+// skins for demo1 only
+@import "../demo1/src/sass/themes/layout/aside/dark";
+@import "../demo1/src/sass/themes/layout/brand/dark";
+@import "../demo1/src/sass/themes/layout/header/base/light";
+@import "../demo1/src/sass/themes/layout/header/menu/light";
+@import "../demo1/src/sass/pages/login/login-3.scss";

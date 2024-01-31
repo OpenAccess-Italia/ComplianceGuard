@@ -1,0 +1,109 @@
+//
+// Sidebar
+//
+
+.sidebar {
+	position: fixed;
+	right: 0;
+	bottom: 0;
+	top: 0;
+	background-color: get($sidebar-config, base, bg-color);
+	box-shadow: get($sidebar-config, base, shadow);
+	transition: right get($sidebar-config, base, transition-speed);
+}
+
+// Desktop Mode
+@include media-breakpoint-up(lg) {
+	// Sidebar
+	.sidebar {
+		z-index: get($sidebar-config, base, zindex);
+		width: get($sidebar-config, base, toolbar-width);
+		transition: width get($sidebar-config, base, transition-speed);
+
+		// Fixed Header Mode
+		.header-fixed.subheader-fixed & {
+			top: get($header-config, desktop, fixed, height) + 1px;
+		}
+
+		// Fixed Header & Subheader Fixed Modes
+		.header-fixed & {
+			top: get($header-config, desktop, fixed, height);
+		}
+
+		// Wrapper
+		.sidebar-wrapper {
+			flex-shrink: 0;
+			border-right: 1px solid transparent;
+			margin-right: -(get($sidebar-config, base, width) - get($sidebar-config, base, toolbar-width));
+			width: get($sidebar-config, base, width) - get($sidebar-config, base, toolbar-width);
+			transition: margin-right get($sidebar-config, base, transition-speed);
+		}
+
+		// Toolbar
+		.sidebar-toolbar {
+			flex-shrink: 0;
+			width: get($sidebar-config, base, toolbar-width);
+			background-color: get($sidebar-config, base, bg-color);
+			position: relative;
+			z-index: 1;
+		}
+	}
+
+	// Sidebar Enabled & Sidebar Expanded Modes
+	.sidebar-enabled {
+		// Scrolltop
+		.scrolltop {
+			right: get($sidebar-config, base, toolbar-width) - (get($scrolltop-config, size, desktop) / 2);
+		}
+
+		// Sticky Toolbar
+		.sticky-toolbar {
+			z-index: get($sidebar-config, base, zindex) + 1;
+			background-color: transparent;
+			box-shadow: none;
+			right: 7px;
+		}
+	}
+
+	// Sidebar Enabled & Sidebar Expanded Modes
+	.sidebar-enabled.sidebar-expanded {
+		// Sidebar
+		.sidebar {
+			width: get($sidebar-config, base, width);
+			transition: width get($sidebar-config, base, transition-speed);
+
+			.sidebar-wrapper {
+				margin-right: 0;
+				transition: margin-right get($sidebar-config, base, transition-speed);
+				border-right-color: get($sidebar-config, base, border-color);
+			}
+		}
+
+		// Scrolltop
+		.scrolltop {
+			right: get($sidebar-config, base, width) - (get($scrolltop-config, size, desktop) / 2);
+		}
+	}
+}
+
+// Tablet & Mobile Modes
+@include media-breakpoint-down(md) {
+	// Sidebar
+	.sidebar {
+		overflow: visible !important;
+
+		// Wrapper
+		.sidebar-wrapper {
+			border-right: 1px solid get($sidebar-config, base, border-color);
+		}
+
+		// Toolbar
+		.sidebar-toolbar {
+			flex-shrink: 0;
+			width: get($sidebar-config, base, toolbar-width);
+		}
+	}
+}
+
+// Aside Offcanvas Panel For Mobile Mode
+@include offcanvas-build(sidebar, tablet-and-mobile, get($sidebar-config, offcanvas-mobile));

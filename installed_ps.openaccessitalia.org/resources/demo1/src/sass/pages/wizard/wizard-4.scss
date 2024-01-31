@@ -1,0 +1,138 @@
+//
+// Wizard 4
+// Pages SASS files are compiled into separate css files
+//
+
+// Initialization of global variables, mixins and functions
+@import "../../init";
+
+// Base
+.wizard.wizard-4 {
+	flex-direction: column;
+
+	// Nav
+	.wizard-nav {
+		// Steps
+		.wizard-steps {
+			display: flex;
+			align-items: flex-end;
+			justify-content: space-between;
+			flex-wrap: wrap;
+
+			// Step
+			.wizard-step {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				flex-wrap: wrap;
+				flex: 0 0 calc(25% - 0.25rem);
+				width: calc(25% - 0.25rem);
+				background-color: $gray-100;
+				border-top-left-radius: 0.5rem;
+				border-top-right-radius: 0.5rem;
+
+				.wizard-wrapper {
+					flex: 1;
+					display: flex;
+					align-items: center;
+					flex-wrap: wrap;
+					color: $dark-75;
+					padding: 2rem 2.5rem;
+
+					.wizard-icon {
+
+					}
+
+					.wizard-label {
+						display: flex;
+						flex-direction: column;
+
+						.wizard-title {
+							font-size: 1.1rem;
+							font-weight: 600;
+						}
+					}
+				}
+
+				&[data-wizard-state="done"] {
+					.wizard-wrapper {
+						.wizard-icon {
+							.svg-icon {
+								@include svg-icon-color($primary);
+							}
+						}
+
+						.wizard-label {
+							.wizard-title,
+							.wizard-desc {
+								color: $primary;
+							}
+						}
+					}
+				}
+
+				&[data-wizard-state="current"] {
+					background-color: $white;
+
+					.wizard-wrapper {
+						.wizard-icon {
+							.svg-icon {
+								@include svg-icon-color($primary);
+							}
+						}
+
+						.wizard-label {
+							.wizard-title,
+							.wizard-desc {
+								color: $primary;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+// Desktop Mode(above 992px below 1200px)
+@include media-breakpoint-down(xl) {
+	.wizard.wizard-4 {
+		// Nav
+		.wizard-nav {
+			.wizard-steps {
+				.wizard-step {
+					flex: 0 0 calc(50% - 0.25rem);
+					width: calc(50% - 0.25rem);
+					border-bottom-left-radius: 0.5rem;
+					border-bottom-right-radius: 0.5rem;
+					margin-bottom: 0.5rem;
+				}
+			}
+		}
+	}
+}
+
+// Tablet & Mobile Modes
+@include media-breakpoint-down(md) {
+	.wizard.wizard-4 {
+		// Nav
+		.wizard-nav {
+			.wizard-steps {
+				flex-direction: column;
+				align-items: flex-start;
+
+				.wizard-step {
+					flex: 0 0 100%;
+					position: relative;
+					width: 100%;
+
+					.wizard-wrapper {
+						justify-content: flex-start;
+						flex: 0 0 100%;
+						padding: 0.5rem 2rem;
+					}
+				}
+			}
+		}
+	}
+}

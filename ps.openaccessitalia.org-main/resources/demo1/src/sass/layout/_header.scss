@@ -1,0 +1,44 @@
+//
+// Header
+//
+
+// Desktop Mode
+@include media-breakpoint-up(lg) {
+	.header {
+		display: flex;
+		justify-content: space-between;
+		height: get($header-config, desktop, default, height);
+		position: relative;
+		z-index: 2;
+
+		// Fixed Header Mode
+		&.header-fixed {
+			position: fixed;
+			top: 0;
+			right: 0;
+			left: 0;
+			z-index: get($header-config, desktop, fixed, zindex);
+		}
+
+		// Aside Enabled & Header Fixed Modes
+		.aside-enabled.header-fixed & {
+			left: get($aside-config, base, width);
+		}
+
+		// Fixed Header & Minimized Header Modes
+		.header-fixed.header-minimize:not(.header-minimize-hover) & {
+			height: get($header-config, desktop, fixed, height);
+			transition: height 0.3s ease;
+		}
+
+		// Fixed Header & Minimized Aside Modes
+		.header-fixed.aside-minimize & {
+			left: get($aside-config, base, minimized-width);
+		}
+
+		// Fixed Header & Fixed Subheader Modes
+		.header-fixed.subheader-fixed & {
+			box-shadow: none !important;
+		}
+	}
+}
