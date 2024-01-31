@@ -1,4 +1,5 @@
 
+![alt text](https://github.com/OpenAccess-Italia/ComplianceGuard-App/blob/main/OAI%20Compliance%20Guard.jpeg)
 
 # Disclaimer
 This software is provided ​“AS IS”. Developers make no other warranties, express or implied.
