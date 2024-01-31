@@ -157,13 +157,16 @@ Accesso SSH in porta 22
 Utenti Attivi:
 
 Terminale/SSH:
-* user: oaicg
-* pass: openaccessitalia
-e poi eseguire "su -" per accesso root con la password di root
+
+user: oaicg
+pass: openaccessitalia
+
+eseguire "su -" per accesso root con la password di root
 
 Terminale:
-* user: root
-* pass: openaccessitalia
+
+user: root
+pass: openaccessitalia
 
 Si consiglia di cambiare le password una volta effettuato il primo accesso
 
@@ -172,8 +175,8 @@ Prima configurazione:
 
 Accedere all'indirizzo http://10.255.255.1:55080
 
-* User: admin
-* Password openaccessitalia
+User: admin
+Password openaccessitalia
 
 Seguire le istruzioni internamente per cambio password, creazione utenti admin o semplici viewer
 E' possibile cambiare ip alla macchina sia da GUI che da SSH
