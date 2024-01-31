@@ -175,8 +175,8 @@ Prima configurazione:
 
 Accedere all'indirizzo http://10.255.255.1:55080
 
-User: admin
-Password openaccessitalia
+*       User: admin
+*       Password openaccessitalia
 
 Seguire le istruzioni internamente per cambio password, creazione utenti admin o semplici viewer
 E' possibile cambiare ip alla macchina sia da GUI che da SSH
