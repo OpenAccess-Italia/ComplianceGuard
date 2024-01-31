@@ -16,7 +16,8 @@ ready to use (file ".env" già esistente e directories "vendor" e
 install" nella directory principale (file ".env" da copiare da
 ".env.example")
 *       ps.openaccessitalia.org.sql - dump mysql del database da utilizzare
-contenente già utente base admin per accesso iniziale
+contenente già utente base admin per accesso iniziale (vedi sotto per la
+password del db).
 
 
 # VM e Container
@@ -187,6 +188,11 @@ Terminale:
 *       pass: openaccessitalia
 
 Si consiglia di cambiare le password una volta effettuato il primo accesso
+
+Le credenziali di accesso al DB:
+
+* user: root
+* pass: OpenaccessItalia@2024
 
 
 Prima configurazione:
