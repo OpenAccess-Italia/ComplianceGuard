@@ -189,10 +189,10 @@ Terminale:
 
 Si consiglia di cambiare le password una volta effettuato il primo accesso
 
-Le credenziali di accesso al DB:
+Le credenziali di accesso al DB nel container lamp:
 
-* user: root
-* pass: OpenaccessItalia@2024
+*       user: root
+*       pass: OpenaccessItalia@2024
 
 
 Prima configurazione:
