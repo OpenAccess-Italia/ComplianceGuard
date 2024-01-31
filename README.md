@@ -19,6 +19,18 @@ install" nella directory principale (file ".env" da copiare da
 contenente già utente base admin per accesso iniziale
 
 
+# VM e Container
+
+L'appliance è configurata su una macchina virtuale Debian 12 che comprende
+due container lxc Debian 12:
+- bgp
+- famp
+
+La VM host concerta tutte le automazioni con script in /opt/src.
+Il container bgp ospita il demone openbgpd. Il container famp ospita la vera
+e propria APP. Anche per entrambi i container le automazioni sono sempre in
+/opt/src.
+
 
 # Configurazione per l'esecuzione:
 
@@ -114,7 +126,7 @@ webgui se i dati sono formalmente corretti se il modulo PS è attivo -
 contiene la parte di configurazione di strongswan da appendere a
 "/etc/ipsec.secrets"
 
-*       iptable.add - creato/aggiornato alla modifica dei settings da webgui
+*       iptables.add - creato/aggiornato alla modifica dei settings da webgui
 se i dati sono formalmente corretti se il modulo PS è attivo - contiete il
 comando da eseguire su iptables per eseguire la source-nat per raggiungere
 il server API PS tramite la VPN (NOTA BENE: per far funzionare la souce-nat
@@ -134,6 +146,10 @@ Nella directory "storage/downloads" dell'app verranno generati ogni 10
 minuti i file "ipv4.txt" e "ipv6.txt" contenenti gli addresses da bannare
 recuperati dalle varie liste di ban a seconda dei mod
 
+Script
+
+Gli script per l'automazione dei processi di raccordo tra la VM e i container
+sono nel path /opt/src
 
 
 # VM GIA' PRONTA ALL'USO
