@@ -1,5 +1,5 @@
 
-![alt text](https://github.com/OpenAccess-Italia/ComplianceGuard-App/blob/main/OAI.PNG)
+![alt text](https://github.com/OpenAccess-Italia/ComplianceGuard-App/blob/main/OAI.png)
 
 # Disclaimer
 This software is provided ​“AS IS”. Developers make no other warranties, express or implied.
