@@ -151,8 +151,8 @@ Si consiglia sempre comunque di leggere e seguire la sezione
 IP di Default 10.255.255.1/24
 GW di Default 10.255.255.254
 
-Accesso http in porta 55080
-Accesso SSH in porta 22
+Accesso HTTP in porta TCP 55080
+Accesso SSH in porta TCP 55080
 
 Utenti Attivi:
 
