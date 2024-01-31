@@ -158,15 +158,15 @@ Utenti Attivi:
 
 Terminale/SSH:
 
-user: oaicg
-pass: openaccessitalia
+*       user: oaicg
+*       pass: openaccessitalia
 
 eseguire "su -" per accesso root con la password di root
 
 Terminale:
 
-user: root
-pass: openaccessitalia
+*       user: root
+*       pass: openaccessitalia
 
 Si consiglia di cambiare le password una volta effettuato il primo accesso
 
