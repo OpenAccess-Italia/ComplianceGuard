@@ -1,5 +1,8 @@
 # ComplianceGuard
 
+# Disclaimer
+This software is provided ​“AS IS”. Developers make no other warranties, express or implied.
+
 
 # SORGENTI E COMPILATI APPLICATIVO 
 
@@ -194,7 +197,6 @@ Con la configurazione del DNS e l'abilitazione anche del modulo CNCPO e ADM, il 
 alle 8 del mattino, la lista aggiornata di tutti i siti web inibiti dalle autorità.
 
 
-A breve video tutorial e Webinar con l'installazione live e la messa in produzione del sistema.
 
 
 Il Team OpenAccessItalia
