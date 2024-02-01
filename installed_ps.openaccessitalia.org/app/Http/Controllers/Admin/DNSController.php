@@ -52,7 +52,8 @@ class DNSController extends Controller
         IN      NS      localhost.
 
         IN      A       $ip    
-
+*       IN      A       $ip
+            
 EOD;
         return $content;
     }
