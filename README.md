@@ -233,8 +233,8 @@ del server DNS inserito e aggiornerà in automatico la lista.
 
 Con la configurazione del DNS e l'abilitazione anche del modulo CNCPO e ADM, il sistema inserirà
 alle 8 del mattino, la lista aggiornata di tutti i siti web inibiti dalle autorità.
-
-
+--
+Per la blacklist consob fare riferimento a: https://github.com/mphilosopher/censura/blob/master/
 
 
 Il Team di OpenAccess Italia
