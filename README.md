@@ -217,7 +217,14 @@ di backbone dell'operatore e accesso in ssh verso i server dns dell'operatore)
 
 Per configurare il neighbor del BGP bisogna andare nella sezione Admin-Settings-Edit Tab General
 Nella tab BGP, Valorizzare i campi BGP Router IP e ASN con i dati corretti del router che farà
-sessione con openbgp all'interno della VM
+sessione con openbgp all'interno della VM. Gli altri dati, per ora, non sono necessari.
+
+Le reti da inibire (per ora IPv4 /32 e IPv6 /128) vengono annunciate via BGP con i seguenti attributi:
+- LOCAL_PREF 120
+- COMMUNITY NO_EXPORT
+- COMMUNITY BLACKHOLE
+
+Dopo ogni modifica dei parametri BGP, il container lxc bgp viene riavviato.
 
 Per configurare la parte DNS basterà andare analogamente nella tab Primary DNS / Secondary DNS
 e compilare i campi richiesti per l'accesso alla macchina, il sistema creerà la zona all'interno
