@@ -31,6 +31,7 @@ La VM host concerta tutte le automazioni con script in /opt/src.
 Il container bgp ospita il demone openbgpd. Il container famp ospita la vera
 e propria APP. Anche per entrambi i container le automazioni sono sempre in
 /opt/src.
+Tutti gli script sono disponibili qui nel repository, cartella scripts.
 
 
 # Configurazione per l'esecuzione:
