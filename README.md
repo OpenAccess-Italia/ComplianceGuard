@@ -232,8 +232,8 @@ e compilare i campi richiesti per l'accesso alla macchina, il sistema creerà la
 del server DNS inserito e aggiornerà in automatico la lista.
 
 Con la configurazione del DNS e l'abilitazione anche del modulo CNCPO e ADM, il sistema inserirà
-alle 8 del mattino, la lista aggiornata di tutti i siti web inibiti dalle autorità.
---
+la lista aggiornata di tutti i siti web inibiti dalle autorità alle 8 del mattino.
+
 Per la blacklist consob fare riferimento a: https://github.com/mphilosopher/censura/blob/master/
 
 
