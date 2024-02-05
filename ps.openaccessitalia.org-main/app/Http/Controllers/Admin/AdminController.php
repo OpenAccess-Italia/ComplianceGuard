@@ -84,6 +84,10 @@ class AdminController extends Controller
                         }
                     }
                 break;
+                case 'PIRACY_SHIELD_VPN_PSK':
+                    file_put_contents($path, str_replace("$key=\"".env($key)."\"","$key=\"".base64_encode($value)."\"", file_get_contents($path)));
+                    $_ENV[$key] = $value;
+                break;
                 default:
                     file_put_contents($path, str_replace("$key=\"".env($key)."\"","$key=\"$value\"", file_get_contents($path)));
                     $_ENV[$key] = $value;
