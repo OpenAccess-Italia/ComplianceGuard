@@ -1916,9 +1916,9 @@ EOD;
                 \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_system","failed to make piracy shield vpn ipsec conf file in '".base_path('storage/settings/').'ipsec_conf.add'."' (".$e->getMessage().")",true);
             }
             //ipsec_secret.add
-            $psk = env('PIRACY_SHIELD_VPN_PSK');
+            $psk = base64_encode(env('PIRACY_SHIELD_VPN_PSK'));
             $content = <<<EOD
-$right : PSK "$psk"
+$right : PSK 0s$psk
 EOD;
             try{
                 file_put_contents(base_path('storage/settings/').'ipsec_secrets.add',$content);

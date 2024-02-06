@@ -186,7 +186,7 @@
                                         <div class="form-group col-md-12">
                                             <label for="PIRACY_SHIELD_VPN_PSK">VPN pre-shared key</label>
                                             <div class="input-group">
-                                                <input type="password" class="form-control" id="PIRACY_SHIELD_VPN_PSK" name="PIRACY_SHIELD_VPN_PSK" value="{{env("PIRACY_SHIELD_VPN_PSK")}}" placeholder="127.0.0.1">
+                                                <input type="password" class="form-control" id="PIRACY_SHIELD_VPN_PSK" name="PIRACY_SHIELD_VPN_PSK" value="{{base64_decode(env("PIRACY_SHIELD_VPN_PSK"))}}" placeholder="127.0.0.1">
                                                 <div class="input-group-append">
                                                     <div class="input-group-text">
                                                         <i class="fas fa-key text-dark mr-1"></i>
