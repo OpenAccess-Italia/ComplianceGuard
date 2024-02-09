@@ -648,6 +648,22 @@
                                                             </div>
                                                         </div>
                                                     </div>
+                                                    <div class="row">
+                                                        <div class="form-group col-md-12">
+                                                            <label for="DNS_SERVER_PRIMARY_EXPORT_PLAIN">Enable plain export (CSV)</label>
+                                                            <div class="input-group">
+                                                                <select class="form-control" id="DNS_SERVER_PRIMARY_EXPORT_PLAIN" name="DNS_SERVER_PRIMARY_EXPORT_PLAIN">
+                                                                    <option value="0" @if(env("DNS_SERVER_PRIMARY_EXPORT_PLAIN") == "0") selected @endif>Disabled</option>
+                                                                    <option value="1" @if(env("DNS_SERVER_PRIMARY_EXPORT_PLAIN") == "1") selected @endif>Enabled</option>
+                                                                </select>
+                                                                <div class="input-group-append">
+                                                                    <div class="input-group-text">
+                                                                        <i class="fas fa-at text-dark mr-1"></i>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -729,6 +745,22 @@
                                                                 <div class="input-group-append">
                                                                     <div class="input-group-text">
                                                                         <i class="fas fa-terminal text-dark mr-1"></i>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="form-group col-md-12">
+                                                            <label for="DNS_SERVER_SECONDARY_EXPORT_PLAIN">Enable plain export (CSV)</label>
+                                                            <div class="input-group">
+                                                                <select class="form-control" id="DNS_SERVER_SECONDARY_EXPORT_PLAIN" name="DNS_SERVER_SECONDARY_EXPORT_PLAIN">
+                                                                    <option value="0" @if(env("DNS_SERVER_SECONDARY_EXPORT_PLAIN") == "0") selected @endif>Disabled</option>
+                                                                    <option value="1" @if(env("DNS_SERVER_SECONDARY_EXPORT_PLAIN") == "1") selected @endif>Enabled</option>
+                                                                </select>
+                                                                <div class="input-group-append">
+                                                                    <div class="input-group-text">
+                                                                        <i class="fas fa-at text-dark mr-1"></i>
                                                                     </div>
                                                                 </div>
                                                             </div>

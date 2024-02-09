@@ -11,7 +11,7 @@ class DNSController extends Controller
     //
     private $ip,$user,$psw,$path,$reload;
 
-    public function __construct($ip,$port,$user,$psw,$path,$reload)
+    public function __construct($ip,$port,$user,$psw,$path,$reload,$export_plain)
     {
         $this->middleware('auth.admin');
         $this->ip = $ip;
@@ -20,6 +20,7 @@ class DNSController extends Controller
         $this->psw = $psw;
         $this->path = $path;
         $this->reload = $reload;
+        $this->export_plain = $export_plain;
     }
 
     private function connect(){
@@ -60,9 +61,9 @@ EOD;
     private function make_zone_record($dns,$db_filename){
         $content = <<<EOD
 zone "$dns" {
-            type master ;
-            file "$db_filename" ;
-        } ;
+    type master ;
+    file "$db_filename" ;
+} ;
 
 EOD;
         return $content;
@@ -256,6 +257,62 @@ EOD;
         return $need_reload;
     }
 
+    private function install_plain(){
+        \App\Http\Controllers\Admin\ActionLogController::log(0,"dns_cron","beginning to make dns plain content in DNS server $this->ip");
+        $content = '';
+        $plain_path = self::zones_directory($this->path) . "/piracyshield.csv";
+        $admbettingblacklist = \App\ADM\BettingBlacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
+        $admsmokingblacklist = \App\ADM\SmokingBlacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
+        $cncpoblacklist = \App\CNCPO\Blacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
+        $piracyshield = \App\Piracy\FQDNs::select('fqdn')->distinct()->pluck('fqdn')->toArray();
+        $manual = \App\Manual\FQDNs::select('fqdn')->distinct()->pluck('fqdn')->toArray();
+        $done = [];
+        foreach ($admbettingblacklist as $fqdn) {
+            if(!in_array($fqdn,$done)){
+                $content .= $fqdn.","."ADM_BETTING".PHP_EOL;
+                $done[] = $fqdn;
+            }
+        }
+        foreach ($admsmokingblacklist as $fqdn) {
+            if(!in_array($fqdn,$done)){
+                $content .= $fqdn.","."ADM_SMOKING".PHP_EOL;
+                $done[] = $fqdn;
+            }
+        }
+        foreach ($cncpoblacklist as $fqdn) {
+            if(!in_array($fqdn,$done)){
+                $content .= $fqdn.","."CNCPO".PHP_EOL;
+                $done[] = $fqdn;
+            }
+        }
+        foreach ($piracyshield as $fqdn) {
+            if(!in_array($fqdn,$done)){
+                $content .= $fqdn.","."PS".PHP_EOL;
+                $done[] = $fqdn;
+            }
+        }
+        foreach ($manual as $fqdn) {
+            if(!in_array($fqdn,$done)){
+                $content .= $fqdn.","."MAN".PHP_EOL;
+                $done[] = $fqdn;
+            }
+        }
+        if($this->sftp_read_file($plain_path) != $content){
+            \App\Http\Controllers\Admin\ActionLogController::log(0,"dns_cron","$plain_path is not updated in DNS server $this->ip");
+            if($this->sftp_write_file($plain_path,$content)){
+                $need_reload = true;
+                \App\Http\Controllers\Admin\ActionLogController::log(0,"dns_cron","succeded to make dns plain content in DNS server $this->ip (reload needed)");
+            }else{
+                $need_reload = false;
+                \App\Http\Controllers\Admin\ActionLogController::log(0,"dns_cron","failed to make dns plain content in DNS server $this->ip (reload not needed)");
+            }
+        }else{
+            $need_reload = false;
+            \App\Http\Controllers\Admin\ActionLogController::log(0,"dns_cron","$plain_path is already updated in DNS server $this->ip (reload not needed)");
+        }
+        return $need_reload;
+    }
+
     private function reload_service(){
         \App\Http\Controllers\Admin\ActionLogController::log(0,"dns_system","trying to execute command '$this->reload' in DNS server $this->ip");
         $ssh_connection = $this->connect();
@@ -287,6 +344,9 @@ EOD;
         \App\Http\Controllers\Admin\ActionLogController::log(0,"dns_cron","starting run for DNS server $this->ip");
         $this->install_dbs();
         if($this->install_zone()){
+            if($this->export_plain == "1") {
+                $this->install_plain();
+            }
             if($this->reload_service()){
                 \App\Http\Controllers\Admin\ActionLogController::log(0,"dns_cron","dns service in DNS server $this->ip reloaded");
             }else{
