@@ -186,7 +186,7 @@
                         value: $('#value').val(),
                         comment: $('#comment').val()
                     },
-                    headers: {'X-CSRF-TOKEN': $('meta[name="csrf_token"]').attr('content')},
+                    headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
                     statusCode: {
                         200: function(data) {
                             table.ajax.reload();
@@ -217,6 +217,7 @@
             maxFiles: 1,
             maxFilesize: 10,
             acceptedFiles: "text/plain",
+            headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
             success: function(file){
                 var result = JSON.parse(file.xhr.response);
                 var content = '';
