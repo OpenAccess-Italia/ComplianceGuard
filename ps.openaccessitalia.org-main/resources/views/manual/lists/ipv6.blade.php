@@ -217,6 +217,7 @@
             maxFiles: 1,
             maxFilesize: 10,
             acceptedFiles: "text/plain",
+            headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
             success: function(file){
                 var result = JSON.parse(file.xhr.response);
                 var content = '';
