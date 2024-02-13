@@ -231,6 +231,15 @@ Per configurare la parte DNS basterà andare analogamente nella tab Primary DNS 
 e compilare i campi richiesti per l'accesso alla macchina, il sistema creerà la zona all'interno
 del server DNS inserito e aggiornerà in automatico la lista.
 
+Per poter consentire la scrittura nel file named.conf.block e l'applicazione delle regole al DNS
+sarà necessario inserire nel file named.conf la seguente stringa
+
+*      include "/etc/bind/named.conf.block";
+
+e creare il file named.conf.block con il comando:
+
+*      touch /etc/bind/named.conf.block
+
 Con la configurazione del DNS e l'abilitazione anche del modulo CNCPO e ADM, il sistema inserirà
 la lista aggiornata di tutti i siti web inibiti dalle autorità alle 8 del mattino.
 
