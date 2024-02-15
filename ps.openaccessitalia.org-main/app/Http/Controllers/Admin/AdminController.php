@@ -114,8 +114,8 @@ class AdminController extends Controller
             "PIRACY_SHIELD_ENABLED","PIRACY_SHIELD_MAIL","PIRACY_SHIELD_PSW","PIRACY_SHIELD_API_URL","PIRACY_SHIELD_DNS_REDIRECT_IP",
             "NET_IP","NET_MASK","NET_GATEWAY","EXTERNAL_DNS_SERVERS",
             "BGP_ROUTER_IP","BGP_ASN","BGP_LOCAL_IP","BGP_LOCAL_MASK","BGP_LOCAL_GATEWAY",
-            "DNS_SERVER_PRIMARY_IP","DNS_SERVER_PRIMARY_PORT","DNS_SERVER_PRIMARY_USER","DNS_SERVER_PRIMARY_PSW","DNS_SERVER_PRIMARY_PATH","DNS_SERVER_PRIMARY_RELOAD","DNS_SERVER_PRIMARY_EXPORT_PLAIN",
-            "DNS_SERVER_SECONDARY_IP","DNS_SERVER_SECONDARY_PORT","DNS_SERVER_SECONDARY_USER","DNS_SERVER_SECONDARY_PSW","DNS_SERVER_SECONDARY_PATH","DNS_SERVER_SECONDARY_RELOAD","DNS_SERVER_SECONDARY_EXPORT_PLAIN",
+            "DNS_SERVER_PRIMARY_IP","DNS_SERVER_PRIMARY_PORT","DNS_SERVER_PRIMARY_USER","DNS_SERVER_PRIMARY_PSW","DNS_SERVER_PRIMARY_PRIVKEY","DNS_SERVER_PRIMARY_PATH","DNS_SERVER_PRIMARY_RELOAD","DNS_SERVER_PRIMARY_EXPORT_PLAIN",
+            "DNS_SERVER_SECONDARY_IP","DNS_SERVER_SECONDARY_PORT","DNS_SERVER_SECONDARY_USER","DNS_SERVER_SECONDARY_PSW","DNS_SERVER_SECONDARY_PRIVKEY","DNS_SERVER_SECONDARY_PATH","DNS_SERVER_SECONDARY_RELOAD","DNS_SERVER_SECONDARY_EXPORT_PLAIN",
             "CNCPO_ENABLED","CNCPO_DOWNLOAD_URL","CNCPO_PFX_PATH","CNCPO_PFX_PASS","CNCPO_DNS_REDIRECT_IP",
             "ADM_ENABLED","ADM_BETTING_URL","ADM_SMOKING_URL","ADM_DNS_REDIRECT_IP",
             "MANUAL_ENABLED","MANUAL_DNS_REDIRECT_IP",
@@ -125,10 +125,14 @@ class AdminController extends Controller
     public function update_dns(){
         $check_env = self::check_env_dns();
         if(count($check_env) == 0){
-            $dns1 = new \App\Http\Controllers\Admin\DNSController(env('DNS_SERVER_PRIMARY_IP'),env('DNS_SERVER_PRIMARY_PORT'),env('DNS_SERVER_PRIMARY_USER'),env('DNS_SERVER_PRIMARY_PSW'),env('DNS_SERVER_PRIMARY_PATH'),env('DNS_SERVER_PRIMARY_RELOAD'),env('DNS_SERVER_PRIMARY_EXPORT_PLAIN'));
+            $dns1 = new \App\Http\Controllers\Admin\DNSController(env('DNS_SERVER_PRIMARY_IP'),env('DNS_SERVER_PRIMARY_PORT'),
+                                                                  env('DNS_SERVER_PRIMARY_USER'),env('DNS_SERVER_PRIMARY_PSW'),env('DNS_SERVER_PRIMARY_PRIVKEY'),
+                                                                  env('DNS_SERVER_PRIMARY_PATH'),env('DNS_SERVER_PRIMARY_RELOAD'),env('DNS_SERVER_PRIMARY_EXPORT_PLAIN'));
             $dns1->update();
             if(env('DNS_SERVER_SECONDARY_IP')){
-                $dns2 = new \App\Http\Controllers\Admin\DNSController(env('DNS_SERVER_SECONDARY_IP'),env('DNS_SERVER_SECONDARY_PORT'),env('DNS_SERVER_SECONDARY_USER'),env('DNS_SERVER_SECONDARY_PSW'),env('DNS_SERVER_SECONDARY_PATH'),env('DNS_SERVER_SECONDARY_RELOAD'),env('DNS_SERVER_SECONDARY_EXPORT_PLAIN'));
+                $dns2 = new \App\Http\Controllers\Admin\DNSController(env('DNS_SERVER_SECONDARY_IP'),env('DNS_SERVER_SECONDARY_PORT'),
+                                                                      env('DNS_SERVER_SECONDARY_USER'),env('DNS_SERVER_SECONDARY_PSW'),env('DNS_SERVER_SECONDARY_PRIVKEY'),
+                                                                      env('DNS_SERVER_SECONDARY_PATH'),env('DNS_SERVER_SECONDARY_RELOAD'),env('DNS_SERVER_SECONDARY_EXPORT_PLAIN'));
                 $dns2->update();
             }else{
                 \App\Http\Controllers\Admin\ActionLogController::log(0,"dns_cron","secondary DNS server IP not set, skipping run");
@@ -169,8 +173,8 @@ class AdminController extends Controller
                 if(!env('DNS_SERVER_PRIMARY_USER')){
                     $errors[] = "Primary DNS server SSH username not filled";
                 }
-                if(!env('DNS_SERVER_PRIMARY_PSW')){
-                    $errors[] = "Primary DNS server SSH password not filled";
+                if(!env('DNS_SERVER_PRIMARY_PSW') && !env('DNS_SERVER_PRIMARY_PRIVKEY')){
+                    $errors[] = "Either primary DNS server SSH password or private key must be filled";
                 }
                 if(!env('DNS_SERVER_PRIMARY_PATH')){
                     $errors[] = "Primary DNS server zone path not filled";
@@ -195,8 +199,8 @@ class AdminController extends Controller
                     if(!env('DNS_SERVER_SECONDARY_USER')){
                         $errors[] = "Secondary DNS server SSH username not filled";
                     }
-                    if(!env('DNS_SERVER_SECONDARY_PSW')){
-                        $errors[] = "Secondary DNS server SSH password not filled";
+                    if(!env('DNS_SERVER_SECONDARY_PSW') && !env('DNS_SERVER_SECONDARY_PRIVKEY')){
+                        $errors[] = "Either secondary DNS server SSH password or private key must be filled";
                     }
                     if(!env('DNS_SERVER_SECONDARY_PATH')){
                         $errors[] = "Secondary DNS server zone path not filled";
