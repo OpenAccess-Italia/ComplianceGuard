@@ -251,7 +251,7 @@ Per l'autenticazione SSH con chiave pubblica occorre generare una chiave con i s
 *     cd /var/www/html/storage/settings/
 *     ssh-keygen -m PEM -t rsa -f <key-name> -C 'commento'
 *     chown www-data:www-data <key-name>*
-*     ssh-copy-id -i <key-name>
+*     ssh-copy-id -i <key-name> <username>@<dns>
 
 Vengono generati i due file delle chiavi `<key-name>` (privata) e `<key-name>.pub` (pubblica).
 Successivamente è possibile configurare la chiave nel campo "SSH private key" con il valore `/var/www/html/storage/settings/<key_name>`
