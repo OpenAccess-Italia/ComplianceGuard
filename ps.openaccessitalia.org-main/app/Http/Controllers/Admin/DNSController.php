@@ -9,15 +9,16 @@ use phpseclib\Net\SSH2;
 class DNSController extends Controller
 {
     //
-    private $ip,$user,$psw,$path,$reload;
+    private $ip,$user,$psw,$privkey,$path,$reload,$export_plain;
 
-    public function __construct($ip,$port,$user,$psw,$path,$reload,$export_plain)
+    public function __construct($ip,$port,$user,$psw,$privkey,$path,$reload,$export_plain)
     {
         $this->middleware('auth.admin');
         $this->ip = $ip;
         $this->port = $port;
         $this->user = $user;
         $this->psw = $psw;
+        $this->privkey = $privkey;
         $this->path = $path;
         $this->reload = $reload;
         $this->export_plain = $export_plain;
@@ -27,7 +28,15 @@ class DNSController extends Controller
         \App\Http\Controllers\Admin\ActionLogController::log(0,"dns_system","trying to connect via ssh to $this->ip (port $this->port)");
         try{
             $ssh_connection = \ssh2_connect($this->ip,$this->port);
-            if(\ssh2_auth_password($ssh_connection,$this->user,$this->psw)){
+            $ssh_auth = false;
+            if($this->privkey){
+                \App\Http\Controllers\Admin\ActionLogController::log(0,"dns_system","trying to authenticate with private key $this->privkey");
+                $ssh_auth = \ssh2_auth_pubkey_file($ssh_connection,$this->user,$this->privkey.".pub",$this->privkey);
+            }else{
+                \App\Http\Controllers\Admin\ActionLogController::log(0,"dns_system","trying to authenticate with password");
+                $ssh_auth = \ssh2_auth_password($ssh_connection,$this->user,$this->psw);
+            }
+            if($ssh_auth){
                 \App\Http\Controllers\Admin\ActionLogController::log(0,"dns_system","connected via ssh to $this->ip (port $this->port)");
                 return $ssh_connection;
             }else{
