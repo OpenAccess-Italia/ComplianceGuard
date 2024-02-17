@@ -277,10 +277,10 @@ class AdminController extends Controller
         $obj->settings->passed = (count($env_test) == 0);
         $obj->settings->messages = (count($env_test) == 0) ? ["Settings formally correct"] : $env_test;
         if($obj->settings->passed){
-            $dns1 = new \App\Http\Controllers\Admin\DNSController(env('DNS_SERVER_PRIMARY_IP'),env('DNS_SERVER_PRIMARY_PORT'),env('DNS_SERVER_PRIMARY_USER'),env('DNS_SERVER_PRIMARY_PSW'),env('DNS_SERVER_PRIMARY_PATH'),env('DNS_SERVER_PRIMARY_RELOAD'));
+            $dns1 = new \App\Http\Controllers\Admin\DNSController(env('DNS_SERVER_PRIMARY_IP'),env('DNS_SERVER_PRIMARY_PORT'),env('DNS_SERVER_PRIMARY_USER'),env('DNS_SERVER_PRIMARY_PSW'),env('DNS_SERVER_PRIMARY_PATH'),env('DNS_SERVER_PRIMARY_RELOAD'),env('DNS_SERVER_PRIMARY_EXPORT_PLAIN'));
             $obj->primary = $dns1->test();
             if(env('DNS_SERVER_SECONDARY_IP')){
-                $dns2 = new \App\Http\Controllers\Admin\DNSController(env('DNS_SERVER_SECONDARY_IP'),env('DNS_SERVER_SECONDARY_PORT'),env('DNS_SERVER_SECONDARY_USER'),env('DNS_SERVER_SECONDARY_PSW'),env('DNS_SERVER_SECONDARY_PATH'),env('DNS_SERVER_SECONDARY_RELOAD'));
+                $dns2 = new \App\Http\Controllers\Admin\DNSController(env('DNS_SERVER_SECONDARY_IP'),env('DNS_SERVER_SECONDARY_PORT'),env('DNS_SERVER_SECONDARY_USER'),env('DNS_SERVER_SECONDARY_PSW'),env('DNS_SERVER_SECONDARY_PATH'),env('DNS_SERVER_SECONDARY_RELOAD'),env('DNS_SERVER_SECONDARY_EXPORT_PLAIN'));
                 $obj->secondary = $dns2->test();
             }
         }
