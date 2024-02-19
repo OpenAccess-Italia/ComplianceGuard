@@ -1,0 +1,10 @@
+#!/bin/bash
+/opt/src/trigger_ipv4.sh &
+/opt/src/trigger_ipv6.sh &
+/opt/src/trigger_bgp.sh &
+/opt/src/trigger_net.sh &
+/opt/src/trigger_ipsec_sec.sh &
+/opt/src/trigger_ipsec_conf.sh &
+/opt/src/trigger_iptables.sh &
+ntpdate time.inrim.it
+exit 0

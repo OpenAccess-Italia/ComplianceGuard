@@ -1,0 +1,3 @@
+#!/bin/bash
+/opt/src/trigger_hosts.sh &
+exit 0

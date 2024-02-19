@@ -1,0 +1,3 @@
+#!/bin/bash
+/opt/src/trigger_ipv46.sh &
+exit 0
