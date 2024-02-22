@@ -694,7 +694,7 @@ class PiracyController extends Controller
         $body_request->password = env("PIRACY_SHIELD_PSW");
         $client = new \GuzzleHttp\Client();
         try{
-            $response = $client->post($endpoint,["json" => $body_request,'connect_timeout' => 60]);
+            $response = $client->post($endpoint,["json" => $body_request,'connect_timeout' => 5]);
             if($response->getBody()){
                 $result = trim($response->getBody()->getContents());
                 if(self::isJson($result)){
@@ -747,7 +747,7 @@ class PiracyController extends Controller
         $body_request->refresh_token = $token;
         $client = new \GuzzleHttp\Client();
         try{
-            $response = $client->post($endpoint,["json" => $body_request,'connect_timeout' => 60]);
+            $response = $client->post($endpoint,["json" => $body_request,'connect_timeout' => 5]);
             if($response->getBody()){
                 $result = trim($response->getBody()->getContents());
                 if(self::isJson($result)){
@@ -800,7 +800,7 @@ class PiracyController extends Controller
         if($access_token){
             $client = new \GuzzleHttp\Client();
             try{
-                $response = $client->get($endpoint,['headers' => ['Authorization' => "Bearer $access_token"],'connect_timeout' => 60]);
+                $response = $client->get($endpoint,['headers' => ['Authorization' => "Bearer $access_token"],'connect_timeout' => 5]);
                 if($response->getBody()){
                     $result = trim($response->getBody()->getContents());
                     if(self::isJson($result)){
@@ -855,7 +855,7 @@ class PiracyController extends Controller
             $body_request = new \StdClass();
             $body_request->ticket_id = $ticket_id;
             try{
-                $response = $client->post($endpoint,["json" => $body_request, 'headers' => ['Authorization' => "Bearer $access_token"], 'connect_timeout' => 60]);
+                $response = $client->post($endpoint,["json" => $body_request, 'headers' => ['Authorization' => "Bearer $access_token"], 'connect_timeout' => 5]);
                 if($response->getBody()){
                     $result = trim($response->getBody()->getContents());
                     self::api_log("POST","/api/v1/ticket/get",$access_token,json_encode($body_request),$response->getStatusCode(),$result);
@@ -922,7 +922,7 @@ class PiracyController extends Controller
         if($access_token){
             $client = new \GuzzleHttp\Client();
             try{
-                $response = $client->get($endpoint,['headers' => ['Authorization' => "Bearer $access_token"], 'connect_timeout' => 10]);
+                $response = $client->get($endpoint,['headers' => ['Authorization' => "Bearer $access_token", 'Accept-Encoding' => 'gzip'], 'connect_timeout' => 60, 'decode_content' => 'gzip']);
                 if($response->getBody()){
                     $result = trim($response->getBody()->getContents());
                     self::api_log("GET","/api/v1/ticket/get/all",$access_token,null,$response->getStatusCode(),$result);
@@ -995,7 +995,7 @@ class PiracyController extends Controller
             $body_request = new \StdClass();
             $body_request->ticket_id = $ticket_id;
             try{
-                $response = $client->get($endpoint,["json" => $body_request, 'headers' => ['Authorization' => "Bearer $access_token"], 'connect_timeout' => 60]);
+                $response = $client->get($endpoint,["json" => $body_request, 'headers' => ['Authorization' => "Bearer $access_token"], 'connect_timeout' => 5]);
                 if($response->getBody()){
                     $result = trim($response->getBody()->getContents());
                     self::api_log("GET","/api/v1/ticket/get/fqdn",$access_token,json_encode($body_request),$response->getStatusCode(),$result);
@@ -1064,7 +1064,7 @@ class PiracyController extends Controller
             $body_request = new \StdClass();
             $body_request->ticket_id = $ticket_id;
             try{
-                $response = $client->get($endpoint,["json" => $body_request, 'headers' => ['Authorization' => "Bearer $access_token"],'connect_timeout' => 60]);
+                $response = $client->get($endpoint,["json" => $body_request, 'headers' => ['Authorization' => "Bearer $access_token"],'connect_timeout' => 5]);
                 if($response->getBody()){
                     $result = trim($response->getBody()->getContents());
                     self::api_log("GET","/api/v1/ticket/get/ipv4",$access_token,json_encode($body_request),$response->getStatusCode(),$result);
@@ -1133,7 +1133,7 @@ class PiracyController extends Controller
             $body_request = new \StdClass();
             $body_request->ticket_id = $ticket_id;
             try{
-                $response = $client->get($endpoint,["json" => $body_request, 'headers' => ['Authorization' => "Bearer $access_token"],'connect_timeout' => 60]);
+                $response = $client->get($endpoint,["json" => $body_request, 'headers' => ['Authorization' => "Bearer $access_token"],'connect_timeout' => 5]);
                 if($response->getBody()){
                     $result = trim($response->getBody()->getContents());
                     self::api_log("GET","/api/v1/ticket/get/ipv6",$access_token,json_encode($body_request),$response->getStatusCode(),$result);
@@ -1274,7 +1274,7 @@ class PiracyController extends Controller
                 $response = $client->get($endpoint,['headers' => ['Authorization' => "Bearer $access_token"],'connect_timeout' => 10]);
                 if($response->getBody()){
                     $result = trim($response->getBody()->getContents());
-                    self::api_log("GET","/api/v1/fqdn/get/all",$access_token,null,$response->getStatusCode(),$result);
+                    self::api_log("GET","/api/v1/ipv4/get/all",$access_token,null,$response->getStatusCode(),$result);
                     if(self::isJson($result)){
                         $obj = json_decode($result);
                         if(property_exists($obj,"status")){
@@ -1302,7 +1302,7 @@ class PiracyController extends Controller
                 if($e->hasResponse()){
                     if($e->getResponse()->getBody()){
                         $result = trim($e->getResponse()->getBody()->getContents());
-                        self::api_log("GET","/api/v1/fqdn/get/all",$access_token,null,$e->getResponse()->getStatusCode(),$result);
+                        self::api_log("GET","/api/v1/ipv4/get/all",$access_token,null,$e->getResponse()->getStatusCode(),$result);
                     }
                     switch($e->getResponse()->getStatusCode()){
                         case 401:
@@ -1415,7 +1415,7 @@ class PiracyController extends Controller
             $body_request = new \StdClass();
             $body_request->value = $ticket_item;
             try{
-                $response = $client->post($endpoint,["json" => $body_request, 'headers' => ['Authorization' => "Bearer $access_token"],'connect_timeout' => 60]);
+                $response = $client->post($endpoint,["json" => $body_request, 'headers' => ['Authorization' => "Bearer $access_token"],'connect_timeout' => 5]);
                 if($response->getBody()){
                     $result = trim($response->getBody()->getContents());
                     self::api_log("POST","/api/v1/ticket/item/set/processed",$access_token,json_encode($body_request),$response->getStatusCode(),$result);
@@ -1485,7 +1485,7 @@ class PiracyController extends Controller
             $body_request->value = $ticket_item;
             $body_request->reason = $reason;
             try{
-                $response = $client->post($endpoint,["json" => $body_request, 'headers' => ['Authorization' => "Bearer $access_token"],'connect_timeout' => 60]);
+                $response = $client->post($endpoint,["json" => $body_request, 'headers' => ['Authorization' => "Bearer $access_token"],'connect_timeout' => 5]);
                 if($response->getBody()){
                     $result = trim($response->getBody()->getContents());
                     self::api_log("POST","/api/v1/ticket/item/set/unprocessed",$access_token,json_encode($body_request),$response->getStatusCode(),$result);
@@ -1552,7 +1552,7 @@ class PiracyController extends Controller
         if($access_token){
             $client = new \GuzzleHttp\Client();
             try{
-                $response = $client->get($endpoint,['headers' => ['Authorization' => "Bearer $access_token"],'connect_timeout' => 60]);
+                $response = $client->get($endpoint,['headers' => ['Authorization' => "Bearer $access_token"],'connect_timeout' => 5]);
                 if($response->getBody()){
                     $result = trim($response->getBody()->getContents());
                     self::api_log("GET","/api/v1/whitelist/item/get/all",$access_token,null,$response->getStatusCode(),$result);
@@ -1625,7 +1625,7 @@ class PiracyController extends Controller
             $body_request = new \StdClass();
             $body_request->item = $item;
             try{
-                $response = $client->post($endpoint,["json" => $body_request, 'headers' => ['Authorization' => "Bearer $access_token"], 'connect_timeout' => 60]);
+                $response = $client->post($endpoint,["json" => $body_request, 'headers' => ['Authorization' => "Bearer $access_token"], 'connect_timeout' => 5]);
                 if($response->getBody()){
                     $result = trim($response->getBody()->getContents());
                     self::api_log("POST","/api/v1/whitelist/item/remove",$access_token,json_encode($body_request),$response->getStatusCode(),$result);
@@ -1696,7 +1696,7 @@ class PiracyController extends Controller
             $body_request->item = $item;
             $body_request->$attr_name = $attr;
             try{
-                $response = $client->post($endpoint,["json" => $body_request, 'headers' => ['Authorization' => "Bearer $access_token"], 'connect_timeout' => 60]);
+                $response = $client->post($endpoint,["json" => $body_request, 'headers' => ['Authorization' => "Bearer $access_token"], 'connect_timeout' => 5]);
                 if($response->getBody()){
                     $result = trim($response->getBody()->getContents());
                     self::api_log("POST","/api/v1/whitelist/item/create",$access_token,json_encode($body_request),$response->getStatusCode(),$result);
@@ -1761,7 +1761,7 @@ class PiracyController extends Controller
         $endpoint = self::buildUrl("/api/v1/ping");
         $client = new \GuzzleHttp\Client();
         try{
-            $response = $client->get($endpoint,['connect_timeout' => 60]);
+            $response = $client->get($endpoint,['connect_timeout' => 5]);
             if($response->getBody()){
                 $result = trim($response->getBody()->getContents());
                 self::api_log("GET","/api/v1/ping",null,null,$response->getStatusCode(),$result);
