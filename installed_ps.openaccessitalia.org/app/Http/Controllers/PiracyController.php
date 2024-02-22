@@ -922,7 +922,7 @@ class PiracyController extends Controller
         if($access_token){
             $client = new \GuzzleHttp\Client();
             try{
-                $response = $client->get($endpoint,['headers' => ['Authorization' => "Bearer $access_token"], 'connect_timeout' => 10]);
+                $response = $client->get($endpoint,['headers' => ['Authorization' => "Bearer $access_token", 'Accept-Encoding' => 'gzip'], 'connect_timeout' => 60, 'decode_content' => 'gzip']);
                 if($response->getBody()){
                     $result = trim($response->getBody()->getContents());
                     self::api_log("GET","/api/v1/ticket/get/all",$access_token,null,$response->getStatusCode(),$result);
@@ -1274,7 +1274,7 @@ class PiracyController extends Controller
                 $response = $client->get($endpoint,['headers' => ['Authorization' => "Bearer $access_token"],'connect_timeout' => 10]);
                 if($response->getBody()){
                     $result = trim($response->getBody()->getContents());
-                    self::api_log("GET","/api/v1/fqdn/get/all",$access_token,null,$response->getStatusCode(),$result);
+                    self::api_log("GET","/api/v1/ipv4/get/all",$access_token,null,$response->getStatusCode(),$result);
                     if(self::isJson($result)){
                         $obj = json_decode($result);
                         if(property_exists($obj,"status")){
@@ -1302,7 +1302,7 @@ class PiracyController extends Controller
                 if($e->hasResponse()){
                     if($e->getResponse()->getBody()){
                         $result = trim($e->getResponse()->getBody()->getContents());
-                        self::api_log("GET","/api/v1/fqdn/get/all",$access_token,null,$e->getResponse()->getStatusCode(),$result);
+                        self::api_log("GET","/api/v1/ipv4/get/all",$access_token,null,$e->getResponse()->getStatusCode(),$result);
                     }
                     switch($e->getResponse()->getStatusCode()){
                         case 401:
