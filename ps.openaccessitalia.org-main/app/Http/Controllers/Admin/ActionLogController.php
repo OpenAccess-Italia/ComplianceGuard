@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 
 class ActionLogController extends Controller
 {
@@ -52,5 +53,61 @@ class ActionLogController extends Controller
             }
         }
         return $to_send;
-    }   
+    }
+
+    public static function check_env(){
+        $errors = [];
+        if(env('LOGS_DAYS_ACTION') != ""){
+            $errors[] = "Action logs retention days not filled";
+        }else{
+            if(filter_var(env('LOGS_DAYS_ACTION'), FILTER_VALIDATE_INT, array("options" => array("min_range"=>0))) === false){
+                $errors[] = "Action logs retention days not valid";
+            }
+        }
+        if(env('LOGS_DAYS_PS_API') != ""){
+            $errors[] = "PiracyShield API logs retention days not filled";
+        }else{
+            if(filter_var(env('LOGS_DAYS_PS_API'), FILTER_VALIDATE_INT, array("options" => array("min_range"=>0))) === false){
+                $errors[] = "PiracyShield API logs retention days not valid";
+            }
+        }
+        if(env('LOGS_DAYS_PS_API_ACCESS_TOKENS') != ""){
+            $errors[] = "PiracyShield API access tokens retention days not filled";
+        }else{
+            if(filter_var(env('LOGS_DAYS_PS_API_ACCESS_TOKENS'), FILTER_VALIDATE_INT, array("options" => array("min_range"=>0))) === false){
+                $errors[] = "PiracyShield API access tokens retention days not valid";
+            }
+        }
+        if(env('LOGS_DAYS_PS_API_REFRESH_TOKENS') != ""){
+            $errors[] = "PiracyShield API refresh tokens retention days not filled";
+        }else{
+            if(filter_var(env('LOGS_DAYS_PS_API_REFRESH_TOKENS'), FILTER_VALIDATE_INT, array("options" => array("min_range"=>0))) === false){
+                $errors[] = "PiracyShield API refresh tokens retention days not valid";
+            }
+        }
+        return $errors;
+    }
+
+    public function log_retention(){
+        if (env("LOGS_DAYS_ACTION") > 0){
+            \App\Http\Controllers\Admin\ActionLogController::log(0,"log_system","trying to execute action logs retention, max days: ".env("LOGS_DAYS_ACTION"));
+            \App\ActionLog::where('timestamp', '<', Carbon::now()->subDay(env("LOGS_DAYS_ACTION")))->delete();
+            \App\Http\Controllers\Admin\ActionLogController::log(0,"log_system","succeded to execute action logs retention");
+        }
+        if (env("LOGS_DAYS_PS_API") > 0){
+            \App\Http\Controllers\Admin\ActionLogController::log(0,"log_system","trying to execute PiracyShield API logs retention, max days: ".env("LOGS_DAYS_PS_API"));
+            \App\Piracy\APILog::where('timestamp', '<', Carbon::now()->subDay(env("LOGS_DAYS_PS_API")))->delete();
+            \App\Http\Controllers\Admin\ActionLogController::log(0,"log_system","succeded to execute PiracyShield API logs retention");
+        }
+        if (env("LOGS_DAYS_PS_API_ACCESS_TOKENS") > 0){
+            \App\Http\Controllers\Admin\ActionLogController::log(0,"log_system","trying to execute PiracyShield API access tokens retention, max days: ".env("LOGS_DAYS_PS_API_ACCESS_TOKENS"));
+            \App\Piracy\APIAccessTokens::where('timestamp', '<', Carbon::now()->subDay(env("LOGS_DAYS_PS_API_ACCESS_TOKENS")))->delete();
+            \App\Http\Controllers\Admin\ActionLogController::log(0,"log_system","succeded to execute PiracyShield API access tokens retention");
+        }
+        if (env("LOGS_DAYS_PS_API_REFRESH_TOKENS") > 0){
+            \App\Http\Controllers\Admin\ActionLogController::log(0,"log_system","trying to execute PiracyShield API refresh tokens retention, max days: ".env("LOGS_DAYS_PS_API_REFRESH_TOKENS"));
+            \App\Piracy\APIRefreshTokens::where('timestamp', '<', Carbon::now()->subDay(env("LOGS_DAYS_PS_API_REFRESH_TOKENS")))->delete();
+            \App\Http\Controllers\Admin\ActionLogController::log(0,"log_system","succeded to execute PiracyShield API refresh tokens retention");
+        }
+    }
 }
