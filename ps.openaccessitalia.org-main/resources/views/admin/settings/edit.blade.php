@@ -936,6 +936,20 @@
                                     </div>
                                     <div class="row">
                                         <div class="form-group col-md-12">
+                                            <label for="LOGS_DAYS_AUTHENTICATION">Authentication logs (0: infinite)</label>
+                                            <div class="input-group">
+                                                <input class="form-control" id="LOGS_DAYS_AUTHENTICATION" name="LOGS_DAYS_AUTHENTICATION" value="{{env("LOGS_DAYS_AUTHENTICATION")}}" placeholder="0" type="number" min="0" step="1">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <i class="fas fa-hashtag text-dark mr-1"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <span class="form-text text-dark">Max number of days to keep authentication logs, 0 to disable retention.</span>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
                                             <label for="LOGS_DAYS_PS_API">PiracyShield API logs (0: infinite)</label>
                                             <div class="input-group">
                                                 <input class="form-control" id="LOGS_DAYS_PS_API" name="LOGS_DAYS_PS_API" value="{{env("LOGS_DAYS_PS_API")}}" placeholder="0" type="number" min="0" step="1">

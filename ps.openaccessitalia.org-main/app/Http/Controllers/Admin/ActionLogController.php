@@ -57,28 +57,35 @@ class ActionLogController extends Controller
 
     public static function check_env(){
         $errors = [];
-        if(env('LOGS_DAYS_ACTION') != ""){
+        if(env('LOGS_DAYS_ACTION') == ""){
             $errors[] = "Action logs retention days not filled";
         }else{
             if(filter_var(env('LOGS_DAYS_ACTION'), FILTER_VALIDATE_INT, array("options" => array("min_range"=>0))) === false){
                 $errors[] = "Action logs retention days not valid";
             }
         }
-        if(env('LOGS_DAYS_PS_API') != ""){
+        if(env('LOGS_DAYS_AUTHENTICATION') == ""){
+            $errors[] = "Authentication logs retention days not filled";
+        }else{
+            if(filter_var(env('LOGS_DAYS_AUTHENTICATION'), FILTER_VALIDATE_INT, array("options" => array("min_range"=>0))) === false){
+                $errors[] = "Authentication logs retention days not valid";
+            }
+        }
+        if(env('LOGS_DAYS_PS_API') == ""){
             $errors[] = "PiracyShield API logs retention days not filled";
         }else{
             if(filter_var(env('LOGS_DAYS_PS_API'), FILTER_VALIDATE_INT, array("options" => array("min_range"=>0))) === false){
                 $errors[] = "PiracyShield API logs retention days not valid";
             }
         }
-        if(env('LOGS_DAYS_PS_API_ACCESS_TOKENS') != ""){
+        if(env('LOGS_DAYS_PS_API_ACCESS_TOKENS') == ""){
             $errors[] = "PiracyShield API access tokens retention days not filled";
         }else{
             if(filter_var(env('LOGS_DAYS_PS_API_ACCESS_TOKENS'), FILTER_VALIDATE_INT, array("options" => array("min_range"=>0))) === false){
                 $errors[] = "PiracyShield API access tokens retention days not valid";
             }
         }
-        if(env('LOGS_DAYS_PS_API_REFRESH_TOKENS') != ""){
+        if(env('LOGS_DAYS_PS_API_REFRESH_TOKENS') == ""){
             $errors[] = "PiracyShield API refresh tokens retention days not filled";
         }else{
             if(filter_var(env('LOGS_DAYS_PS_API_REFRESH_TOKENS'), FILTER_VALIDATE_INT, array("options" => array("min_range"=>0))) === false){
