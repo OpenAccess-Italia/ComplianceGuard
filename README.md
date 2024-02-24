@@ -261,7 +261,7 @@ Successivamente è possibile configurare la chiave nel campo "SSH private key" c
 Per aggiornare la propria versione installata dovete semplicemente loggarvi in ssh dentro la vostra macchina con 
 privilegi di root con il comando 
 *        su -
-fare update delle variabili dentro il file .env modificandolo con il vostro editor preferito e copiare le nuove modifiche presenti nel file .env.example (Vi ricordiamo che dentor il file .env ci sono i vostri parametri personali di VPN, DNS e BGP pertanto dovete fare con cautela le modifiche). Dopo aver aggiornato il file .env potete lanciare i seguenti comandi:
+fare update delle variabili dentro il file .env modificandolo con il vostro editor preferito e copiare le nuove modifiche presenti nel file .env.example (Vi ricordiamo che dentor il file .env ci sono i vostri parametri personali di VPN, DNS e BGP pertanto dovete fare con cautela le modifiche). Dopo aver aggiornato il file .env possiamo procedere.
 
 Vi consigliamo di fare un backup prima di qualsiasi update in modo da poter tornare indietro lanciando questi comandi:
 
