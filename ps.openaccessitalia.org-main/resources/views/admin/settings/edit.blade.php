@@ -610,7 +610,21 @@
                                                         </div>
                                                     </div>
                                                     <div class="row">
-                                                        <div class="form-group col-md-12">
+                                                        <div class="col-md-12">
+                                                            <small class="form-text">Please specify either SSH private key path or password for authentication (private key will take precedence)</small>
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label for="DNS_SERVER_PRIMARY_PRIVKEY">SSH private key</label>
+                                                            <div class="input-group">
+                                                                <input class="form-control" id="DNS_SERVER_PRIMARY_PRIVKEY" name="DNS_SERVER_PRIMARY_PRIVKEY" value="{{env("DNS_SERVER_PRIMARY_PRIVKEY")}}" placeholder="~/.ssh/id_rsa">
+                                                                <div class="input-group-append">
+                                                                    <div class="input-group-text">
+                                                                        <i class="fas fa-user-lock text-dark mr-1"></i>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group col-md-6">
                                                             <label for="DNS_SERVER_PRIMARY_PSW">SSH password</label>
                                                             <div class="input-group">
                                                                 <input type="password" class="form-control" id="DNS_SERVER_PRIMARY_PSW" name="DNS_SERVER_PRIMARY_PSW" value="{{env("DNS_SERVER_PRIMARY_PSW")}}">
@@ -712,7 +726,21 @@
                                                         </div>
                                                     </div>
                                                     <div class="row">
-                                                        <div class="form-group col-md-12">
+                                                        <div class="col-md-12">
+                                                            <small class="form-text">Please specify either SSH private key path or password for authentication (private key will take precedence)</small>
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label for="DNS_SERVER_SECONDARY_PRIVKEY">SSH private key</label>
+                                                            <div class="input-group">
+                                                                <input class="form-control" id="DNS_SERVER_SECONDARY_PRIVKEY" name="DNS_SERVER_SECONDARY_PRIVKEY" value="{{env("DNS_SERVER_SECONDARY_PRIVKEY")}}" placeholder="~/.ssh/id_rsa">
+                                                                <div class="input-group-append">
+                                                                    <div class="input-group-text">
+                                                                        <i class="fas fa-user-lock text-dark mr-1"></i>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group col-md-6">
                                                             <label for="DNS_SERVER_SECONDARY_PSW">SSH password</label>
                                                             <div class="input-group">
                                                                 <input type="password" class="form-control" id="DNS_SERVER_SECONDARY_PSW" name="DNS_SERVER_SECONDARY_PSW" value="{{env("DNS_SERVER_SECONDARY_PSW")}}">

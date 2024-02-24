@@ -1899,8 +1899,10 @@ conn agcom@ps
     ike=aes256-sha256-modp1024!
     esp=aes256-sha256!
     keyexchange=ikev2
-    ikelifetime=27000s
+    ikelifetime=28800s
+    lifetime=27000s
     auto=start
+    dpdaction=restart
     authby=psk
     left=$left
     leftsubnet=$left_subnet
