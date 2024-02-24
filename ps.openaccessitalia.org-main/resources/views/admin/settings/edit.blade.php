@@ -67,6 +67,14 @@
                                 <span class="nav-text">General</span>
                             </a>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" id="log-retention-tab" data-toggle="tab" href="#log-retention" role="tab" aria-controls="log-retention" aria-selected="false">
+                                <span class="nav-icon">
+                                    <i class="fas fa-hdd"></i>
+                                </span>
+                                <span class="nav-text">Log retention</span>
+                            </a>
+                        </li>
                     </ul>
                     <form action="/admin/setting/edit/save" method="POST">
                     @csrf
@@ -904,6 +912,83 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="log-retention" role="tabpanel" aria-labelledby="log-retention-tab">
+                            <div class="card card-custom">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <label for="LOGS_DAYS_ACTION">Action logs (0: infinite)</label>
+                                            <div class="input-group">
+                                                <input class="form-control" id="LOGS_DAYS_ACTION" name="LOGS_DAYS_ACTION" value="{{env("LOGS_DAYS_ACTION")}}" placeholder="0" type="number" min="0" step="1">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <i class="fas fa-hashtag text-dark mr-1"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <span class="form-text text-dark">Max number of days to keep action logs, 0 to disable retention.</span>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <label for="LOGS_DAYS_AUTHENTICATION">Authentication logs (0: infinite)</label>
+                                            <div class="input-group">
+                                                <input class="form-control" id="LOGS_DAYS_AUTHENTICATION" name="LOGS_DAYS_AUTHENTICATION" value="{{env("LOGS_DAYS_AUTHENTICATION")}}" placeholder="0" type="number" min="0" step="1">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <i class="fas fa-hashtag text-dark mr-1"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <span class="form-text text-dark">Max number of days to keep authentication logs, 0 to disable retention.</span>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <label for="LOGS_DAYS_PS_API">PiracyShield API logs (0: infinite)</label>
+                                            <div class="input-group">
+                                                <input class="form-control" id="LOGS_DAYS_PS_API" name="LOGS_DAYS_PS_API" value="{{env("LOGS_DAYS_PS_API")}}" placeholder="0" type="number" min="0" step="1">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <i class="fas fa-hashtag text-dark mr-1"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <span class="form-text text-dark">Max number of days to keep PiracyShield API logs, 0 to disable retention.</span>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <label for="LOGS_DAYS_PS_API_ACCESS_TOKENS">PiracyShield Access Tokens (0: infinite)</label>
+                                            <div class="input-group">
+                                                <input class="form-control" id="LOGS_DAYS_PS_API_ACCESS_TOKENS" name="LOGS_DAYS_PS_API_ACCESS_TOKENS" value="{{env("LOGS_DAYS_PS_API_ACCESS_TOKENS")}}" placeholder="0" type="number" min="0" step="1">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <i class="fas fa-hashtag text-dark mr-1"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <span class="form-text text-dark">Max number of days to keep PiracyShield API access tokens, 0 to disable retention.</span>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <label for="LOGS_DAYS_PS_API_REFRESH_TOKENS">PiracyShield Refresh Tokens (0: infinite)</label>
+                                            <div class="input-group">
+                                                <input class="form-control" id="LOGS_DAYS_PS_API_REFRESH_TOKENS" name="LOGS_DAYS_PS_API_REFRESH_TOKENS" value="{{env("LOGS_DAYS_PS_API_REFRESH_TOKENS")}}" placeholder="2" type="number" min="0" step="1">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <i class="fas fa-hashtag text-dark mr-1"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <span class="form-text text-dark">Max number of days to keep PiracyShield API refresh tokens, 0 to disable retention.<br>
+                                            NOTE: API refresh tokens are refreshed every day, keep at least 2 days to allow access tokens to be generated.</span>
                                         </div>
                                     </div>
                                 </div>

@@ -119,7 +119,9 @@ class AdminController extends Controller
             "CNCPO_ENABLED","CNCPO_DOWNLOAD_URL","CNCPO_PFX_PATH","CNCPO_PFX_PASS","CNCPO_DNS_REDIRECT_IP",
             "ADM_ENABLED","ADM_BETTING_URL","ADM_SMOKING_URL","ADM_DNS_REDIRECT_IP",
             "MANUAL_ENABLED","MANUAL_DNS_REDIRECT_IP",
-            "MAIL_HOST","MAIL_PORT","MAIL_USERNAME","MAIL_PASSWORD","MAIL_ENCRYPTION","MAIL_FROM_ADDRESS","MAIL_FROM_NAME","MAIL_TO_ADDRESSES"]);
+            "MAIL_HOST","MAIL_PORT","MAIL_USERNAME","MAIL_PASSWORD","MAIL_ENCRYPTION","MAIL_FROM_ADDRESS","MAIL_FROM_NAME","MAIL_TO_ADDRESSES",
+            "LOGS_DAYS_ACTION","LOGS_DAYS_AUTHENTICATION","LOGS_DAYS_PS_API","LOGS_DAYS_PS_API_ACCESS_TOKENS","LOGS_DAYS_PS_API_REFRESH_TOKENS"
+        ]);
     }
 
     public function update_dns(){
@@ -152,6 +154,18 @@ class AdminController extends Controller
             \App\Http\Controllers\Admin\ActionLogController::log(0,"bgp_cron","run ended");
         }else{
             \App\Http\Controllers\Admin\ActionLogController::log(0,"bgp_cron","run not started because of: ".implode(", ",$check_env));
+        }
+    }
+
+    public function log_retention(){
+        $check_env = \App\Http\Controllers\Admin\ActionLogController::check_env();
+        if(count($check_env) == 0){
+            \App\Http\Controllers\Admin\ActionLogController::log(0,"log_retention_cron","starting run");
+            $c = new \App\Http\Controllers\Admin\ActionLogController();
+            $c->log_retention();
+            \App\Http\Controllers\Admin\ActionLogController::log(0,"log_retention_cron","run ended");
+        }else{
+            \App\Http\Controllers\Admin\ActionLogController::log(0,"log_retention_cron","run not started because of: ".implode(", ",$check_env));
         }
     }
 

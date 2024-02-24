@@ -23,6 +23,6 @@ return [
     |
     */
 
-    'older' => 365,
+    'older' => env('LOGS_DAYS_AUTHENTICATION', 365),
 
 ];
