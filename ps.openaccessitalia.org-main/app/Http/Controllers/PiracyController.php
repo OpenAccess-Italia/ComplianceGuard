@@ -922,7 +922,7 @@ class PiracyController extends Controller
         if($access_token){
             $client = new \GuzzleHttp\Client();
             try{
-                $response = $client->get($endpoint,['headers' => ['Authorization' => "Bearer $access_token"], 'connect_timeout' => 10]);
+                $response = $client->get($endpoint,['headers' => ['Authorization' => "Bearer $access_token", 'Accept-Encoding' => 'gzip'], 'connect_timeout' => 60, 'decode_content' => 'gzip']);
                 if($response->getBody()){
                     $result = trim($response->getBody()->getContents());
                     self::api_log("GET","/api/v1/ticket/get/all",$access_token,null,$response->getStatusCode(),$result);
@@ -1274,7 +1274,7 @@ class PiracyController extends Controller
                 $response = $client->get($endpoint,['headers' => ['Authorization' => "Bearer $access_token"],'connect_timeout' => 10]);
                 if($response->getBody()){
                     $result = trim($response->getBody()->getContents());
-                    self::api_log("GET","/api/v1/fqdn/get/all",$access_token,null,$response->getStatusCode(),$result);
+                    self::api_log("GET","/api/v1/ipv4/get/all",$access_token,null,$response->getStatusCode(),$result);
                     if(self::isJson($result)){
                         $obj = json_decode($result);
                         if(property_exists($obj,"status")){
@@ -1302,7 +1302,7 @@ class PiracyController extends Controller
                 if($e->hasResponse()){
                     if($e->getResponse()->getBody()){
                         $result = trim($e->getResponse()->getBody()->getContents());
-                        self::api_log("GET","/api/v1/fqdn/get/all",$access_token,null,$e->getResponse()->getStatusCode(),$result);
+                        self::api_log("GET","/api/v1/ipv4/get/all",$access_token,null,$e->getResponse()->getStatusCode(),$result);
                     }
                     switch($e->getResponse()->getStatusCode()){
                         case 401:
@@ -1916,9 +1916,9 @@ EOD;
                 \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_system","failed to make piracy shield vpn ipsec conf file in '".base_path('storage/settings/').'ipsec_conf.add'."' (".$e->getMessage().")",true);
             }
             //ipsec_secret.add
-            $psk = base64_encode(env('PIRACY_SHIELD_VPN_PSK'));
+            $psk = env('PIRACY_SHIELD_VPN_PSK');
             $content = <<<EOD
-$right : PSK 0s$psk
+$right : PSK "$psk"
 EOD;
             try{
                 file_put_contents(base_path('storage/settings/').'ipsec_secrets.add',$content);
