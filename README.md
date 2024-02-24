@@ -266,20 +266,18 @@ Dopo aver aggiornato il file .env potete lanciare i seguenti comandi:
 
 Vi consigliamo di fare un backup prima di qualsiasi update in modo da poter tornare indietro lanciando questi comandi:
 
-*       mkdir /var/lib/lxc/lamp/rootfs/var/www/htmlBCK2
-*       cp -a /var/lib/lxc/lamp/rootfs/var/www/html/. /var/lib/lxc/lamp/rootfs/var/www/htmlBCK2/
+*       mkdir /var/lib/lxc/lamp/rootfs/var/www/htmlBCK
+*       cp -a /var/lib/lxc/lamp/rootfs/var/www/html/. /var/lib/lxc/lamp/rootfs/var/www/htmlBCK/
 
 
 Procediamo all'update dal lanciando i seguenti comandi:
 
-*       cd /
 *       mkdir /var/lib/lxc/lamp/rootfs/var/www/git
 *       cd /var/lib/lxc/lamp/rootfs/var/www/git
 *       git clone https://github.com/OpenAccess-Italia/ComplianceGuard
 *       cp -a /var/lib/lxc/lamp/rootfs/var/www/git/ComplianceGuard/ps.openaccessitalia.org-main/. /var/lib/lxc/lamp/rootfs/var/www/html/
 *       chown -R 100033:100033 /var/lib/lxc/lamp/rootfs/var/www/html
 *       rm -r /var/lib/lxc/lamp/rootfs/var/www/git
-*       cd /
 
 
 
