@@ -250,10 +250,38 @@ Per l'autenticazione SSH con chiave pubblica occorre generare una chiave con i s
 *     lxc-attach lamp
 *     cd /var/www/html/storage/settings/
 *     ssh-keygen -m PEM -t rsa -f <key-name> -C 'commento'
-*     chown www-data:www-data <key-name>*
+*     chown 100033:100033 <key-name>*
 *     ssh-copy-id -i <key-name> <username>@<dns>
 
 Vengono generati i due file delle chiavi `<key-name>` (privata) e `<key-name>.pub` (pubblica).
 Successivamente è possibile configurare la chiave nel campo "SSH private key" con il valore `/var/www/html/storage/settings/<key_name>`
+
+# UPDATE DELL'APPLICATIVO
+
+Per aggiornare la propria versione installata dovete semplicemente loggarvi in ssh dentro la vostra macchina con 
+privilegi di root con il comando "su -", fare update delle variabili dentro il file .env modificandolo con "nano"
+o "vi" e copiare le nuove modifiche presenti nel file .env.example (Vi ricordiamo che dentor il file .env ci sono 
+i vostri parametri personali di VPN, DNS e BGP pertanto dovete fare con cautela le modifiche).
+Dopo aver aggiornato il file .env potete lanciare i seguenti comandi:
+
+Vi consigliamo di fare un backup prima di qualsiasi update in modo da poter tornare indietro lanciando questi comandi:
+
+*       mkdir /var/lib/lxc/lamp/rootfs/var/www/htmlBCK2
+*       cp -a /var/lib/lxc/lamp/rootfs/var/www/html/. /var/lib/lxc/lamp/rootfs/var/www/htmlBCK2/
+
+
+Procediamo all'update dal lanciando i seguenti comandi:
+
+*       cd /
+*       mkdir /var/lib/lxc/lamp/rootfs/var/www/git
+*       d /var/lib/lxc/lamp/rootfs/var/www/git
+*       git clone https://github.com/OpenAccess-Italia/ComplianceGuard
+*       cp -a /var/lib/lxc/lamp/rootfs/var/www/git/ComplianceGuard/ps.openaccessitalia.org-main/. /var/lib/lxc/lamp/rootfs/var/www/html/
+*       chown -R 100033:100033 /var/lib/lxc/lamp/rootfs/var/www/html
+*       rm -r /var/lib/lxc/lamp/rootfs/var/www/git
+*       cd /
+
+
+
 
 Il Team di OpenAccess Italia
