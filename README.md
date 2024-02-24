@@ -274,7 +274,7 @@ Procediamo all'update dal lanciando i seguenti comandi:
 
 *       cd /
 *       mkdir /var/lib/lxc/lamp/rootfs/var/www/git
-*       d /var/lib/lxc/lamp/rootfs/var/www/git
+*       cd /var/lib/lxc/lamp/rootfs/var/www/git
 *       git clone https://github.com/OpenAccess-Italia/ComplianceGuard
 *       cp -a /var/lib/lxc/lamp/rootfs/var/www/git/ComplianceGuard/ps.openaccessitalia.org-main/. /var/lib/lxc/lamp/rootfs/var/www/html/
 *       chown -R 100033:100033 /var/lib/lxc/lamp/rootfs/var/www/html
