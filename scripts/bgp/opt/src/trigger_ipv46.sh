@@ -1,7 +1,7 @@
 #!/bin/bash
 
-LTIMEv4=`stat -c %Z /opt/src/ipv4.txt`
-LTIMEv6=`stat -c %Z /opt/src/ipv6.txt`
+LTIMEv4=0
+LTIMEv6=0
 
 while true    
 do
