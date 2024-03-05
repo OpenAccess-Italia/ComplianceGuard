@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Aggregator\Aggregator;
 
 class BGPController extends Controller
 {
@@ -31,6 +32,9 @@ class BGPController extends Controller
                 $done[] = $ipv4;
             }
         }
+        $aggregator = new \App\Aggregator\Aggregator();
+        $content = $aggregator->aggregate($content);
+        \App\Http\Controllers\Admin\ActionLogController::log(0,"bgp_system","aggregated ". count($done) ." ipv4 networks in ". count(explode("\n", $content)) ." summarized networks");
         try{
             file_put_contents(base_path('storage/download/').'ipv4.txt',$content);
             \App\Http\Controllers\Admin\ActionLogController::log(0,"bgp_system","succeded to make ipv4 bgp file in '".base_path('storage/download/').'ipv4.txt'."'");
@@ -59,6 +63,9 @@ class BGPController extends Controller
                 $done[] = $ipv6;
             }
         }
+        $aggregator = new \App\Aggregator\Aggregator();
+        $content = $aggregator->aggregate($content);
+        \App\Http\Controllers\Admin\ActionLogController::log(0,"bgp_system","aggregated ". count($done) ." ipv6 networks in ". count(explode("\n", $content)) ." summarized networks");
         try{
             file_put_contents(base_path('storage/download/').'ipv6.txt',$content);
             \App\Http\Controllers\Admin\ActionLogController::log(0,"bgp_system","succeded to make ipv6 bgp file in '".base_path('storage/download/').'ipv6.txt'."'");
