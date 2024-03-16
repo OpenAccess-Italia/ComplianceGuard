@@ -368,7 +368,7 @@ class PiracyController extends Controller
 
     public function datatable_tickets(Request $request){
         if($request->ajax()){
-            $data = \App\Piracy\Tickets::orderBy("timestamp","desc")->get();
+            $data = \App\Piracy\Tickets::query();
             return Datatables::of($data)
                 ->rawColumns(
                     ['status','timestamp']
@@ -437,7 +437,7 @@ class PiracyController extends Controller
 
     public function datatable_fqdn(Request $request){
         if($request->ajax()){
-            $data = \App\Piracy\FQDNs::orderBy("timestamp","desc")->get();
+            $data = \App\Piracy\FQDNs::query();
             return Datatables::of($data)
                 ->rawColumns(
                     ['fqdn','timestamp']
@@ -484,7 +484,7 @@ class PiracyController extends Controller
 
     public function datatable_ipv4(Request $request){
         if($request->ajax()){
-            $data = \App\Piracy\IPv4s::orderBy("timestamp","desc")->get();
+            $data = \App\Piracy\IPv4s::query();
             return Datatables::of($data)
                 ->rawColumns(
                     ['ipv4','timestamp']
@@ -531,7 +531,7 @@ class PiracyController extends Controller
 
     public function datatable_ipv6(Request $request){
         if($request->ajax()){
-            $data = \App\Piracy\IPv6s::orderBy("timestamp","desc")->get();
+            $data = \App\Piracy\IPv6s::query();
             return Datatables::of($data)
                 ->rawColumns(
                     ['ipv6','timestamp']

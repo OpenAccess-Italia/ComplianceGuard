@@ -18,9 +18,9 @@ class AdminController extends Controller
     public function datatable_actions_log(Request $request){
         if($request->ajax()){
             if($request->input('hide_system_cron') == "true"){
-                $data = \App\ActionLog::where('timestamp', '>=', Carbon::now()->subDay())->where("user_id","<>","0")->orderBy("id","desc")->get();
+                $data = \App\ActionLog::where("user_id","<>","0");
             }else{
-                $data = \App\ActionLog::where('timestamp', '>=', Carbon::now()->subDay())->orderBy("id","desc")->get();
+                $data = \App\ActionLog::query();
             }
             return Datatables::of($data)->addColumn('action',function($row){
                 return htmlspecialchars($row->action);
@@ -29,17 +29,17 @@ class AdminController extends Controller
     }
 
     public function datatable_ps_api_log(Request $request){
-        $data = \App\Piracy\APILog::where('timestamp', '>=', Carbon::now()->subDay())->orderBy("id","desc")->get();
+        $data = \App\Piracy\APILog::query();
         return Datatables::of($data)->make(true);
     }
 
     public function datatable_ps_access_tokens(Request $request){
-        $data = \App\Piracy\APIAccessTokens::orderBy("id","desc")->get();
+        $data = \App\Piracy\APIAccessTokens::query();
         return Datatables::of($data)->make(true);
     }
 
     public function datatable_ps_refresh_tokens(Request $request){
-        $data = \App\Piracy\APIRefreshTokens::orderBy("id","desc")->get();
+        $data = \App\Piracy\APIRefreshTokens::query();
         return Datatables::of($data)->make(true);
     }
 

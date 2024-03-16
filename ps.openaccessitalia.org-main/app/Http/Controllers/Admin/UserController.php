@@ -18,7 +18,7 @@ class UserController extends Controller
 
     public function datatable_user(Request $request){
         if($request->ajax()){
-            $data = \App\User::get();
+            $data = \App\User::query();
             return Datatables::of($data)
                 ->rawColumns(
                     ['name',
