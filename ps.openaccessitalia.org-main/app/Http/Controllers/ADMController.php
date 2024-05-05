@@ -25,7 +25,7 @@ class ADMController extends Controller
 
     private function find_betting_files_url(){
         \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","trying to find betting adm blacklist links");
-        $client = new \GuzzleHttp\Client();
+        $client = new \App\Http\HttpClient();
         try {
             $response = $client->get(env("ADM_BETTING_URL"));
         }catch(\GuzzleHttp\Exception\BadResponseException $e){
@@ -157,7 +157,7 @@ class ADMController extends Controller
 
     private function find_smoking_files_url(){
         \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","trying to find smoking adm blacklist links");
-        $client = new \GuzzleHttp\Client();
+        $client = new \App\Http\HttpClient();
         try {
             $response = $client->get(env("ADM_SMOKING_URL"));
         }catch(\GuzzleHttp\Exception\BadResponseException $e){
