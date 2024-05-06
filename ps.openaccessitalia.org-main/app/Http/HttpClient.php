@@ -4,6 +4,7 @@ namespace App\Http;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\ServerException;
 use Illuminate\Support\Facades\Log;
 
 class HttpClient extends Client
@@ -40,8 +41,8 @@ class HttpClient extends Client
             Log::info("Retrying $retryCount / $this->maxRetries...");
             try {
                 return parent::$functionNameToWrap($url, $options);
-            } catch (RequestException $e) {
-                Log::info("Status code: " . ($e->getResponse() == null) ? '-' : $e->getResponse()->getStatusCode());
+            } catch (ServerException $e) {
+                Log::info("Error 5xx.");
                 if ($retryCount >= $this->maxRetries || !$this->shouldRetry($e)) {
                     throw $e;
                 }
@@ -62,8 +63,8 @@ class HttpClient extends Client
      */
     protected function shouldRetry(RequestException $exception)
     {
-        // Retry logic based on the HTTP status code, e.g., retry if 5xx server error
-        return $exception->getResponse() !== null && floor($exception->getResponse()->getStatusCode() / 100) === 5;
+        // Retry every failed request with error 5xx.
+        return true;
     }
 
     /**
