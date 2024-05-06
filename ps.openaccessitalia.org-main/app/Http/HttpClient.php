@@ -41,7 +41,7 @@ class HttpClient extends Client
             try {
                 return parent::$functionNameToWrap($url, $options);
             } catch (RequestException $e) {
-                Log::info("Status code: " . $e->getResponse()->getStatusCode());
+                Log::info("Status code: " . ($e->getResponse() == null) ? '-' : $e->getResponse()->getStatusCode());
                 if ($retryCount >= $this->maxRetries || !$this->shouldRetry($e)) {
                     throw $e;
                 }
