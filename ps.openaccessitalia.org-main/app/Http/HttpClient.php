@@ -4,6 +4,7 @@ namespace App\Http;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use Illuminate\Support\Facades\Log;
 
 class HttpClient extends Client
 {
@@ -31,20 +32,24 @@ class HttpClient extends Client
      */
     private function wrapper($functionNameToWrap, $url = null, $options = [])
     {
+        Log::info("Sending \"$functionNameToWrap\" request to \"$url\"");
         $options['timeout'] = $this->timeout / 1000;
 
-        $retryCount = 0;
+        $retryCount = 1;
         do {
+            Log::info("Retrying $retryCount / $this->maxRetries...");
             try {
                 return parent::$functionNameToWrap($url, $options);
             } catch (RequestException $e) {
+                Log::info("Status code: " . $e->getResponse()->getStatusCode());
                 if ($retryCount >= $this->maxRetries || !$this->shouldRetry($e)) {
                     throw $e;
                 }
+                Log::info("Retrying in ".($this->retryDelay * 1000)." ms...");
                 usleep($this->retryDelay * 1000);
             }
             $retryCount++;
-        } while ($retryCount < $this->maxRetries);
+        } while ($retryCount <= $this->maxRetries);
 
         throw $e;
     }
