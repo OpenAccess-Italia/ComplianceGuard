@@ -922,7 +922,7 @@ class PiracyController extends Controller
         if($access_token){
             $client = new \App\Http\HttpClient();
             try{
-                $response = $client->get($endpoint,['headers' => ['Authorization' => "Bearer $access_token", 'Accept-Encoding' => 'gzip'], 'connect_timeout' => 20, 'decode_content' => 'gzip']);
+                $response = $client->get($endpoint,['headers' => ['Authorization' => "Bearer $access_token", 'Accept-Encoding' => 'gzip'], 'connect_timeout' => 60, 'decode_content' => 'gzip']);
                 if($response->getBody()){
                     $result = trim($response->getBody()->getContents());
                     self::api_log("GET","/api/v1/ticket/get/all",$access_token,null,$response->getStatusCode(),$result);
