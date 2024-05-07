@@ -3,8 +3,7 @@
 namespace App\Http;
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Exception\ServerException;
+use GuzzleHttp\Exception\BadResponseException;
 use Illuminate\Support\Facades\Log;
 
 class HttpClient extends Client
@@ -18,7 +17,7 @@ class HttpClient extends Client
 
         // Set the default options for the retry logic
         $this->maxRetries = (isset($config["maxRetries"])) ? $config["maxRetries"] : 5;
-        $this->retryDelay = (isset($config["retryDelay"])) ? $config["retryDelay"] : 1000;
+        $this->retryDelay = (isset($config["retryDelay"])) ? $config["retryDelay"] : 2000;
         $this->timeout = (isset($config["timeout"])) ? $config["timeout"] : 10000;
     }
 
@@ -34,37 +33,64 @@ class HttpClient extends Client
     private function wrapper($functionNameToWrap, $url = null, $options = [])
     {
         Log::info("Sending \"$functionNameToWrap\" request to \"$url\"");
+
         $options['timeout'] = $this->timeout / 1000;
 
         $retryCount = 1;
-        do {
-            Log::info("Retrying $retryCount / $this->maxRetries...");
+
+        while(true) {
+
+            Log::info("Attempt $retryCount/$this->maxRetries...");
             try {
-                return parent::$functionNameToWrap($url, $options);
-            } catch (ServerException $e) {
-                Log::info("Error 5xx.");
+                $response = parent::$functionNameToWrap($url, $options);
+                $statusCode = $response->getStatusCode();
+                Log::info("Success. HTTP Status code: $statusCode");
+                return $response;
+            } catch (BadResponseException $e) {
+                Log::debug("Request failed...");
+                
+                // Log the response HTTP status
+                $response = $e->getResponse();
+                if($response){
+                    $statusCode = $response->getStatusCode();
+                    $reasonPhrase = $response->getReasonPhrase();
+                    Log::info("[HTTP $statusCode]: $reasonPhrase");
+                }
+
+                // If we should not retry the request again, throw the last error.
                 if ($retryCount >= $this->maxRetries || !$this->shouldRetry($e)) {
                     throw $e;
                 }
-                Log::info("Retrying in ".($this->retryDelay * 1000)." ms...");
+
+                // Wait retryDelay ms and retry the request.
+                Log::info("Retrying in ".($this->retryDelay)." ms...");
                 usleep($this->retryDelay * 1000);
             }
+            
             $retryCount++;
-        } while ($retryCount <= $this->maxRetries);
-
-        throw $e;
+        }
     }
 
     /**
      * Determine if a request should be retried.
      *
-     * @param RequestException $exception
+     * @param BadResponseException $exception
      * @return bool
      */
-    protected function shouldRetry(RequestException $exception)
+    protected function shouldRetry(BadResponseException $exception)
     {
-        // Retry every failed request with error 5xx.
-        return true;
+        $response = $exception->getResponse();
+        if($response){
+            $statusCode = $response->getStatusCode();
+            if(
+                $statusCode == 429 || // HTTP Too Many Requests Error
+                ($statusCode >= 500 && $statusCode <= 599) // HTTP 5xx Error
+            ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
