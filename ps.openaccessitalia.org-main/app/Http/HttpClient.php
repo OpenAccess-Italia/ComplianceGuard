@@ -16,7 +16,7 @@ class HttpClient extends Client
         parent::__construct($config);
 
         // Set the default options for the retry logic
-        $this->maxRetries = (isset($config["maxRetries"])) ? $config["maxRetries"] : 5;
+        $this->maxRetries = (isset($config["maxRetries"])) ? $config["maxRetries"] : 20;
         $this->retryDelay = (isset($config["retryDelay"])) ? $config["retryDelay"] : 2000;
         $this->timeout = (isset($config["timeout"])) ? $config["timeout"] : 20000;
     }
