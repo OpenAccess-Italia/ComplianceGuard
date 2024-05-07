@@ -3,7 +3,7 @@
 namespace App\Http;
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\BadResponseException;
+use GuzzleHttp\Exception\RequestException;
 use Illuminate\Support\Facades\Log;
 
 class HttpClient extends Client
@@ -46,7 +46,7 @@ class HttpClient extends Client
                 $statusCode = $response->getStatusCode();
                 Log::info("Success. HTTP Status code: $statusCode");
                 return $response;
-            } catch (BadResponseException $e) {
+            } catch (RequestException $e) {
                 Log::debug("Request failed...");
                 
                 // Log the response HTTP status
@@ -74,10 +74,10 @@ class HttpClient extends Client
     /**
      * Determine if a request should be retried.
      *
-     * @param BadResponseException $exception
+     * @param RequestException $exception
      * @return bool
      */
-    protected function shouldRetry(BadResponseException $exception)
+    protected function shouldRetry(RequestException $exception)
     {
         $response = $exception->getResponse();
         if($response){
@@ -88,9 +88,12 @@ class HttpClient extends Client
             ) {
                 return true;
             }
+
+            return false;
         }
 
-        return false;
+        // This is to allow retry on timeouts.
+        return true;
     }
 
     /**
