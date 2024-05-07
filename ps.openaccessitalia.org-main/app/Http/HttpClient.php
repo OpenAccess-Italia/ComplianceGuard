@@ -18,7 +18,7 @@ class HttpClient extends Client
         // Set the default options for the retry logic
         $this->maxRetries = (isset($config["maxRetries"])) ? $config["maxRetries"] : 5;
         $this->retryDelay = (isset($config["retryDelay"])) ? $config["retryDelay"] : 2000;
-        $this->timeout = (isset($config["timeout"])) ? $config["timeout"] : 10000;
+        $this->timeout = (isset($config["timeout"])) ? $config["timeout"] : 20000;
     }
 
     /**
