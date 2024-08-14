@@ -278,7 +278,14 @@ Procediamo all'update dal lanciando i seguenti comandi:
 *       chown -R 100033:100033 /var/lib/lxc/lamp/rootfs/var/www/html
 *       rm -r /var/lib/lxc/lamp/rootfs/var/www/git
 
+# CORREZIONE ERRORE DI CERTIFICATO
+Dalla fine di luglio 2024 e' stata segnalata l'impossibilita' di collegarsi al portale di Piracy Shield. Il motivo risiede nella mancanza del certificato di TI TRUST TECHNOLOGIES all'interno di uno dei container di Compliance Guard. Niente paura, ecco cosa fare:
 
+*    lxc-attach lamp
+*    wget -qO- http://tiTrust.crt.sectigo.com/TITrustTechnologiesOVCA.crt | openssl x509 -inform DER  -out /usr/share/ca-certificates/TITrustTechnologiesOVCA.crt
+*    echo TITrustTechnologiesOVCA.crt >> /etc/ca-certificates.conf
+*    update-ca-certificates
 
+Grazie a Octavio Melendres e Alessandro Montano per la soluzione.
 
 Il Team di OpenAccess Italia
