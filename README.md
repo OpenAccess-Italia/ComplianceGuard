@@ -55,7 +55,7 @@ Per l'esecuzione dei cron è necessario mettere a crontab il seguente
 comando:
 
 
-"*  *  *  *  * cd {{app_directory}} && php artisan schedule:run >> /dev/null2>&1"
+"*  *  *  *  * cd {{app_directory}} && php artisan schedule:run >> /dev/null 2>&1"
 
 
 dove {{app_directory}} deve essere il path della directory base dell'app.

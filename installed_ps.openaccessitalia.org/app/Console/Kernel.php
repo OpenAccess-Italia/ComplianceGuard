@@ -29,7 +29,9 @@ class Kernel extends ConsoleKernel
         //UPDATE ADM BLACKLISTS
         $schedule->call('App\Http\Controllers\ADMController@update_blacklists')->timezone('Europe/Rome')->dailyAt('9:00');
         //UPDATE PIRACY SHIELD
-        $schedule->call('App\Http\Controllers\PiracyController@run')->timezone('Europe/Rome')->everyTenMinutes();
+        $schedule->call('App\Http\Controllers\PiracyController@run')->timezone('Europe/Rome')->everyTenMinutes()->before(function () {
+            sleep(rand(15, 180));
+        }); 
         //UPDATE DNS
         $schedule->call('App\Http\Controllers\Admin\AdminController@update_dns')->timezone('Europe/Rome')->everyTenMinutes();
         //UPDATE BGP
