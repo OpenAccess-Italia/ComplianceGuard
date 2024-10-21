@@ -45,6 +45,7 @@
                                 <th>IPv4</th>
                                 <th>Timestamp</th>
                                 <th>Origin Ticket ID</th>
+                                <th class="text-center"><i class="fas fa-bolt"></i></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -59,6 +60,19 @@
 </div>
 <!--end::Content-->
 
+<div class="modal" id="modal_alert" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content bg-light">
+            <div class="modal-body" id="modal_alert_content">
+                
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     $(document).ready(function(){
         var table = $('#datatable').DataTable({
@@ -70,7 +84,8 @@
             columns: [
                 {data: 'ipv4', name: 'ipv4'},
                 {data: 'timestamp', name: 'timestamp'},
-                {data: 'original_ticket_id', name: 'original_ticket_id'}
+                {data: 'original_ticket_id', name: 'original_ticket_id'},
+                {data: 'action', name: 'action', orderable:false, className: 'text-center'}
             ],
             language: {
                 "processing": "<i class=\"fas fa-2x fa-spin fa-spinner\"></i>"
@@ -86,6 +101,34 @@
                 $('#datatable_length select').addClass('custom-select custom-select-sm form-control form-control-sm');
                 $('a.paginate_button.current').addClass('btn btn-primary');
                 $('a.paginate_button').not('.current').addClass('btn btn-outline-secondary');
+                $('button[data-action]').off('click').on('click',function(){
+                    if(confirm('Are you sure you want to delete this resource? Any processing feedback sent to the authority will remain unchanged. However, the integrity of the original ticket will be compromised.')){
+                        var item = $(this).data('item');
+                        var type = $(this).data('type');
+                        var action = $(this).data('action');
+                        $.ajax({
+                            type: "POST",
+                            url: '/piracy/lists/'+type+'/crud/'+action,
+                            data: {
+                                item: item,
+                            },
+                            headers: {'X-CSRF-TOKEN': $('meta[name="csrf_token"]').attr('content')},
+                            statusCode: {
+                                200: function(data) {
+                                    table.ajax.reload();
+                                },
+                                404: function() {
+                                    $('#modal_alert_content').html('<div class="alert alert-custom alert-danger" role="alert"><div class="alert-icon"><i class="flaticon-cancel"></i></div><div class="alert-text">Error, view log for more details</div></div>')
+                                    $('#modal_alert').modal('show');
+                                },
+                                500: function() {
+                                    $('#modal_alert_content').html('<div class="alert alert-custom alert-danger" role="alert"><div class="alert-icon"><i class="flaticon-cancel"></i></div><div class="alert-text">Error, view log for more details</div></div>')
+                                    $('#modal_alert').modal('show');
+                                }
+                            }
+                        });
+                    }
+                });
             }
         });
     });

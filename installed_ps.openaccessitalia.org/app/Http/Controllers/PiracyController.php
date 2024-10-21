@@ -20,7 +20,9 @@ class PiracyController extends Controller
                 //get all tickets
                 $all_tickets = self::get_all_tickets();
                 if($all_tickets !== false){
+                    $tickets_ids_list = [];
                     foreach ($all_tickets as $ticket) {
+                        $tickets_ids_list[] = $ticket->ticket_id;
                         //check if tickets not already stored
                         $db_ticket = \App\Piracy\Tickets::find($ticket->ticket_id);
                         if(!$db_ticket){
@@ -194,10 +196,108 @@ class PiracyController extends Controller
                             }
                         }else{
                             \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $ticket->ticket_id already stored");
+                            //check if ticket is still editable (not older than 24 hours)
+                            if(self::is_editable($ticket->metadata->created_at)){
+                                //if is still editable recheck if some items have been added/removed from authority system
+                                //fqdn
+                                $db_fqdns = json_decode($db_ticket->fqdns);
+                                $fqdns_changed = false;
+                                //removed
+                                foreach($db_fqdns as $db_fqdn) {
+                                    if(!in_array($db_fqdn,$ticket->fqdn)){
+                                        $fqdns_changed = true;
+                                        \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $db_ticket->ticket_id item fqdn $db_fqdn has been removed from authority system",true);
+                                        if(\App\Piracy\FQDNs::where("fqdn",$db_fqdn)->where("original_ticket_id",$db_ticket->ticket_id)->delete() > 0){
+                                            \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $db_ticket->ticket_id item fqdn $db_fqdn has been deleted from local system");
+                                        }else{
+                                            \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $db_ticket->ticket_id item fqdn $db_fqdn failed to be deleted from local system (no fqdn found)",true);
+                                        }
+                                    }
+                                }
+                                //added
+                                foreach($ticket->fqdn as $fqdn){
+                                    if(!\App\Piracy\FQDNs::where("fqdn",$fqdn)->where("original_ticket_id",$db_ticket->ticket_id)->first()){
+                                        $fqdns_changed = true;
+                                        \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $db_ticket->ticket_id item fqdn $fqdn has been added from authority system",true);
+                                    }
+                                }
+                                if($fqdns_changed){
+                                    //if fdqns list has changed update it in database ticket structure
+                                    $db_ticket->fqdns = json_encode($ticket->fqdn);
+                                    if($db_ticket->save()){
+                                        \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $db_ticket->ticket_id fqdns list has been updated in local system");
+                                    }else{
+                                        \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $db_ticket->ticket_id fqdns list failed to be updated in local system",true);
+                                    }
+                                }
+                                //ipv4
+                                $db_ipv4s = json_decode($db_ticket->ipv4s);
+                                $ipv4s_changed = false;
+                                //removed
+                                foreach($db_ipv4s as $db_ipv4) {
+                                    if(!in_array($db_ipv4,$ticket->ipv4)){
+                                        $ipv4s_changed = true;
+                                        \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $db_ticket->ticket_id item ipv4 $db_ipv4 has been removed from authority system",true);
+                                        if(\App\Piracy\IPv4s::where("ipv4",$db_ipv4)->where("original_ticket_id",$db_ticket->ticket_id)->delete() > 0){
+                                            \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $db_ticket->ticket_id item ipv4 $db_ipv4 has been deleted from local system");
+                                        }else{
+                                            \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $db_ticket->ticket_id item ipv4 $db_ipv4 failed to be deleted from local system (no ipv4 found)",true);
+                                        }
+                                    }
+                                }
+                                //added
+                                foreach($ticket->ipv4 as $ipv4){
+                                    if(!\App\Piracy\IPv4s::where("ipv4",$ipv4)->where("original_ticket_id",$db_ticket->ticket_id)->first()){
+                                        $ipv4s_changed = true;
+                                        \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $db_ticket->ticket_id item ipv4 $ipv4 has been added from authority system",true);
+                                    }
+                                }
+                                if($ipv4s_changed){
+                                    //if fdqns list has changed update it in database ticket structure
+                                    $db_ticket->ipv4s = json_encode($ticket->ipv4);
+                                    if($db_ticket->save()){
+                                        \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $db_ticket->ticket_id ipv4s list has been updated in local system");
+                                    }else{
+                                        \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $db_ticket->ticket_id ipv4s list failed to be updated in local system",true);
+                                    }
+                                }
+                                //ipv6
+                                $db_ipv6s = json_decode($db_ticket->ipv6s);
+                                $ipv6s_changed = false;
+                                //removed
+                                foreach($db_ipv6s as $db_ipv6) {
+                                    if(!in_array($db_ipv6,$ticket->ipv6)){
+                                        $ipv6s_changed = true;
+                                        \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $db_ticket->ticket_id item ipv6 $db_ipv6 has been removed from authority system",true);
+                                        if(\App\Piracy\IPv6s::where("ipv6",$db_ipv6)->where("original_ticket_id",$db_ticket->ticket_id)->delete() > 0){
+                                            \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $db_ticket->ticket_id item ipv6 $db_ipv6 has been deleted from local system");
+                                        }else{
+                                            \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $db_ticket->ticket_id item ipv6 $db_ipv6 failed to be deleted from local system (no ipv6 found)",true);
+                                        }
+                                    }
+                                }
+                                //added
+                                foreach($ticket->ipv6 as $ipv6){
+                                    if(!\App\Piracy\IPv6s::where("ipv6",$ipv6)->where("original_ticket_id",$db_ticket->ticket_id)->first()){
+                                        $ipv6s_changed = true;
+                                        \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $db_ticket->ticket_id item ipv6 $ipv6 has been added from authority system",true);
+                                    }
+                                }
+                                if($ipv6s_changed){
+                                    //if fdqns list has changed update it in database ticket structure
+                                    $db_ticket->ipv6s = json_encode($ticket->ipv6);
+                                    if($db_ticket->save()){
+                                        \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $db_ticket->ticket_id ipv6s list has been updated in local system");
+                                    }else{
+                                        \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $db_ticket->ticket_id ipv6s list failed to be updated in local system",true);
+                                    }
+                                }
+                            }
                             //check if ticket is still updatable (not older than 48 hours)
                             if(self::is_updatable($ticket->metadata->created_at)){
                                 //if is still updatable recheck if feedback for each ticket item has been sent
-                                foreach ($ticket->fqdn as $fqdn) {
+                                $db_ticket_fqdns = json_decode($db_ticket->fqdns);
+                                foreach ($db_ticket_fqdns as $fqdn) {
                                     if(!\App\Piracy\TicketItemsLog::where('ticket_id',$ticket->ticket_id)->where('item_type','fqdn')->where('item',$fqdn)->first()){
                                         //if feedback not yet sent than run like an item of a new ticket
                                         \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $ticket->ticket_id item fqdn $fqdn has not yet a sent feedback, rechecking");
@@ -234,7 +334,8 @@ class PiracyController extends Controller
                                         }
                                     }
                                 }
-                                foreach ($ticket->ipv4 as $ipv4) {
+                                $db_ticket_ipv4s = json_decode($db_ticket->ipv4s);
+                                foreach ($db_ticket_ipv4s as $ipv4) {
                                     if(!\App\Piracy\TicketItemsLog::where('ticket_id',$ticket->ticket_id)->where('item_type','ipv4')->where('item',$ipv4)->first()){
                                         //if feedback not yet sent than run like an item of a new ticket
                                         \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $ticket->ticket_id item ipv4 $ipv4 has not yet a sent feedback, rechecking");
@@ -271,7 +372,8 @@ class PiracyController extends Controller
                                         }
                                     }
                                 }
-                                foreach ($ticket->ipv6 as $ipv6) {
+                                $db_ticket_ipv6s = json_decode($db_ticket->ipv6s);
+                                foreach ($db_ticket_ipv6s as $ipv6) {
                                     if(!\App\Piracy\TicketItemsLog::where('ticket_id',$ticket->ticket_id)->where('item_type','ipv6')->where('item',$ipv6)->first()){
                                         //if feedback not yet sent than run like an item of a new ticket
                                         \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $ticket->ticket_id item ipv6 $ipv6 has not yet a sent feedback, rechecking");
@@ -309,6 +411,19 @@ class PiracyController extends Controller
                                     }
                                 }
                             }
+                        }
+                    }
+                    //negative check if ticket has been removed from authority system (last 24 hours)
+                    $last24h_db_tickets = \App\Piracy\Tickets::where("timestamp",">=",\Carbon\Carbon::now()->subHours(24)->toDateTimeString())->get();
+                    foreach($last24h_db_tickets as $ticket_to_check) {
+                        if(!in_array($ticket_to_check->ticket_id,$tickets_ids_list)){
+                            \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $ticket_to_check->ticket_id has been removed from authority system",true);
+                            $deleted_fqdns = \App\Piracy\FQDNs::where("original_ticket_id",$ticket_to_check->ticket_id)->delete();
+                            $deleted_ipv4s = \App\Piracy\IPv4s::where("original_ticket_id",$ticket_to_check->ticket_id)->delete();
+                            $deleted_ipv6s = \App\Piracy\IPv6s::where("original_ticket_id",$ticket_to_check->ticket_id)->delete();
+                            $deleted_ticket = $ticket_to_check->ticket_id;
+                            $ticket_to_check->delete();
+                            \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_cron","ticket $deleted_ticket has been removed from local system (fqdns: $deleted_fqdns, ipv4s: $deleted_ipv4s, ipv6s: $deleted_ipv6s)",true);
                         }
                     }
                 }else{
@@ -374,6 +489,12 @@ class PiracyController extends Controller
                     ['status','timestamp']
                 )->addColumn('ticket_id',function($row){
                     return '<a href="/piracy/ticket/'.$row->ticket_id.'">'.$row->ticket_id.'</a>';
+                })->addColumn('fqdn_count',function($row){
+                    return count(json_decode($row->fqdns));
+                })->addColumn('ipv4_count',function($row){
+                    return count(json_decode($row->ipv4s));
+                })->addColumn('ipv6_count',function($row){
+                    return count(json_decode($row->ipv6s));
                 })->escapeColumns('ticket_id')->make(true);
         }
     }
@@ -443,6 +564,8 @@ class PiracyController extends Controller
                     ['fqdn','timestamp']
                 )->addColumn('original_ticket_id',function($row){
                     return '<a href="/piracy/ticket/'.$row->original_ticket_id.'">'.$row->original_ticket_id.'</a>';
+                })->addColumn('action',function($row){
+                    return '<button class="btn btn-danger btn-sx btn-icon" data-action="delete" data-type="fqdn" data-item="'.$row->fqdn.'"><i class="fas fa-trash"></i></button>';
                 })->escapeColumns('original_ticket_id')->make(true);
         }
     }
@@ -490,6 +613,8 @@ class PiracyController extends Controller
                     ['ipv4','timestamp']
                 )->addColumn('original_ticket_id',function($row){
                     return '<a href="/piracy/ticket/'.$row->original_ticket_id.'">'.$row->original_ticket_id.'</a>';
+                })->addColumn('action',function($row){
+                    return '<button class="btn btn-danger btn-sx btn-icon" data-action="delete" data-type="ipv4" data-item="'.$row->ipv4.'"><i class="fas fa-trash"></i></button>';
                 })->escapeColumns('original_ticket_id')->make(true);
         }
     }
@@ -537,6 +662,8 @@ class PiracyController extends Controller
                     ['ipv6','timestamp']
                 )->addColumn('original_ticket_id',function($row){
                     return '<a href="/piracy/ticket/'.$row->original_ticket_id.'">'.$row->original_ticket_id.'</a>';
+                })->addColumn('action',function($row){
+                    return '<button class="btn btn-danger btn-sx btn-icon" data-action="delete" data-type="ipv6" data-item="'.$row->ipv6.'"><i class="fas fa-trash"></i></button>';
                 })->escapeColumns('original_ticket_id')->make(true);
         }
     }
@@ -574,6 +701,48 @@ class PiracyController extends Controller
                 return response('',500);
             break;
         }
+    }
+
+    public function crud(Request $request,$type,$action){
+        if($request->filled(["item"])){
+            $item = $request->input("item");
+            switch($action){
+                case 'delete':
+                    \App\Http\Controllers\Admin\ActionLogController::log(\Auth::user()->id,\Auth::user()->name,"trynig to $action from $type list item $item");
+                    switch($type){
+                        case 'fqdn':
+                            $item = \App\Piracy\FQDNs::find($item);
+                        break;
+                        case 'ipv4':
+                            $item = \App\Piracy\IPv4s::find($item);
+                        break;
+                        case 'ipv6':
+                            $item = \App\Piracy\IPv6s::find($item);
+                        break;
+                        default:
+                            \App\Http\Controllers\Admin\ActionLogController::log(\Auth::user()->id,\Auth::user()->name,"CRUD type not supported (tried to $action from $type list item $item)");
+                            return response('',500);
+                        break;
+                    }
+                    if($item){
+                        if($item->delete()){
+                            \App\Http\Controllers\Admin\ActionLogController::log(\Auth::user()->id,\Auth::user()->name,"succeded to $action from $type list item $item");
+                            return response('',200);
+                        }else{
+                            \App\Http\Controllers\Admin\ActionLogController::log(\Auth::user()->id,\Auth::user()->name,"failed to $action from $type list item $item");
+                            return response('',500);
+                        }
+                    }
+                    \App\Http\Controllers\Admin\ActionLogController::log(\Auth::user()->id,\Auth::user()->name,"$type item $item not found (tried to $action from $type list item $item)");
+                    return response('',404);
+                break;
+                default:
+                    \App\Http\Controllers\Admin\ActionLogController::log(\Auth::user()->id,\Auth::user()->name,"CRUD action not supported (tried to $action from $type list item $item)");
+                    return response('',500);
+                break;
+            }
+        }
+        return response('',500);
     }
 
     public function datatable_whitelist(Request $request){
@@ -953,7 +1122,7 @@ class PiracyController extends Controller
                 if($e->hasResponse()){
                     if($e->getResponse()->getBody()){
                         $result = trim($e->getResponse()->getBody()->getContents());
-                        self::api_log("POST","/api/v1/ticket/get/all",$access_token,null,$e->getResponse()->getStatusCode(),$result);
+                        self::api_log("GET","/api/v1/ticket/get/all",$access_token,null,$e->getResponse()->getStatusCode(),$result);
                     }
                     switch($e->getResponse()->getStatusCode()){
                         case 401:
@@ -1957,6 +2126,14 @@ EOD;
         $now = new \DateTime();
         $now->setTimezone(new \DateTimeZone('Europe/Rome'));
         $check = $now->modify('-48 hours');
+        $datetime = \DateTime::createFromFormat('Y-m-d\TH:i:s+', $timestamp, new \DateTimeZone('Europe/Rome'));
+        return ($datetime > $check);
+    }
+
+    private static function is_editable($timestamp){
+        $now = new \DateTime();
+        $now->setTimezone(new \DateTimeZone('Europe/Rome'));
+        $check = $now->modify('-24 hours');
         $datetime = \DateTime::createFromFormat('Y-m-d\TH:i:s+', $timestamp, new \DateTimeZone('Europe/Rome'));
         return ($datetime > $check);
     }

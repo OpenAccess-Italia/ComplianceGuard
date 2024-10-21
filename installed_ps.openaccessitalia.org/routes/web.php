@@ -60,6 +60,7 @@ Route::get('/piracy/lists/ipv4/get','PiracyController@datatable_ipv4')->middlewa
 Route::get('/piracy/lists/ipv4/download/{line}','PiracyController@download_ipv4')->middleware('auth.piracy');
 Route::get('/piracy/lists/ipv6/get','PiracyController@datatable_ipv6')->middleware('auth.piracy');
 Route::get('/piracy/lists/ipv6/download/{line}','PiracyController@download_ipv6')->middleware('auth.piracy');
+Route::post('/piracy/lists/{type}/crud/{action}','PiracyController@crud')->middleware('auth.piracy');
 //CNCPO
 Route::get('/cncpo/files/get', 'CNCPOController@datatable_files')->middleware('auth.cncpo');
 Route::get('/cncpo/blacklist/get', 'CNCPOController@datatable_blacklist')->middleware('auth.cncpo');

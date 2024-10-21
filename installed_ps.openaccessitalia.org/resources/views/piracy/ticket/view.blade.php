@@ -102,6 +102,14 @@
                                     </td>
                                 </tr>
                             @endforeach
+                            @foreach (\App\Piracy\TicketItemsLog::where('ticket_id',$ticket->ticket_id)->where('item_type','fqdn')->whereNotIn('item',json_decode($ticket->fqdns))->get() as $fqdn)
+                                <tr>
+                                    <td><s>{{$fqdn->item}}</s></td>
+                                    <td>
+                                        {{$fqdn->status}} at {{$fqdn->timestamp}}
+                                    </td>
+                                </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -132,6 +140,14 @@
                                     </td>
                                 </tr>
                             @endforeach
+                            @foreach (\App\Piracy\TicketItemsLog::where('ticket_id',$ticket->ticket_id)->where('item_type','ipv4')->whereNotIn('item',json_decode($ticket->ipv4s))->get() as $ipv4)
+                                <tr>
+                                    <td><s>{{$ipv4->item}}</s></td>
+                                    <td>
+                                        {{$ipv4->status}} at {{$ipv4->timestamp}}
+                                    </td>
+                                </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -159,6 +175,14 @@
                                         @else
                                             Feedback not sent
                                         @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                            @foreach (\App\Piracy\TicketItemsLog::where('ticket_id',$ticket->ticket_id)->where('item_type','ipv6')->whereNotIn('item',json_decode($ticket->ipv6s))->get() as $ipv6)
+                                <tr>
+                                    <td><s>{{$ipv6->item}}</s></td>
+                                    <td>
+                                        {{$ipv6->status}} at {{$ipv6->timestamp}}
                                     </td>
                                 </tr>
                             @endforeach
