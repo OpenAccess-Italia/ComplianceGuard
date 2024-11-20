@@ -861,7 +861,7 @@ class PiracyController extends Controller
         $body_request = new \StdClass();
         $body_request->email = env("PIRACY_SHIELD_MAIL");
         $body_request->password = env("PIRACY_SHIELD_PSW");
-        $client = new \GuzzleHttp\Client();
+        $client = new \App\Http\HttpClient();
         try{
             $response = $client->post($endpoint,["json" => $body_request,'connect_timeout' => 5]);
             if($response->getBody()){
@@ -914,7 +914,7 @@ class PiracyController extends Controller
         $endpoint = self::buildUrl("/api/v1/authentication/refresh");
         $body_request = new \StdClass();
         $body_request->refresh_token = $token;
-        $client = new \GuzzleHttp\Client();
+        $client = new \App\Http\HttpClient();
         try{
             $response = $client->post($endpoint,["json" => $body_request,'connect_timeout' => 5]);
             if($response->getBody()){
@@ -967,7 +967,7 @@ class PiracyController extends Controller
         $endpoint = self::buildUrl("/api/v1/authentication/logout");
         $access_token = self::get_access_token(false);
         if($access_token){
-            $client = new \GuzzleHttp\Client();
+            $client = new \App\Http\HttpClient();
             try{
                 $response = $client->get($endpoint,['headers' => ['Authorization' => "Bearer $access_token"],'connect_timeout' => 5]);
                 if($response->getBody()){
@@ -1020,7 +1020,7 @@ class PiracyController extends Controller
         $endpoint = self::buildUrl("/api/v1/ticket/get");
         $access_token = self::get_access_token(false);
         if($access_token){
-            $client = new \GuzzleHttp\Client();
+            $client = new \App\Http\HttpClient();
             $body_request = new \StdClass();
             $body_request->ticket_id = $ticket_id;
             try{
@@ -1089,7 +1089,7 @@ class PiracyController extends Controller
         $endpoint = self::buildUrl("/api/v1/ticket/get/all");
         $access_token = self::get_access_token(false);
         if($access_token){
-            $client = new \GuzzleHttp\Client();
+            $client = new \App\Http\HttpClient();
             try{
                 $response = $client->get($endpoint,['headers' => ['Authorization' => "Bearer $access_token", 'Accept-Encoding' => 'gzip'], 'connect_timeout' => 60, 'decode_content' => 'gzip']);
                 if($response->getBody()){
@@ -1160,7 +1160,7 @@ class PiracyController extends Controller
         $endpoint = self::buildUrl("/api/v1/ticket/get/fqdn");
         $access_token = self::get_access_token(false);
         if($access_token){
-            $client = new \GuzzleHttp\Client();
+            $client = new \App\Http\HttpClient();
             $body_request = new \StdClass();
             $body_request->ticket_id = $ticket_id;
             try{
@@ -1229,7 +1229,7 @@ class PiracyController extends Controller
         $endpoint = self::buildUrl("/api/v1/ticket/get/ipv4");
         $access_token = self::get_access_token(false);
         if($access_token){
-            $client = new \GuzzleHttp\Client();
+            $client = new \App\Http\HttpClient();
             $body_request = new \StdClass();
             $body_request->ticket_id = $ticket_id;
             try{
@@ -1298,7 +1298,7 @@ class PiracyController extends Controller
         $endpoint = self::buildUrl("/api/v1/ticket/get/ipv6");
         $access_token = self::get_access_token(false);
         if($access_token){
-            $client = new \GuzzleHttp\Client();
+            $client = new \App\Http\HttpClient();
             $body_request = new \StdClass();
             $body_request->ticket_id = $ticket_id;
             try{
@@ -1367,7 +1367,7 @@ class PiracyController extends Controller
         $endpoint = self::buildUrl("/api/v1/fqdn/get/all");
         $access_token = self::get_access_token(false);
         if($access_token){
-            $client = new \GuzzleHttp\Client();
+            $client = new \App\Http\HttpClient();
             try{
                 $response = $client->get($endpoint,['headers' => ['Authorization' => "Bearer $access_token"],'connect_timeout' => 10]);
                 if($response->getBody()){
@@ -1438,7 +1438,7 @@ class PiracyController extends Controller
         $endpoint = self::buildUrl("/api/v1/ipv4/get/all");
         $access_token = self::get_access_token(false);
         if($access_token){
-            $client = new \GuzzleHttp\Client();
+            $client = new \App\Http\HttpClient();
             try{
                 $response = $client->get($endpoint,['headers' => ['Authorization' => "Bearer $access_token"],'connect_timeout' => 10]);
                 if($response->getBody()){
@@ -1509,7 +1509,7 @@ class PiracyController extends Controller
         $endpoint = self::buildUrl("/api/v1/ipv6/get/all");
         $access_token = self::get_access_token(false);
         if($access_token){
-            $client = new \GuzzleHttp\Client();
+            $client = new \App\Http\HttpClient();
             try{
                 $response = $client->get($endpoint,['headers' => ['Authorization' => "Bearer $access_token"],'connect_timeout' => 10]);
                 if($response->getBody()){
@@ -1580,7 +1580,7 @@ class PiracyController extends Controller
         $endpoint = self::buildUrl("/api/v1/ticket/item/set/processed");
         $access_token = self::get_access_token(false);
         if($access_token){
-            $client = new \GuzzleHttp\Client();
+            $client = new \App\Http\HttpClient();
             $body_request = new \StdClass();
             $body_request->value = $ticket_item;
             try{
@@ -1649,7 +1649,7 @@ class PiracyController extends Controller
         $endpoint = self::buildUrl("/api/v1/ticket/item/set/unprocessed");
         $access_token = self::get_access_token(false);
         if($access_token){
-            $client = new \GuzzleHttp\Client();
+            $client = new \App\Http\HttpClient();
             $body_request = new \StdClass();
             $body_request->value = $ticket_item;
             $body_request->reason = $reason;
@@ -1719,7 +1719,7 @@ class PiracyController extends Controller
         $endpoint = self::buildUrl("/api/v1/whitelist/item/get/all");
         $access_token = self::get_access_token(false);
         if($access_token){
-            $client = new \GuzzleHttp\Client();
+            $client = new \App\Http\HttpClient();
             try{
                 $response = $client->get($endpoint,['headers' => ['Authorization' => "Bearer $access_token"],'connect_timeout' => 5]);
                 if($response->getBody()){
@@ -1790,7 +1790,7 @@ class PiracyController extends Controller
         $endpoint = self::buildUrl("/api/v1/whitelist/item/remove");
         $access_token = self::get_access_token(false);
         if($access_token){
-            $client = new \GuzzleHttp\Client();
+            $client = new \App\Http\HttpClient();
             $body_request = new \StdClass();
             $body_request->item = $item;
             try{
@@ -1859,7 +1859,7 @@ class PiracyController extends Controller
         $endpoint = self::buildUrl("/api/v1/whitelist/item/create");
         $access_token = self::get_access_token(false);
         if($access_token){
-            $client = new \GuzzleHttp\Client();
+            $client = new \App\Http\HttpClient();
             $body_request = new \StdClass();
             $body_request->genre = $genre;
             $body_request->item = $item;
@@ -1928,7 +1928,7 @@ class PiracyController extends Controller
     public static function ping(){
         \App\Http\Controllers\Admin\ActionLogController::log(0,"piracy_system","trying to ping system");
         $endpoint = self::buildUrl("/api/v1/ping");
-        $client = new \GuzzleHttp\Client();
+        $client = new \App\Http\HttpClient();
         try{
             $response = $client->get($endpoint,['connect_timeout' => 5]);
             if($response->getBody()){
