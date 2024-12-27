@@ -209,7 +209,7 @@ EOD;
         $admsmokingblacklist = \App\ADM\SmokingBlacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
         $cncpoblacklist = \App\CNCPO\Blacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
         $months = env('PIRACY_SHIELD_ITEMS_VALIDITY_MONTHS');
-        $piracyshield = collect(DB::connection('piracy_shield')->select("select feedbacks.item from (select distinct item from ticket_items_log where item_type = 'fqdn' and `timestamp` > DATE_SUB(now(), INTERVAL ? MONTH)) as feedbacks INNER JOIN (select fqdn as item from fqdns where `timestamp` > DATE_SUB(now(), INTERVAL ? MONTH)) as lastitems on feedbacks.item = lastitems.item order by item",[$months,$months]))->pluck('item');
+        $piracyshield = collect(DB::connection('mysql')->select("select feedbacks.item from (select distinct item from ps_ticket_items_log where item_type = 'fqdn' and `timestamp` > DATE_SUB(now(), INTERVAL ? MONTH)) as feedbacks INNER JOIN (select fqdn as item from ps_fqdns where `timestamp` > DATE_SUB(now(), INTERVAL ? MONTH)) as lastitems on feedbacks.item = lastitems.item order by item",[$months,$months]))->pluck('item');
         $manual = \App\Manual\FQDNs::select('fqdn')->distinct()->pluck('fqdn')->toArray();
         $done = [];
         foreach ($admbettingblacklist as $fqdn) {
