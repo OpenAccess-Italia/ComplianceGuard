@@ -232,9 +232,9 @@
                                     </div>
                                     <div class="row">
                                         <div class="form-group col-md-12">
-                                            <label for="CNCPO_DOWNLOAD_URL">Download URL</label>
+                                            <label for="CNCPO_PEC_EMAIL">PEC Email Address</label>
                                             <div class="input-group">
-                                                <input class="form-control" id="CNCPO_DOWNLOAD_URL" name="CNCPO_DOWNLOAD_URL" value="{{env("CNCPO_DOWNLOAD_URL")}}" placeholder="https://xxx.xxx.xxx.xxx/Blacklist/Download">
+                                                <input class="form-control" id="CNCPO_PEC_EMAIL" name="CNCPO_PEC_EMAIL" value="{{env("CNCPO_PEC_EMAIL")}}" placeholder="pec@acme.com">
                                                 <div class="input-group-append">
                                                     <div class="input-group-text">
                                                         <i class="fas fa-link text-dark mr-1"></i>
@@ -245,29 +245,127 @@
                                     </div>
                                     <div class="row">
                                         <div class="form-group col-md-12">
-                                            <label for="CNCPO_PFX_PATH">PFX cert path</label>
+                                            <label for="CNCPO_PEC_IMAP_HOST">PEC IMAP Hostname</label>
                                             <div class="input-group">
-                                                <input class="form-control" id="CNCPO_PFX_PATH" name="CNCPO_PFX_PATH" value="{{env("CNCPO_PFX_PATH")}}" placeholder="/path/to/cert.pfx">
+                                                <input class="form-control" id="CNCPO_PEC_IMAP_HOST" name="CNCPO_PEC_IMAP_HOST" value="{{env("CNCPO_PEC_IMAP_HOST")}}" placeholder="imap.pec.host.net">
                                                 <div class="input-group-append">
                                                     <div class="input-group-text">
-                                                        <i class="fas fa-certificate text-dark mr-1"></i>
+                                                        <i class="fas fa-link text-dark mr-1"></i>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <span class="form-text text-dark">The certificate is provided by the authority in base64 encoding, to use the certificate correctly it is necessary to convert it with the following command:<br><pre>openssl enc -base64 -d -in in_file.pfx -out out_file.pfx</pre></span>
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="form-group col-md-12">
-                                            <label for="CNCPO_PFX_PASS">PFX cert password</label>
+                                            <label for="CNCPO_PEC_IMAP_ARCHIVE_FOLDER">PEC IMAP Archive Folder</label>
                                             <div class="input-group">
-                                                <input type="password" class="form-control" id="CNCPO_PFX_PASS" name="CNCPO_PFX_PASS" value="{{env("CNCPO_PFX_PASS")}}">
+                                                <input class="form-control" id="CNCPO_PEC_IMAP_ARCHIVE_FOLDER" name="CNCPO_PEC_IMAP_ARCHIVE_FOLDER" value="{{env("CNCPO_PEC_IMAP_ARCHIVE_FOLDER")}}" placeholder="Archive">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <i class="fas fa-link text-dark mr-1"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <label for="CNCPO_PEC_PASSWORD">PEC IMAP Password</label>
+                                            <div class="input-group">
+                                                <input class="form-control" id="CNCPO_PEC_PASSWORD" name="CNCPO_PEC_PASSWORD" value="{{env("CNCPO_PEC_PASSWORD")}}" placeholder="my_secret_password">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <i class="fas fa-link text-dark mr-1"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <label for="CNCPO_PEC_SMTP_HOST">PEC SMTP Hostname</label>
+                                            <div class="input-group">
+                                                <input class="form-control" id="CNCPO_PEC_SMTP_HOST" name="CNCPO_PEC_SMTP_HOST" value="{{env("CNCPO_PEC_SMTP_HOST")}}" placeholder="smtp.pec.host.net">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <i class="fas fa-link text-dark mr-1"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <label for="CNCPO_PEC_SMTP_PASSWORD">PEC SMTP Password</label>
+                                            <div class="input-group">
+                                                <input class="form-control" id="CNCPO_PEC_SMTP_PASSWORD" name="CNCPO_PEC_SMTP_PASSWORD" value="{{env("CNCPO_PEC_SMTP_PASSWORD")}}" placeholder="super_secret_password">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <i class="fas fa-link text-dark mr-1"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <label for="CNCPO_GPG_PRIVATE_KEY">GPG Private Certificate</label>
+                                            <div class="input-group">
+                                                <textarea rows="8" class="form-control" id="CNCPO_GPG_PRIVATE_KEY" name="CNCPO_GPG_PRIVATE_KEY" placeholder="-----BEGIN PGP PRIVATE KEY BLOCK-----
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+....
+-----END PGP PRIVATE KEY BLOCK-----">{{env("CNCPO_GPG_PRIVATE_KEY")}}</textarea>
                                                 <div class="input-group-append">
                                                     <div class="input-group-text">
                                                         <i class="fas fa-certificate text-dark mr-1"></i>
                                                     </div>
                                                 </div>
                                             </div>
+                                            <span class="form-text text-dark">Please follow the instructions on how to generate and export certificate here</span>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <label for="CNCPO_GPG_PRIVATE_KEY_PASSWORD">GPG Private Certificate Password</label>
+                                            <div class="input-group">
+                                                <input type="password" class="form-control" id="CNCPO_GPG_PRIVATE_KEY_PASSWORD" name="CNCPO_GPG_PRIVATE_KEY_PASSWORD" value="{{env("CNCPO_GPG_PRIVATE_KEY_PASSWORD")}}">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <i class="fas fa-certificate text-dark mr-1"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <label for="CNCPO_REPLY_ENABLED">Send automatic reply to blacklist mails</label>
+                                            <div class="input-group">
+                                                <select class="form-control" id="CNCPO_REPLY_ENABLED" name="CNCPO_REPLY_ENABLED">
+                                                    <option value="0" @if(env("CNCPO_REPLY_ENABLED") == "0") selected @endif>No</option>
+                                                    <option value="1" @if(env("CNCPO_REPLY_ENABLED") == "1") selected @endif>Yes</option>
+                                                </select>
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <i class="fas fa-at text-dark mr-1"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <label for="CNCPO_REPLY_SIGNATURE">Reply email signature</label>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" id="CNCPO_REPLY_SIGNATURE" name="CNCPO_REPLY_SIGNATURE" value="{{env("CNCPO_REPLY_SIGNATURE")}}">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <i class="fas fa-certificate text-dark mr-1"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <span class="form-text text-dark">To change reply content edit files <b>cncpo-reply.blade.php</b> and <b>cncpo-reply-text.blade.php</b> located in resources/views/mail</span>
                                         </div>
                                     </div>
                                     <div class="row">

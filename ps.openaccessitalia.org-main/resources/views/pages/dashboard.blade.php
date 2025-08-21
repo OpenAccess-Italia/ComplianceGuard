@@ -25,6 +25,19 @@
         <!--begin::Container-->
         <div class="container">
             <div class="row">
+                @if(Auth::user()->id == 1 && Auth::user()->admin == 1)
+                    <div class="col-lg-12">
+                        <div class="alert alert-custom alert-light-warning show mb-5" role="alert">
+                            <div class="alert-icon"><i class="flaticon-warning"></i></div>
+                            <div class="alert-text">You should not use this user. You should create a new user with admin policy and disable this one.</div>
+                            <div class="alert-close">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true"><i class="ki ki-close"></i></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                @endif
                 <div class="col-lg-3">
                     <!--begin::Stats Widget 1-->
                     <div class="card card-custom card-stretch gutter-b">
@@ -37,17 +50,6 @@
                         <!--end::Header-->
                         <!--begin::Body-->
                         <div class="card-body d-flex align-items-center justify-content-between pt-7 flex-wrap">
-                            @if(Auth::user()->id == 1 && Auth::user()->admin == 1)
-                                <div class="alert alert-custom alert-light-warning show mb-5" role="alert">
-                                    <div class="alert-icon"><i class="flaticon-warning"></i></div>
-                                    <div class="alert-text">You should not use this user. You should create a new user with admin policy and disable this one.</div>
-                                    <div class="alert-close">
-                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                            <span aria-hidden="true"><i class="ki ki-close"></i></span>
-                                        </button>
-                                    </div>
-                                </div>
-                            @else
                                 <!--begin::label-->
                                 <span class="font-weight-bolder w-100 text-center display5 text-dark-75 py-4 pl-5 pr-5">
                                     <div class="symbol symbol-100 mr-5">
@@ -60,7 +62,6 @@
                                     </div>
                                 </span>
                                 <!--end::label-->
-                            @endif
                         </div>
                         <!--end::Body-->
                     </div>
@@ -101,10 +102,9 @@
                     <!--end::Stats Widget 2-->
                 </div>
                 @endif
-            </div>
-            <div class="row">
+
                 @if(\Auth::user()->cncpo && env("CNCPO_ENABLED") == "1")
-                <div class="col-lg-2">
+                <div class="col-lg-4">
                     <!--begin::Stats Widget 2-->
                     <div class="card card-custom card-stretch gutter-b">
                         <!--begin::Header-->
@@ -145,7 +145,7 @@
                 </div>
                 @endif
                 @if(\Auth::user()->adm && env("ADM_ENABLED") == "1")
-                <div class="col-lg-3">
+                <div class="col-lg-4">
                     <!--begin::Stats Widget 2-->
                     <div class="card card-custom card-stretch gutter-b">
                         <!--begin::Header-->
@@ -238,6 +238,6 @@
 <!--end::Content-->
 
 <script>
-    
+
 </script>
 @endsection

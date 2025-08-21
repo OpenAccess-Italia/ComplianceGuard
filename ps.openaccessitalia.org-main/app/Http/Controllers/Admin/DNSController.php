@@ -2,17 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use phpseclib\Net\SSH2;
-use DB;
 
 class DNSController extends Controller
 {
     //
-    private $ip,$user,$psw,$path,$reload;
+    private $ip,$user,$psw,$path,$reload,$export_plain;
 
-    public function __construct($ip,$port,$user,$psw,$path,$reload)
+    public function __construct($ip,$port,$user,$psw,$path,$reload,$export_plain)
     {
         $this->middleware('auth.admin');
         $this->ip = $ip;
@@ -21,6 +18,7 @@ class DNSController extends Controller
         $this->psw = $psw;
         $this->path = $path;
         $this->reload = $reload;
+        $this->export_plain = $export_plain;
     }
 
     private function connect(){
@@ -38,7 +36,7 @@ class DNSController extends Controller
             \App\Http\Controllers\Admin\ActionLogController::log(0,"dns_system","failed to connect via ssh to $this->ip (port $this->port) (".$e->getMessage().")",true);
             return false;
         }
-        
+
     }
 
     private static function make_db_content($ip){
@@ -80,7 +78,7 @@ EOD;
         }else{
             \App\Http\Controllers\Admin\ActionLogController::log(0,"dns_system","failed to check if $filename exists in DNS server $this->ip (fail to connect)",true);
             return false;
-        }     
+        }
     }
 
     private function sftp_read_file($filename){
@@ -131,7 +129,7 @@ EOD;
             \App\Http\Controllers\Admin\ActionLogController::log(0,"dns_system","failed to write $filename in DNS server $this->ip (fail to connect)",true);
             return false;
         }
-        
+
     }
 
     private static function zones_directory($path){
@@ -208,8 +206,7 @@ EOD;
         $admbettingblacklist = \App\ADM\BettingBlacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
         $admsmokingblacklist = \App\ADM\SmokingBlacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
         $cncpoblacklist = \App\CNCPO\Blacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
-        $months = env('PIRACY_SHIELD_ITEMS_VALIDITY_MONTHS');
-        $piracyshield = collect(DB::connection('piracy_shield')->select("select feedbacks.item from (select distinct item from ticket_items_log where item_type = 'fqdn' and `timestamp` > DATE_SUB(now(), INTERVAL ? MONTH)) as feedbacks INNER JOIN (select fqdn as item from fqdns where `timestamp` > DATE_SUB(now(), INTERVAL ? MONTH)) as lastitems on feedbacks.item = lastitems.item order by item",[$months,$months]))->pluck('item');
+        $piracyshield = \App\Piracy\FQDNs::select('fqdn')->distinct()->pluck('fqdn')->toArray();
         $manual = \App\Manual\FQDNs::select('fqdn')->distinct()->pluck('fqdn')->toArray();
         $done = [];
         foreach ($admbettingblacklist as $fqdn) {
@@ -289,6 +286,9 @@ EOD;
         \App\Http\Controllers\Admin\ActionLogController::log(0,"dns_cron","starting run for DNS server $this->ip");
         $this->install_dbs();
         if($this->install_zone()){
+            if($this->export_plain == "1") {
+                $this->install_plain();
+            }
             if($this->reload_service()){
                 \App\Http\Controllers\Admin\ActionLogController::log(0,"dns_cron","dns service in DNS server $this->ip reloaded");
             }else{

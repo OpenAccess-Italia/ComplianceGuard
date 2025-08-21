@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\GpgKeyUpdated;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use DataTables;
@@ -23,7 +24,7 @@ class AdminController extends Controller
                 $data = \App\ActionLog::where('timestamp', '>=', Carbon::now()->subDay())->orderBy("id","desc")->get();
             }
             return Datatables::of($data)->addColumn('action',function($row){
-                return htmlspecialchars($row->action);
+                return htmlspecialchars($row->action, ENT_QUOTES | ENT_HTML5);
             })->make(true);
         }
     }
@@ -45,15 +46,26 @@ class AdminController extends Controller
 
     public function save_settings(Request $request){
         $data = $request->except('_token');
+        $updated = [];
         foreach ($data as $key => $value) {
             if(self::env_exist($key) && self::env_auth($key)){
                 $value = ($value == "null") ? null : $value;
                 if(env($key) != $value){
                     self::update_env($key,$value);
                     \App\Http\Controllers\Admin\ActionLogController::log(\Auth::user()->id,\Auth::user()->name,"updated setting $key from ".env($key)." to $value");
+                    $updated[] = $key;
                 }
             }
         }
+
+        if (
+            (in_array('CNCPO_GPG_PRIVATE_KEY', $updated) || in_array('CNCPO_GPG_PRIVATE_KEY_PASSWORD', $updated))
+            && env('CNCPO_ENABLED') === '1')
+        {
+            //Trigger event to import GPG key
+            GpgKeyUpdated::dispatch();
+        }
+
         //settings files updates
         self::make_network_settings_file();
         \App\Http\Controllers\Admin\BGPController::make_settings_file();
@@ -106,16 +118,75 @@ class AdminController extends Controller
     }
 
     private static function env_auth($key){
-        return in_array($key,["PIRACY_SHIELD_VPN_PEER_IP","PIRACY_SHIELD_VPN_REMOTE_LAN_IP","PIRACY_SHIELD_VPN_LOCAL_LAN_IP","PIRACY_SHIELD_VPN_PSK","PIRACY_SHIELD_ITEMS_VALIDITY_MONTHS","NET_IP","NET_MASK","NET_GATEWAY","BGP_ROUTER_IP","BGP_ASN","BGP_LOCAL_IP","BGP_LOCAL_MASK","BGP_LOCAL_GATEWAY","DNS_SERVER_PRIMARY_IP","DNS_SERVER_PRIMARY_PORT","DNS_SERVER_PRIMARY_USER","DNS_SERVER_PRIMARY_PSW","DNS_SERVER_PRIMARY_PATH","DNS_SERVER_PRIMARY_RELOAD","DNS_SERVER_SECONDARY_IP","DNS_SERVER_SECONDARY_PORT","DNS_SERVER_SECONDARY_USER","DNS_SERVER_SECONDARY_PSW","DNS_SERVER_SECONDARY_PATH","DNS_SERVER_SECONDARY_RELOAD","PIRACY_SHIELD_MAIL","PIRACY_SHIELD_PSW","PIRACY_SHIELD_API_URL","EXTERNAL_DNS_SERVERS","CNCPO_DOWNLOAD_URL","CNCPO_PFX_PATH","CNCPO_PFX_PASS","ADM_BETTING_URL","ADM_SMOKING_URL","CNCPO_DNS_REDIRECT_IP","ADM_DNS_REDIRECT_IP","PIRACY_SHIELD_DNS_REDIRECT_IP","CNCPO_ENABLED","ADM_ENABLED","PIRACY_SHIELD_ENABLED","MANUAL_ENABLED","MANUAL_DNS_REDIRECT_IP","MAIL_HOST","MAIL_PORT","MAIL_USERNAME","MAIL_PASSWORD","MAIL_ENCRYPTION","MAIL_FROM_ADDRESS","MAIL_FROM_NAME","MAIL_TO_ADDRESSES"]);
+        return in_array($key,[
+            "PIRACY_SHIELD_VPN_PEER_IP",
+            "PIRACY_SHIELD_VPN_REMOTE_LAN_IP",
+            "PIRACY_SHIELD_VPN_LOCAL_LAN_IP",
+            "PIRACY_SHIELD_VPN_PSK",
+            "PIRACY_SHIELD_ITEMS_VALIDITY_MONTHS",
+            "NET_IP",
+            "NET_MASK",
+            "NET_GATEWAY",
+            "BGP_ROUTER_IP",
+            "BGP_ASN",
+            "BGP_LOCAL_IP",
+            "BGP_LOCAL_MASK",
+            "BGP_LOCAL_GATEWAY",
+            "DNS_SERVER_PRIMARY_IP",
+            "DNS_SERVER_PRIMARY_PORT",
+            "DNS_SERVER_PRIMARY_USER",
+            "DNS_SERVER_PRIMARY_PSW",
+            "DNS_SERVER_PRIMARY_PATH",
+            "DNS_SERVER_PRIMARY_RELOAD",
+            "DNS_SERVER_SECONDARY_IP",
+            "DNS_SERVER_SECONDARY_PORT",
+            "DNS_SERVER_SECONDARY_USER",
+            "DNS_SERVER_SECONDARY_PSW",
+            "DNS_SERVER_SECONDARY_PATH",
+            "DNS_SERVER_SECONDARY_RELOAD",
+            "PIRACY_SHIELD_MAIL",
+            "PIRACY_SHIELD_PSW",
+            "PIRACY_SHIELD_API_URL",
+            "EXTERNAL_DNS_SERVERS",
+            "ADM_BETTING_URL",
+            "ADM_SMOKING_URL",
+            "ADM_DNS_REDIRECT_IP",
+            "PIRACY_SHIELD_DNS_REDIRECT_IP",
+            "CNCPO_ENABLED",
+            "CNCPO_PEC_EMAIL",
+            "CNCPO_PEC_IMAP_HOST",
+            "CNCPO_PEC_IMAP_ARCHIVE_FOLDER",
+            "CNCPO_PEC_PASSWORD",
+            "CNCPO_PEC_SMTP_HOST",
+            "CNCPO_PEC_SMTP_PASSWORD",
+            "CNCPO_FROM_EMAIL",
+            "CNCPO_GPG_PRIVATE_KEY",
+            "CNCPO_GPG_PRIVATE_KEY_PASSWORD",
+            "CNCPO_DNS_REDIRECT_IP",
+            "CNCPO_REPLY_ENABLED",
+            "CNCPO_REPLY_SIGNATURE",
+            "ADM_ENABLED",
+            "PIRACY_SHIELD_ENABLED",
+            "MANUAL_ENABLED",
+            "MANUAL_DNS_REDIRECT_IP",
+            "MAIL_HOST",
+            "MAIL_PORT",
+            "MAIL_USERNAME",
+            "MAIL_PASSWORD",
+            "MAIL_ENCRYPTION",
+            "MAIL_FROM_ADDRESS",
+            "MAIL_FROM_NAME",
+            "MAIL_TO_ADDRESSES"
+        ]);
     }
 
     public function update_dns(){
         $check_env = self::check_env_dns();
         if(count($check_env) == 0){
-            $dns1 = new \App\Http\Controllers\Admin\DNSController(env('DNS_SERVER_PRIMARY_IP'),env('DNS_SERVER_PRIMARY_PORT'),env('DNS_SERVER_PRIMARY_USER'),env('DNS_SERVER_PRIMARY_PSW'),env('DNS_SERVER_PRIMARY_PATH'),env('DNS_SERVER_PRIMARY_RELOAD'));
+            $dns1 = new \App\Http\Controllers\Admin\DNSController(env('DNS_SERVER_PRIMARY_IP'),env('DNS_SERVER_PRIMARY_PORT'),env('DNS_SERVER_PRIMARY_USER'),env('DNS_SERVER_PRIMARY_PSW'),env('DNS_SERVER_PRIMARY_PATH'),env('DNS_SERVER_PRIMARY_RELOAD'),env('DNS_SERVER_PRIMARY_EXPORT_PLAIN'));
             $dns1->update();
             if(env('DNS_SERVER_SECONDARY_IP')){
-                $dns2 = new \App\Http\Controllers\Admin\DNSController(env('DNS_SERVER_SECONDARY_IP'),env('DNS_SERVER_SECONDARY_PORT'),env('DNS_SERVER_SECONDARY_USER'),env('DNS_SERVER_SECONDARY_PSW'),env('DNS_SERVER_SECONDARY_PATH'),env('DNS_SERVER_SECONDARY_RELOAD'));
+                $dns2 = new \App\Http\Controllers\Admin\DNSController(env('DNS_SERVER_SECONDARY_IP'),env('DNS_SERVER_SECONDARY_PORT'),env('DNS_SERVER_SECONDARY_USER'),env('DNS_SERVER_SECONDARY_PSW'),env('DNS_SERVER_SECONDARY_PATH'),env('DNS_SERVER_SECONDARY_RELOAD'),env('DNS_SERVER_PRIMARY_EXPORT_PLAIN'));
                 $dns2->update();
             }else{
                 \App\Http\Controllers\Admin\ActionLogController::log(0,"dns_cron","secondary DNS server IP not set, skipping run");
@@ -258,10 +329,10 @@ class AdminController extends Controller
         $obj->settings->passed = (count($env_test) == 0);
         $obj->settings->messages = (count($env_test) == 0) ? ["Settings formally correct"] : $env_test;
         if($obj->settings->passed){
-            $dns1 = new \App\Http\Controllers\Admin\DNSController(env('DNS_SERVER_PRIMARY_IP'),env('DNS_SERVER_PRIMARY_PORT'),env('DNS_SERVER_PRIMARY_USER'),env('DNS_SERVER_PRIMARY_PSW'),env('DNS_SERVER_PRIMARY_PATH'),env('DNS_SERVER_PRIMARY_RELOAD'));
+            $dns1 = new \App\Http\Controllers\Admin\DNSController(env('DNS_SERVER_PRIMARY_IP'),env('DNS_SERVER_PRIMARY_PORT'),env('DNS_SERVER_PRIMARY_USER'),env('DNS_SERVER_PRIMARY_PSW'),env('DNS_SERVER_PRIMARY_PATH'),env('DNS_SERVER_PRIMARY_RELOAD'),env('DNS_SERVER_PRIMARY_EXPORT_PLAIN'));
             $obj->primary = $dns1->test();
             if(env('DNS_SERVER_SECONDARY_IP')){
-                $dns2 = new \App\Http\Controllers\Admin\DNSController(env('DNS_SERVER_SECONDARY_IP'),env('DNS_SERVER_SECONDARY_PORT'),env('DNS_SERVER_SECONDARY_USER'),env('DNS_SERVER_SECONDARY_PSW'),env('DNS_SERVER_SECONDARY_PATH'),env('DNS_SERVER_SECONDARY_RELOAD'));
+                $dns2 = new \App\Http\Controllers\Admin\DNSController(env('DNS_SERVER_SECONDARY_IP'),env('DNS_SERVER_SECONDARY_PORT'),env('DNS_SERVER_SECONDARY_USER'),env('DNS_SERVER_SECONDARY_PSW'),env('DNS_SERVER_SECONDARY_PATH'),env('DNS_SERVER_SECONDARY_RELOAD'),env('DNS_SERVER_PRIMARY_EXPORT_PLAIN'));
                 $obj->secondary = $dns2->test();
             }
         }
@@ -314,7 +385,19 @@ class AdminController extends Controller
             return false;
         }
     }
-    
+
+    public function log_retention(){
+        $check_env = \App\Http\Controllers\Admin\ActionLogController::check_env();
+        if(count($check_env) == 0){
+            \App\Http\Controllers\Admin\ActionLogController::log(0,"log_retention_cron","starting run");
+            $c = new \App\Http\Controllers\Admin\ActionLogController();
+            $c->log_retention();
+            \App\Http\Controllers\Admin\ActionLogController::log(0,"log_retention_cron","run ended");
+        }else{
+            \App\Http\Controllers\Admin\ActionLogController::log(0,"log_retention_cron","run not started because of: ".implode(", ",$check_env));
+        }
+    }
+
     private static function make_network_settings_file(){
         \App\Http\Controllers\Admin\ActionLogController::log(0,"system","trying to make network settings file in '".base_path('storage/settings/').'network.csv'."'");
         $check_env = self::check_env_network();

@@ -41,7 +41,7 @@ class ADMController extends Controller
                     if(strpos($row, "Elenco dei siti soggetti ad inibizione - txt") !== false){
                         $txt = self::get_href(trim($row));
                     }
-                    if(strpos($row, "File di controllo - txt") !== false){
+                    if(strpos($row, "File di controllo (SHA 256) - txt") !== false){
                         $sha256 = self::get_href(trim($row));
                     }
                 }
@@ -79,7 +79,7 @@ class ADMController extends Controller
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
         curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36');
-        
+
         $result = curl_exec($ch);
         if(curl_errno($ch)){
             \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","failed to download betting adm blacklist (curl error: ".curl_error($ch).")");
@@ -99,7 +99,7 @@ class ADMController extends Controller
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
         curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36');
-        
+
         $result = curl_exec($ch);
         if(curl_errno($ch)){
             \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","failed to download betting adm blacklist sha256 (curl error: ".curl_error($ch).")");
@@ -173,7 +173,7 @@ class ADMController extends Controller
                     if(strpos($row, "Elenco dei siti soggetti ad inibizione - txt") !== false){
                         $txt = self::get_href(trim($row));
                     }
-                    if(strpos($row, "File di controllo - txt") !== false){
+                    if(strpos($row, "File di controllo (SHA 256) - txt") !== false){
                         $sha256 = self::get_href(trim($row));
                     }
                 }
@@ -211,7 +211,7 @@ class ADMController extends Controller
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
         curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36');
-        
+
         $result = curl_exec($ch);
         if(curl_errno($ch)){
             \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","failed to download smoking adm blacklist (curl error: ".curl_error($ch).")");
@@ -231,7 +231,7 @@ class ADMController extends Controller
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
         curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36');
-        
+
         $result = curl_exec($ch);
         if(curl_errno($ch)){
             \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","failed to download smoking adm blacklist sha256 (curl error: ".curl_error($ch).")");
@@ -434,7 +434,7 @@ class ADMController extends Controller
         $content = implode("\n",$list);
         \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","FQDN betting adm blacklist pulled by ".$request->ip());
         $headers = [
-            'Content-type' => 'text/plain', 
+            'Content-type' => 'text/plain',
             'Content-Disposition' => sprintf('attachment; filename="%s"', "betting_blacklist.txt")
         ];
         return \Response::make($content, 200, $headers);
@@ -445,7 +445,7 @@ class ADMController extends Controller
         $content = implode("\n",$list);
         \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","FQDN smoking adm blacklist pulled by ".$request->ip());
         $headers = [
-            'Content-type' => 'text/plain', 
+            'Content-type' => 'text/plain',
             'Content-Disposition' => sprintf('attachment; filename="%s"', "smoking_blacklist.txt")
         ];
         return \Response::make($content, 200, $headers);
