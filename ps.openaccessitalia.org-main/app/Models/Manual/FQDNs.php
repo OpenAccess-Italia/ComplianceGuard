@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Manual;
+namespace App\Models\Manual;
 
 use Illuminate\Database\Eloquent\Model;
 
-class IPv4s extends Model
+class FQDNs extends Model
 {
     //
-    protected $table = 'manual_ipv4s';
+    protected $table = 'manual_fqdns';
     public $timestamps = false;
     protected $dates = ['timestamp'];
-    protected $primaryKey = 'ipv4';
+    protected $primaryKey = 'fqdn';
     protected $casts = [
-        'ipv4' => 'string',
+        'fqdn' => 'string',
     ];
 }

@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Manual;
+namespace App\Models\Piracy;
 
 use Illuminate\Database\Eloquent\Model;
 
-class FQDNs extends Model
+class IPv6s extends Model
 {
     //
-    protected $table = 'manual_fqdns';
+    protected $table = 'ps_ipv6s';
     public $timestamps = false;
     protected $dates = ['timestamp'];
-    protected $primaryKey = 'fqdn';
+    protected $primaryKey = 'ipv6';
     protected $casts = [
-        'fqdn' => 'string',
+        'ipv6' => 'string',
     ];
 }

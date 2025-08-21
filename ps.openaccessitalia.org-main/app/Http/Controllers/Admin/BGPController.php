@@ -17,8 +17,8 @@ class BGPController extends Controller
     public function make_ipv4_list_file(){
         \App\Http\Controllers\Admin\ActionLogController::log(0,"bgp_system","trying to make ipv4 bgp file in '".base_path('storage/download/').'ipv4.txt'."'");
         $content = '';
-        $ipv4s_piracy = \App\Piracy\IPv4s::select('ipv4')->distinct()->pluck('ipv4')->toArray();
-        $ipv4s_manual = \App\Manual\IPv4s::select('ipv4')->distinct()->pluck('ipv4')->toArray();
+        $ipv4s_piracy = \App\Models\Piracy\IPv4s::select('ipv4')->distinct()->pluck('ipv4')->toArray();
+        $ipv4s_manual = \App\Models\Manual\IPv4s::select('ipv4')->distinct()->pluck('ipv4')->toArray();
         $done = [];
         foreach ($ipv4s_piracy as $ipv4) {
             if(!in_array($ipv4,$done)){
@@ -45,8 +45,8 @@ class BGPController extends Controller
     public function make_ipv6_list_file(){
         \App\Http\Controllers\Admin\ActionLogController::log(0,"bgp_system","trying to make ipv6 bgp file in '".base_path('storage/download/').'ipv6.txt'."'");
         $content = '';
-        $ipv6s_piracy = \App\Piracy\IPv6s::select('ipv6')->distinct()->pluck('ipv6')->toArray();
-        $ipv6s_manual = \App\Manual\IPv6s::select('ipv6')->distinct()->pluck('ipv6')->toArray();
+        $ipv6s_piracy = \App\Models\Piracy\IPv6s::select('ipv6')->distinct()->pluck('ipv6')->toArray();
+        $ipv6s_manual = \App\Models\Manual\IPv6s::select('ipv6')->distinct()->pluck('ipv6')->toArray();
         $done = [];
         foreach ($ipv6s_piracy as $ipv6) {
             if(!in_array($ipv6,$done)){

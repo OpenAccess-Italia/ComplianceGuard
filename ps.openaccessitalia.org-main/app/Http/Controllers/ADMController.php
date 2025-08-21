@@ -127,7 +127,7 @@ class ADMController extends Controller
 
     private function save_betting_file($validation){
         \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","saving betting adm blacklist");
-        $new = new \App\ADM\BettingFiles();
+        $new = new \App\Models\ADM\BettingFiles();
         $new->content = $validation["txt"];
         $new->sha256 = $validation["sha256"];
         if($new->save()){
@@ -146,7 +146,7 @@ class ADMController extends Controller
         $total = $success = 0;
         foreach ($rows as $row) {
             $total++;
-            $new = new \App\ADM\BettingBlacklist();
+            $new = new \App\Models\ADM\BettingBlacklist();
             $new->fqdn = trim($row);
             if($new->save()){
                 $success++;
@@ -259,7 +259,7 @@ class ADMController extends Controller
 
     private function save_smoking_file($validation){
         \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","saving smoking adm blacklist");
-        $new = new \App\ADM\SmokingFiles();
+        $new = new \App\Models\ADM\SmokingFiles();
         $new->content = $validation["txt"];
         $new->sha256 = $validation["sha256"];
         if($new->save()){
@@ -278,7 +278,7 @@ class ADMController extends Controller
         $total = $success = 0;
         foreach ($rows as $row) {
             $total++;
-            $new = new \App\ADM\SmokingBlacklist();
+            $new = new \App\Models\ADM\SmokingBlacklist();
             $new->fqdn = trim($row);
             if($new->save()){
                 $success++;
@@ -430,7 +430,7 @@ class ADMController extends Controller
     }
 
     public function download_betting_blacklist(Request $request){
-        $list = \App\ADM\BettingBlacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
+        $list = \App\Models\ADM\BettingBlacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
         $content = implode("\n",$list);
         \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","FQDN betting adm blacklist pulled by ".$request->ip());
         $headers = [
@@ -441,7 +441,7 @@ class ADMController extends Controller
     }
 
     public function download_smoking_blacklist(Request $request){
-        $list = \App\ADM\SmokingBlacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
+        $list = \App\Models\ADM\SmokingBlacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
         $content = implode("\n",$list);
         \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","FQDN smoking adm blacklist pulled by ".$request->ip());
         $headers = [
@@ -453,7 +453,7 @@ class ADMController extends Controller
 
     public function datatable_betting_blacklist(Request $request){
         if($request->ajax()){
-            $data = \App\ADM\BettingBlacklist::query();
+            $data = \App\Models\ADM\BettingBlacklist::query();
             return Datatables::of($data)
                 ->rawColumns(
                     ['fqdn']
@@ -463,7 +463,7 @@ class ADMController extends Controller
 
     public function datatable_betting_files(Request $request){
         if($request->ajax()){
-            $data = \App\ADM\BettingFiles::query();
+            $data = \App\Models\ADM\BettingFiles::query();
             return Datatables::of($data)
                 ->rawColumns(
                     ['timestamp',
@@ -474,7 +474,7 @@ class ADMController extends Controller
 
     public function datatable_smoking_blacklist(Request $request){
         if($request->ajax()){
-            $data = \App\ADM\SmokingBlacklist::query();
+            $data = \App\Models\ADM\SmokingBlacklist::query();
             return Datatables::of($data)
                 ->rawColumns(
                     ['fqdn']
@@ -484,7 +484,7 @@ class ADMController extends Controller
 
     public function datatable_smoking_files(Request $request){
         if($request->ajax()){
-            $data = \App\ADM\SmokingFiles::query();
+            $data = \App\Models\ADM\SmokingFiles::query();
             return Datatables::of($data)
                 ->rawColumns(
                     ['timestamp',

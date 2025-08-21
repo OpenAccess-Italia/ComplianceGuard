@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Piracy;
+namespace App\Models\ADM;
 
 use Illuminate\Database\Eloquent\Model;
 
-class TicketItemsLog extends Model
+class SmokingFiles extends Model
 {
     //
-    protected $table = 'ps_ticket_items_log';
+    protected $table = 'adm_smoking_files';
     public $timestamps = false;
     protected $dates = ['timestamp'];
     protected $primaryKey = 'id';

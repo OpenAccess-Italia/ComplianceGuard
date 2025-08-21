@@ -14,7 +14,7 @@ class ManualController extends Controller
 
     public function datatable_fqdn(Request $request){
         if($request->ajax()){
-            $data = \App\Manual\FQDNs::query();
+            $data = \App\Models\Manual\FQDNs::query();
             return Datatables::of($data)
                 ->rawColumns(
                     ['fqdn','comment','timestamp']
@@ -24,7 +24,7 @@ class ManualController extends Controller
 
     public function datatable_ipv4(Request $request){
         if($request->ajax()){
-            $data = \App\Manual\IPv4s::query();
+            $data = \App\Models\Manual\IPv4s::query();
             return Datatables::of($data)
                 ->rawColumns(
                     ['ipv4','comment','timestamp']
@@ -34,7 +34,7 @@ class ManualController extends Controller
 
     public function datatable_ipv6(Request $request){
         if($request->ajax()){
-            $data = \App\Manual\IPv6s::query();
+            $data = \App\Models\Manual\IPv6s::query();
             return Datatables::of($data)
                 ->rawColumns(
                     ['ipv6','comment','timestamp']
@@ -47,8 +47,8 @@ class ManualController extends Controller
             if($request->filled(["value"])){
                 \App\Http\Controllers\Admin\ActionLogController::log(\Auth::user()->id,\Auth::user()->name,"trying to add ".$request->input("value")." to manual FQDN list");
                 if(self::validateFQDN($request->input("value"))){
-                    if(!\App\Manual\FQDNs::find($request->input("value"))){
-                        $new = new \App\Manual\FQDNs();
+                    if(!\App\Models\Manual\FQDNs::find($request->input("value"))){
+                        $new = new \App\Models\Manual\FQDNs();
                         $new->fqdn = $request->input("value");
                         $new->comment = $request->input("comment");
                         if($new->save()){
@@ -72,8 +72,8 @@ class ManualController extends Controller
     public function delete_fqdn(Request $request,$value){
         \App\Http\Controllers\Admin\ActionLogController::log(\Auth::user()->id,\Auth::user()->name,"trying to delete $value from manual FQDN list");
         if(self::validateFQDN($value)){
-            if(\App\Manual\FQDNs::find($value)){
-                if(\App\Manual\FQDNs::find($value)->delete()){
+            if(\App\Models\Manual\FQDNs::find($value)){
+                if(\App\Models\Manual\FQDNs::find($value)->delete()){
                     \App\Http\Controllers\Admin\ActionLogController::log(\Auth::user()->id,\Auth::user()->name,"succeded to delete $value from manual FQDN list");
                     return response('',200);
                 }
@@ -92,8 +92,8 @@ class ManualController extends Controller
             if($request->filled(["value"])){
                 \App\Http\Controllers\Admin\ActionLogController::log(\Auth::user()->id,\Auth::user()->name,"trying to add ".$request->input("value")." to manual IPv4 list");
                 if(filter_var($request->input("value"), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)){
-                    if(!\App\Manual\IPv4s::find($request->input("value"))){
-                        $new = new \App\Manual\IPv4s();
+                    if(!\App\Models\Manual\IPv4s::find($request->input("value"))){
+                        $new = new \App\Models\Manual\IPv4s();
                         $new->ipv4 = $request->input("value");
                         $new->comment = $request->input("comment");
                         if($new->save()){
@@ -117,8 +117,8 @@ class ManualController extends Controller
     public function delete_ipv4(Request $request,$value){
         \App\Http\Controllers\Admin\ActionLogController::log(\Auth::user()->id,\Auth::user()->name,"trying to delete $value from manual IPv4 list");
         if(filter_var($value, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)){
-            if(\App\Manual\IPv4s::find($value)){
-                if(\App\Manual\IPv4s::find($value)->delete()){
+            if(\App\Models\Manual\IPv4s::find($value)){
+                if(\App\Models\Manual\IPv4s::find($value)->delete()){
                     \App\Http\Controllers\Admin\ActionLogController::log(\Auth::user()->id,\Auth::user()->name,"succeded to delete $value from manual IPv4 list");
                     return response('',200);
                 }
@@ -137,8 +137,8 @@ class ManualController extends Controller
             if($request->filled(["value"])){
                 \App\Http\Controllers\Admin\ActionLogController::log(\Auth::user()->id,\Auth::user()->name,"trying to add ".$request->input("value")." to manual IPv6 list");
                 if(filter_var($request->input("value"), FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)){
-                    if(!\App\Manual\IPv6s::find($request->input("value"))){
-                        $new = new \App\Manual\IPv6s();
+                    if(!\App\Models\Manual\IPv6s::find($request->input("value"))){
+                        $new = new \App\Models\Manual\IPv6s();
                         $new->ipv6 = $request->input("value");
                         $new->comment = $request->input("comment");
                         if($new->save()){
@@ -162,8 +162,8 @@ class ManualController extends Controller
     public function delete_ipv6(Request $request,$value){
         \App\Http\Controllers\Admin\ActionLogController::log(\Auth::user()->id,\Auth::user()->name,"trying to delete $value from manual IPv6 list");
         if(filter_var($value, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)){
-            if(\App\Manual\IPv6s::find($value)){
-                if(\App\Manual\IPv6s::find($value)->delete()){
+            if(\App\Models\Manual\IPv6s::find($value)){
+                if(\App\Models\Manual\IPv6s::find($value)->delete()){
                     \App\Http\Controllers\Admin\ActionLogController::log(\Auth::user()->id,\Auth::user()->name,"succeded to delete $value from manual IPv6 list");
                     return response('',200);
                 }
@@ -200,8 +200,8 @@ class ManualController extends Controller
                 foreach ($rows as $row) {
                     $i++;
                     if(self::validateFQDN(trim($row))){
-                        if(!\App\Manual\FQDNs::find(trim($row))){
-                            $new = new \App\Manual\FQDNs();
+                        if(!\App\Models\Manual\FQDNs::find(trim($row))){
+                            $new = new \App\Models\Manual\FQDNs();
                             $new->fqdn = trim($row);
                             $new->comment = "Imported from $filename";
                             if($new->save()){
@@ -226,8 +226,8 @@ class ManualController extends Controller
                 foreach ($rows as $row) {
                     $i++;
                     if(filter_var(trim($row), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)){
-                        if(!\App\Manual\IPv4s::find(trim($row))){
-                            $new = new \App\Manual\IPv4s();
+                        if(!\App\Models\Manual\IPv4s::find(trim($row))){
+                            $new = new \App\Models\Manual\IPv4s();
                             $new->ipv4 = trim($row);
                             $new->comment = "Imported from $filename";
                             if($new->save()){
@@ -252,8 +252,8 @@ class ManualController extends Controller
                 foreach ($rows as $row) {
                     $i++;
                     if(filter_var(trim($row), FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)){
-                        if(!\App\Manual\IPv6s::find(trim($row))){
-                            $new = new \App\Manual\IPv6s();
+                        if(!\App\Models\Manual\IPv6s::find(trim($row))){
+                            $new = new \App\Models\Manual\IPv6s();
                             $new->ipv6 = trim($row);
                             $new->comment = "Imported from $filename";
                             if($new->save()){

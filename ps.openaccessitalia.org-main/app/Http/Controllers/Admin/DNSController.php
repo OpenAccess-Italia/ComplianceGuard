@@ -203,11 +203,11 @@ EOD;
         \App\Http\Controllers\Admin\ActionLogController::log(0,"dns_cron","beginning to make dns zone content in DNS server $this->ip");
         $content = '';
         $directory = self::zones_directory($this->path);
-        $admbettingblacklist = \App\ADM\BettingBlacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
-        $admsmokingblacklist = \App\ADM\SmokingBlacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
-        $cncpoblacklist = \App\CNCPO\Blacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
-        $piracyshield = \App\Piracy\FQDNs::select('fqdn')->distinct()->pluck('fqdn')->toArray();
-        $manual = \App\Manual\FQDNs::select('fqdn')->distinct()->pluck('fqdn')->toArray();
+        $admbettingblacklist = \App\Models\ADM\BettingBlacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
+        $admsmokingblacklist = \App\Models\ADM\SmokingBlacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
+        $cncpoblacklist = \App\Models\CNCPO\Blacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
+        $piracyshield = \App\Models\Piracy\FQDNs::select('fqdn')->distinct()->pluck('fqdn')->toArray();
+        $manual = \App\Models\Manual\FQDNs::select('fqdn')->distinct()->pluck('fqdn')->toArray();
         $done = [];
         foreach ($admbettingblacklist as $fqdn) {
             if(!in_array($fqdn,$done)){

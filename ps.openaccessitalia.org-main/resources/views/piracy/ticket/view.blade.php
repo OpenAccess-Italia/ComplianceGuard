@@ -92,7 +92,7 @@
                                     <td>{{$fqdn}}</td>
                                     <td>
                                         @php
-                                            $feedback = \App\Piracy\TicketItemsLog::where('ticket_id',$ticket->ticket_id)->where('item_type','fqdn')->where('item',$fqdn)->get()->first();
+                                            $feedback = \App\Models\Piracy\TicketItemsLog::where('ticket_id',$ticket->ticket_id)->where('item_type','fqdn')->where('item',$fqdn)->get()->first();
                                         @endphp
                                         @if($feedback)
                                             {{$feedback->status}} at {{$feedback->timestamp}}
@@ -102,7 +102,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                            @foreach (\App\Piracy\TicketItemsLog::where('ticket_id',$ticket->ticket_id)->where('item_type','fqdn')->whereNotIn('item',json_decode($ticket->fqdns))->get() as $fqdn)
+                            @foreach (\App\Models\Piracy\TicketItemsLog::where('ticket_id',$ticket->ticket_id)->where('item_type','fqdn')->whereNotIn('item',json_decode($ticket->fqdns))->get() as $fqdn)
                                 <tr>
                                     <td><s>{{$fqdn->item}}</s></td>
                                     <td>
@@ -130,7 +130,7 @@
                                     <td>{{$ipv4}}</td>
                                     <td>
                                         @php
-                                            $feedback = \App\Piracy\TicketItemsLog::where('ticket_id',$ticket->ticket_id)->where('item_type','ipv4')->where('item',$ipv4)->get()->first();
+                                            $feedback = \App\Models\Piracy\TicketItemsLog::where('ticket_id',$ticket->ticket_id)->where('item_type','ipv4')->where('item',$ipv4)->get()->first();
                                         @endphp
                                         @if($feedback)
                                             {{$feedback->status}} at {{$feedback->timestamp}}
@@ -140,7 +140,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                            @foreach (\App\Piracy\TicketItemsLog::where('ticket_id',$ticket->ticket_id)->where('item_type','ipv4')->whereNotIn('item',json_decode($ticket->ipv4s))->get() as $ipv4)
+                            @foreach (\App\Models\Piracy\TicketItemsLog::where('ticket_id',$ticket->ticket_id)->where('item_type','ipv4')->whereNotIn('item',json_decode($ticket->ipv4s))->get() as $ipv4)
                                 <tr>
                                     <td><s>{{$ipv4->item}}</s></td>
                                     <td>
@@ -168,7 +168,7 @@
                                     <td>{{$ipv6}}</td>
                                     <td>
                                         @php
-                                            $feedback = \App\Piracy\TicketItemsLog::where('ticket_id',$ticket->ticket_id)->where('item_type','ipv6')->where('item',$ipv6)->get()->first();
+                                            $feedback = \App\Models\Piracy\TicketItemsLog::where('ticket_id',$ticket->ticket_id)->where('item_type','ipv6')->where('item',$ipv6)->get()->first();
                                         @endphp
                                         @if($feedback)
                                             {{$feedback->status}} at {{$feedback->timestamp}}
@@ -178,7 +178,7 @@
                                     </td>
                                 </tr>
                             @endforeach
-                            @foreach (\App\Piracy\TicketItemsLog::where('ticket_id',$ticket->ticket_id)->where('item_type','ipv6')->whereNotIn('item',json_decode($ticket->ipv6s))->get() as $ipv6)
+                            @foreach (\App\Models\Piracy\TicketItemsLog::where('ticket_id',$ticket->ticket_id)->where('item_type','ipv6')->whereNotIn('item',json_decode($ticket->ipv6s))->get() as $ipv6)
                                 <tr>
                                     <td><s>{{$ipv6->item}}</s></td>
                                     <td>
@@ -199,7 +199,7 @@
 
 <script>
     $(document).ready(function(){
-        
+
     });
 </script>
 

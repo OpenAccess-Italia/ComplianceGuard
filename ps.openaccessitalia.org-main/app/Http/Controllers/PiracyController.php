@@ -6,7 +6,7 @@ use App\Http\Controllers\Admin\ActionLogController;
 use App\Piracy\APILog;
 use App\Piracy\FQDNs;
 use App\Piracy\IPv4s;
-use App\Piracy\IPv6s;
+use App\Models\Piracy\IPv6s;
 use App\Piracy\TicketItemsLog;
 use App\Piracy\Tickets;
 use Auth;
@@ -758,13 +758,13 @@ class PiracyController extends Controller
     private static function get_access_token($force_new_one = false){
         if($force_new_one){
             //if forced new token check if last refresh token is valid
-            $last_refresh_token = \App\Piracy\APIRefreshTokens::where('timestamp','>',now()->subWeek())->orderBy('id','desc')->get()->first();
+            $last_refresh_token = \App\Models\Piracy\APIRefreshTokens::where('timestamp','>',now()->subWeek())->orderBy('id','desc')->get()->first();
             if($last_refresh_token){
                 //if the last refresh token is still valid
                 $new_access_token = self::refresh_login($last_refresh_token->refresh_token);
                 if($new_access_token){
                     //if successfully refreshed
-                    $new_access_token_db = new \App\Piracy\APIAccessTokens();
+                    $new_access_token_db = new \App\Models\Piracy\APIAccessTokens();
                     $new_access_token_db->access_token = $new_access_token->access_token;
                     $new_access_token_db->save();
                     return $new_access_token_db->access_token;
@@ -774,10 +774,10 @@ class PiracyController extends Controller
                 $new_access_token = self::new_login();
                 if($new_access_token){
                     //if new login success
-                    $new_access_token_db = new \App\Piracy\APIAccessTokens();
+                    $new_access_token_db = new \App\Models\Piracy\APIAccessTokens();
                     $new_access_token_db->access_token = $new_access_token->access_token;
                     $new_access_token_db->save();
-                    $new_refresh_token_db = new \App\Piracy\APIRefreshTokens();
+                    $new_refresh_token_db = new \App\Models\Piracy\APIRefreshTokens();
                     $new_refresh_token_db->refresh_token = $new_access_token->refresh_token;
                     $new_refresh_token_db->save();
                     return $new_access_token_db->access_token;
@@ -791,10 +791,10 @@ class PiracyController extends Controller
             $new_access_token = self::new_login();
             if($new_access_token){
                 //if new login success
-                $new_access_token_db = new \App\Piracy\APIAccessTokens();
+                $new_access_token_db = new \App\Models\Piracy\APIAccessTokens();
                 $new_access_token_db->access_token = $new_access_token->access_token;
                 $new_access_token_db->save();
-                $new_refresh_token_db = new \App\Piracy\APIRefreshTokens();
+                $new_refresh_token_db = new \App\Models\Piracy\APIRefreshTokens();
                 $new_refresh_token_db->refresh_token = $new_access_token->refresh_token;
                 $new_refresh_token_db->save();
                 return $new_access_token_db->access_token;
@@ -805,20 +805,20 @@ class PiracyController extends Controller
         }
 
         //if not forced new token check if the last access token is valid
-        $last_access_token = \App\Piracy\APIAccessTokens::where('timestamp','>',now()->subHours(1))->orderBy('id','desc')->get()->first();
+        $last_access_token = \App\Models\Piracy\APIAccessTokens::where('timestamp','>',now()->subHours(1))->orderBy('id','desc')->get()->first();
         if($last_access_token){
             //if the last access token is still valid, return it
             return $last_access_token->access_token;
         }
 
         //if last access token is expired check if last refresh token is still valid
-        $last_refresh_token = \App\Piracy\APIRefreshTokens::where('timestamp','>',now()->subWeek())->orderBy('id','desc')->get()->first();
+        $last_refresh_token = \App\Models\Piracy\APIRefreshTokens::where('timestamp','>',now()->subWeek())->orderBy('id','desc')->get()->first();
         if($last_refresh_token){
             //if the last refresh token is still valid
             $new_access_token = self::refresh_login($last_refresh_token->refresh_token);
             if($new_access_token){
                 //if successfully refreshed
-                $new_access_token_db = new \App\Piracy\APIAccessTokens();
+                $new_access_token_db = new \App\Models\Piracy\APIAccessTokens();
                 $new_access_token_db->access_token = $new_access_token->access_token;
                 $new_access_token_db->save();
                 return $new_access_token_db->access_token;
@@ -828,10 +828,10 @@ class PiracyController extends Controller
             $new_access_token = self::new_login();
             if($new_access_token){
                 //if new login success
-                $new_access_token_db = new \App\Piracy\APIAccessTokens();
+                $new_access_token_db = new \App\Models\Piracy\APIAccessTokens();
                 $new_access_token_db->access_token = $new_access_token->access_token;
                 $new_access_token_db->save();
-                $new_refresh_token_db = new \App\Piracy\APIRefreshTokens();
+                $new_refresh_token_db = new \App\Models\Piracy\APIRefreshTokens();
                 $new_refresh_token_db->refresh_token = $new_access_token->refresh_token;
                 $new_refresh_token_db->save();
                 return $new_access_token_db->access_token;
@@ -845,10 +845,10 @@ class PiracyController extends Controller
         $new_access_token = self::new_login();
         if($new_access_token){
             //if new login success
-            $new_access_token_db = new \App\Piracy\APIAccessTokens();
+            $new_access_token_db = new \App\Models\Piracy\APIAccessTokens();
             $new_access_token_db->access_token = $new_access_token->access_token;
             $new_access_token_db->save();
-            $new_refresh_token_db = new \App\Piracy\APIRefreshTokens();
+            $new_refresh_token_db = new \App\Models\Piracy\APIRefreshTokens();
             $new_refresh_token_db->refresh_token = $new_access_token->refresh_token;
             $new_refresh_token_db->save();
             return $new_access_token_db->access_token;

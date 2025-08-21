@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Piracy;
+namespace App\Models\Piracy;
 
 use Illuminate\Database\Eloquent\Model;
 
-class APILog extends Model
+class TicketItemsLog extends Model
 {
     //
-    protected $table = 'ps_api_log';
+    protected $table = 'ps_ticket_items_log';
     public $timestamps = false;
     protected $dates = ['timestamp'];
     protected $primaryKey = 'id';

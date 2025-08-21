@@ -93,17 +93,17 @@ class ActionLogController extends Controller
         }
         if (env("LOGS_DAYS_PS_API") > 0){
             \App\Http\Controllers\Admin\ActionLogController::log(0,"log_system","trying to execute PiracyShield API logs retention, max days: ".env("LOGS_DAYS_PS_API"));
-            \App\Piracy\APILog::where('timestamp', '<', Carbon::now()->subDay(env("LOGS_DAYS_PS_API")))->delete();
+            \App\Models\Piracy\APILog::where('timestamp', '<', Carbon::now()->subDay(env("LOGS_DAYS_PS_API")))->delete();
             \App\Http\Controllers\Admin\ActionLogController::log(0,"log_system","succeded to execute PiracyShield API logs retention");
         }
         if (env("LOGS_DAYS_PS_API_ACCESS_TOKENS") > 0){
             \App\Http\Controllers\Admin\ActionLogController::log(0,"log_system","trying to execute PiracyShield API access tokens retention, max days: ".env("LOGS_DAYS_PS_API_ACCESS_TOKENS"));
-            \App\Piracy\APIAccessTokens::where('timestamp', '<', Carbon::now()->subDay(env("LOGS_DAYS_PS_API_ACCESS_TOKENS")))->delete();
+            \App\Models\Piracy\APIAccessTokens::where('timestamp', '<', Carbon::now()->subDay(env("LOGS_DAYS_PS_API_ACCESS_TOKENS")))->delete();
             \App\Http\Controllers\Admin\ActionLogController::log(0,"log_system","succeded to execute PiracyShield API access tokens retention");
         }
         if (env("LOGS_DAYS_PS_API_REFRESH_TOKENS") > 0){
             \App\Http\Controllers\Admin\ActionLogController::log(0,"log_system","trying to execute PiracyShield API refresh tokens retention, max days: ".env("LOGS_DAYS_PS_API_REFRESH_TOKENS"));
-            \App\Piracy\APIRefreshTokens::where('timestamp', '<', Carbon::now()->subDay(env("LOGS_DAYS_PS_API_REFRESH_TOKENS")))->delete();
+            \App\Models\Piracy\APIRefreshTokens::where('timestamp', '<', Carbon::now()->subDay(env("LOGS_DAYS_PS_API_REFRESH_TOKENS")))->delete();
             \App\Http\Controllers\Admin\ActionLogController::log(0,"log_system","succeded to execute PiracyShield API refresh tokens retention");
         }
     }

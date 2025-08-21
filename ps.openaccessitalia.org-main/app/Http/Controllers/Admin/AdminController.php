@@ -30,17 +30,17 @@ class AdminController extends Controller
     }
 
     public function datatable_ps_api_log(Request $request){
-        $data = \App\Piracy\APILog::where('timestamp', '>=', Carbon::now()->subDay())->orderBy("id","desc")->get();
+        $data = \App\Models\Piracy\APILog::where('timestamp', '>=', Carbon::now()->subDay())->orderBy("id","desc")->get();
         return Datatables::of($data)->make(true);
     }
 
     public function datatable_ps_access_tokens(Request $request){
-        $data = \App\Piracy\APIAccessTokens::orderBy("id","desc")->get();
+        $data = \App\Models\Piracy\APIAccessTokens::orderBy("id","desc")->get();
         return Datatables::of($data)->make(true);
     }
 
     public function datatable_ps_refresh_tokens(Request $request){
-        $data = \App\Piracy\APIRefreshTokens::orderBy("id","desc")->get();
+        $data = \App\Models\Piracy\APIRefreshTokens::orderBy("id","desc")->get();
         return Datatables::of($data)->make(true);
     }
 

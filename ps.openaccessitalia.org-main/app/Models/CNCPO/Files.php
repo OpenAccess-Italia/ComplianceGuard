@@ -1,6 +1,6 @@
 <?php
 
-namespace App\CNCPO;
+namespace App\Models\CNCPO;
 
 use Illuminate\Database\Eloquent\Model;
 

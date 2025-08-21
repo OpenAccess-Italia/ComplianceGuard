@@ -1,13 +1,13 @@
 <?php
 
-namespace App\CNCPO;
+namespace App\Models\ADM;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Blacklist extends Model
+class SmokingBlacklist extends Model
 {
     //
-    protected $table = 'cncpo_blacklist';
+    protected $table = 'adm_smoking_blacklist';
     public $timestamps = false;
     protected $primaryKey = 'id';
 }

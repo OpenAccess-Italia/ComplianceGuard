@@ -1,13 +1,13 @@
 <?php
 
-namespace App\ADM;
+namespace App\Models\Piracy;
 
 use Illuminate\Database\Eloquent\Model;
 
-class SmokingFiles extends Model
+class APIRefreshTokens extends Model
 {
     //
-    protected $table = 'adm_smoking_files';
+    protected $table = 'ps_api_refresh_tokens';
     public $timestamps = false;
     protected $dates = ['timestamp'];
     protected $primaryKey = 'id';

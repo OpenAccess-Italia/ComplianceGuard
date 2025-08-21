@@ -169,7 +169,7 @@ class CNCPOController extends Controller
 
     private function save_file($validation){
         ActionLogController::log(0,"cncpo_system","saving cncpo blacklist");
-        $new = new \App\CNCPO\Files();
+        $new = new \App\Models\CNCPO\Files();
         $new->blacklist_id = $validation["blacklist_id"];
         $new->blacklist_timestamp = $validation["balcklist_timestamp"];
         $new->content = $validation["content"];
@@ -196,7 +196,7 @@ class CNCPOController extends Controller
             $fqdn = $row_arr[1];
             if($count > 0){
                 $total++;
-                $new = new \App\CNCPO\Blacklist();
+                $new = new \App\Models\CNCPO\Blacklist();
                 $new->url = $url;
                 $new->fqdn = $fqdn;
                 if($new->save()){
@@ -295,7 +295,7 @@ class CNCPOController extends Controller
 
     public function datatable_files(Request $request){
         if($request->ajax()){
-            $data = \App\CNCPO\Files::query();
+            $data = \App\Models\CNCPO\Files::query();
             return Datatables::of($data)
                 ->rawColumns(
                     ['blacklist_id',
@@ -308,7 +308,7 @@ class CNCPOController extends Controller
 
     public function datatable_blacklist(Request $request){
         if($request->ajax()){
-            $data = \App\CNCPO\Blacklist::query();
+            $data = \App\Models\CNCPO\Blacklist::query();
             return Datatables::of($data)
                 ->rawColumns(
                     ['url',
@@ -322,12 +322,12 @@ class CNCPOController extends Controller
             case 'url':
                 //by url
                 $message = "CNCPO URL blacklist downloaded";
-                $list = \App\CNCPO\Blacklist::select('url')->distinct()->pluck('url')->toArray();
+                $list = \App\Models\CNCPO\Blacklist::select('url')->distinct()->pluck('url')->toArray();
             break;
             default:
                 //by fqdn
                 $message = "CNCPO FQDN blacklist downloaded";
-                $list = \App\CNCPO\Blacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
+                $list = \App\Models\CNCPO\Blacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
             break;
         }
         $content = implode("\n",$list);

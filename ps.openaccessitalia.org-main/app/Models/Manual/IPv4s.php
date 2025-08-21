@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Piracy;
+namespace App\Models\Manual;
 
 use Illuminate\Database\Eloquent\Model;
 
-class IPv6s extends Model
+class IPv4s extends Model
 {
     //
-    protected $table = 'ps_ipv6s';
+    protected $table = 'manual_ipv4s';
     public $timestamps = false;
     protected $dates = ['timestamp'];
-    protected $primaryKey = 'ipv6';
+    protected $primaryKey = 'ipv4';
     protected $casts = [
-        'ipv6' => 'string',
+        'ipv4' => 'string',
     ];
 }

@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Piracy;
+namespace App\Models\Piracy;
 
 use Illuminate\Database\Eloquent\Model;
 
-class APIAccessTokens extends Model
+class APILog extends Model
 {
     //
-    protected $table = 'ps_api_access_tokens';
+    protected $table = 'ps_api_log';
     public $timestamps = false;
     protected $dates = ['timestamp'];
     protected $primaryKey = 'id';

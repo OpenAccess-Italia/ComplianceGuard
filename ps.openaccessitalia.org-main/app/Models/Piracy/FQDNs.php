@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Piracy;
+namespace App\Models\Piracy;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Tickets extends Model
+class FQDNs extends Model
 {
     //
-    protected $table = 'ps_tickets';
+    protected $table = 'ps_fqdns';
     public $timestamps = false;
     protected $dates = ['timestamp'];
-    protected $primaryKey = 'ticket_id';
+    protected $primaryKey = 'fqdn';
     protected $casts = [
-        'ticket_id' => 'string',
+        'fqdn' => 'string',
     ];
 }
