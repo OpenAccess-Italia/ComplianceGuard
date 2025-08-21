@@ -10,23 +10,23 @@
     "require": {
         "php": "^7.4",
         "ext-json": "*",
-        "fideloper/proxy": "^4.0",
-        "guzzlehttp/guzzle": "*",
-        "laravel/framework": "5.8.*",
-        "laravel/tinker": "^1.0",
-        "maatwebsite/excel": "3.1",
+        "fideloper/proxy": "^4.4",
+        "guzzlehttp/guzzle": "^6.3|^7.0",
+        "laravel/framework": "^6.0",
+        "laravel/tinker": "^2.0",
+        "maatwebsite/excel": "^3.1",
         "php-mime-mail-parser/php-mime-mail-parser": "^7.1.2",
         "webklex/laravel-imap": "^4.1",
         "yadahan/laravel-authentication-log": "^1.4",
-        "yajra/laravel-datatables-oracle": "~9.0"
+        "yajra/laravel-datatables-oracle": "^9.0"
     },
     "require-dev": {
         "beyondcode/laravel-dump-server": "^1.0",
         "filp/whoops": "^2.0",
-        "fakerphp/faker": "^1.4",
+        "fakerphp/faker": "^1.9.1",
         "mockery/mockery": "^1.0",
-        "nunomaduro/collision": "^2.0",
-        "phpunit/phpunit": "^7.5"
+        "nunomaduro/collision": "^3.0",
+        "phpunit/phpunit": "^8.0"
     },
     "config": {
         "optimize-autoloader": true,
@@ -35,8 +35,7 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": [
-            ]
+            "dont-discover": []
         }
     },
     "autoload": {
