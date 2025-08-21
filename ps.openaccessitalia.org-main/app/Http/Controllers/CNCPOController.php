@@ -10,20 +10,11 @@ use Illuminate\Support\Facades\Mail;
 use PhpMimeMailParser\Parser;
 use Swift_Mailer;
 use Swift_SmtpTransport;
-use Webklex\PHPIMAP\Attachment;
 use Webklex\PHPIMAP\Exceptions\ConnectionFailedException;
-use Webklex\PHPIMAP\Exceptions\EventNotFoundException;
 use Webklex\PHPIMAP\Exceptions\FolderFetchingException;
 use Webklex\PHPIMAP\Exceptions\GetMessagesFailedException;
-use Webklex\PHPIMAP\Exceptions\InvalidMessageDateException;
-use Webklex\PHPIMAP\Exceptions\InvalidWhereQueryCriteriaException;
 use Webklex\PHPIMAP\Exceptions\MaskNotFoundException;
-use Webklex\PHPIMAP\Exceptions\MessageContentFetchingException;
-use Webklex\PHPIMAP\Exceptions\MessageFlagException;
-use Webklex\PHPIMAP\Exceptions\MessageHeaderFetchingException;
-use Webklex\PHPIMAP\Exceptions\MessageNotFoundException;
 use Webklex\PHPIMAP\Exceptions\RuntimeException;
-use Webklex\PHPIMAP\Message;
 
 class CNCPOController extends Controller
 {
@@ -72,7 +63,7 @@ class CNCPOController extends Controller
         }
 
         if ($message === null) {
-            ActionLogController::log(0,"cncpo_system","there is no cncpo blacklist mail to read, try again later");;;
+            ActionLogController::log(0,"cncpo_system","there is no cncpo blacklist mail to read, try again later");
             return null;
         }
 
@@ -246,7 +237,7 @@ class CNCPOController extends Controller
                         ActionLogController::log(0,"cncpo_cron","downloaded file is invalid",true);
                     }
                 }else{
-                    ActionLogController::log(0,"cncpo_cron","file download failed",true);
+                    ActionLogController::log(0,"cncpo_cron","file download failed");
                 }
 
                 ActionLogController::log(0,"cncpo_cron","run ended");
