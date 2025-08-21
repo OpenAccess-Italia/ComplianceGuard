@@ -2,14 +2,13 @@
 
 namespace App;
 
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Yadahan\AuthenticationLog\AuthenticationLogable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Yadahan\AuthenticationLog\AuthenticationLogable;
 
 class User extends Authenticatable
 {
-    use Notifiable, AuthenticationLogable;
+    use AuthenticationLogable, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -39,5 +38,4 @@ class User extends Authenticatable
     ];
 
     protected $dates = ['created_ad'];
-
 }

@@ -19,22 +19,21 @@ class Kernel extends ConsoleKernel
     /**
      * Define the application's command schedule.
      *
-     * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
      * @return void
      */
     protected function schedule(Schedule $schedule)
     {
-        //UPDATE CNCPO BLACKLIST
+        // UPDATE CNCPO BLACKLIST
         $schedule->call('App\Http\Controllers\CNCPOController@update_blacklist')->timezone('Europe/Rome')->dailyAt('10:00');
-        //UPDATE ADM BLACKLISTS
+        // UPDATE ADM BLACKLISTS
         $schedule->call('App\Http\Controllers\ADMController@update_blacklists')->timezone('Europe/Rome')->dailyAt('9:00');
-        //UPDATE PIRACY SHIELD
+        // UPDATE PIRACY SHIELD
         $schedule->call('App\Http\Controllers\PiracyController@run')->timezone('Europe/Rome')->everyTenMinutes();
-        //UPDATE DNS
+        // UPDATE DNS
         $schedule->call('App\Http\Controllers\Admin\AdminController@update_dns')->timezone('Europe/Rome')->everyTenMinutes();
-        //UPDATE BGP
+        // UPDATE BGP
         $schedule->call('App\Http\Controllers\Admin\AdminController@update_bgp')->timezone('Europe/Rome')->everyTenMinutes();
-        //LOG RETENTION
+        // LOG RETENTION
         $schedule->call('App\Http\Controllers\Admin\AdminController@log_retention')->timezone('Europe/Rome')->hourly();
     }
 

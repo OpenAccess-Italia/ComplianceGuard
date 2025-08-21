@@ -8,7 +8,10 @@ class APILog extends Model
 {
     //
     protected $table = 'ps_api_log';
+
     public $timestamps = false;
+
     protected $dates = ['timestamp'];
+
     protected $primaryKey = 'id';
 }

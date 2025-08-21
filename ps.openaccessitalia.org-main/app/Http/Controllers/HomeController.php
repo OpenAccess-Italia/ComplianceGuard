@@ -2,15 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Notifications\Messages\MailMessage;
-use DB;
-use DataTables;
-use DateTime;
-use Carbon\Carbon;
-
 class HomeController extends Controller
 {
     /**
@@ -32,5 +23,4 @@ class HomeController extends Controller
     {
         return view('pages.dashboard');
     }
-
 }
