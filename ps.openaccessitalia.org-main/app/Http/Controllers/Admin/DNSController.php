@@ -16,7 +16,6 @@ class DNSController extends Controller
 {
     public function __construct(private $ip, private $port, private $user, private $psw, private $path, private $reload, private $export_plain)
     {
-        $this->middleware('auth.admin');
     }
 
     private function connect()

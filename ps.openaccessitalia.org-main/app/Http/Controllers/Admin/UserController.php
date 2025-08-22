@@ -16,7 +16,6 @@ class UserController extends Controller
     //
     public function __construct()
     {
-        $this->middleware('auth.admin');
     }
 
     public function datatable_user(Request $request)
@@ -26,8 +25,7 @@ class UserController extends Controller
 
             return Datatables::of($data)
                 ->rawColumns(
-                    ['name',
-                        'email']
+                    ['name', 'email']
                 )
                 ->addColumn('admin', function ($row) {
                     if ($row->admin) {
@@ -60,9 +58,7 @@ class UserController extends Controller
                     }
                 })
                 ->addColumn('action', function ($row) {
-                    $btn = "<a href=\"/admin/users/view/$row->id/\" class=\"edit btn btn-primary btn-icon\"><i class=\"fas fa-pencil-alt\"></i></a>";
-
-                    return $btn;
+                    return "<a href=\"/admin/users/view/$row->id/\" class=\"edit btn btn-primary btn-icon\"><i class=\"fas fa-pencil-alt\"></i></a>";
                 })
                 ->escapeColumns('action')->make(true);
         }
@@ -74,8 +70,7 @@ class UserController extends Controller
         if ($request->filled(['name', 'email', 'friendly_name'])) {
             // CHECK USERNAME
             if (strlen($request->input('name')) >= 8) {
-                $user = User::where('name', $request->input('name'))->get()->first();
-                if ($user) {
+                if (User::where('name', $request->input('name'))->get()->first()) {
                     $errors[] = 'Username already exists';
                 }
             } else {
@@ -111,8 +106,8 @@ class UserController extends Controller
                     return json_encode($result);
                 }
             }
-            $password = self::generatePassword(16);
-            $salt = hash('sha512', uniqid(mt_rand(1, mt_getrandmax()), true));
+            $password = User::generatePassword(16);
+            $salt = hash('sha512', uniqid(random_int(1, mt_getrandmax()), true));
             $newuser->password = \Hash::make(hash('sha512', hash('sha512', $password).$salt));
             $newuser->salt = $salt;
             $newuser->email = $request->input('email');
@@ -125,23 +120,24 @@ class UserController extends Controller
             $newuser->adm = (int) $request->has('adm');
             $newuser->manual = (int) $request->has('manual');
             try {
+                $result = new \StdClass;
                 if ($newuser->save()) {
-                    $result = new \StdClass;
                     $result->status = 'OK';
                     $result->id = $newuser->id;
                     ActionLogController::log(Auth::user()->id, Auth::user()->name, "succeded to add user $newuser->id");
-                    Mail::send('mail.welcome', [
-                        'alias' => $newuser->friendly_name,
-                        'username' => $newuser->name,
-                        'email' => $newuser->email,
-                        'password' => $password,
-                    ],
-                        function (Message $message) use ($newuser) {
-                            $message->subject('Welcome in '.env('APP_NAME'));
-                            $message->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
-                            $message->to($newuser->email);
-                        });
-                    if (count(Mail::failures()) == 0) {
+                    if (Mail::send('mail.welcome', [
+                                'alias' => $newuser->friendly_name,
+                                'username' => $newuser->name,
+                                'email' => $newuser->email,
+                                'password' => $password,
+                            ],
+                            static function (Message $message) use ($newuser) {
+                                $message->subject('Welcome in '.env('APP_NAME'));
+                                $message->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
+                                $message->to($newuser->email);
+                            }
+                        )
+                    ) {
                         ActionLogController::log(Auth::user()->id, Auth::user()->name, "succeded to send welcome mail tu user $newuser->id");
                     } else {
                         ActionLogController::log(Auth::user()->id, Auth::user()->name, "failed to send welcome mail tu user $newuser->id");
@@ -150,7 +146,6 @@ class UserController extends Controller
                     return json_encode($result);
                 }
 
-                $result = new \StdClass;
                 $result->status = 'KO';
                 $result->errors = ['Failed insert'];
                 ActionLogController::log(Auth::user()->id, Auth::user()->name, 'failed to add user ('.implode(',', $result->errors).')');
@@ -272,18 +267,5 @@ class UserController extends Controller
 
             return json_encode($result);
         }
-    }
-
-    private static function generatePassword($length)
-    {
-        $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
-        $pass = [];
-        $alphaLength = strlen($alphabet) - 1;
-        for ($i = 0; $i < $length; $i++) {
-            $n = random_int(0, $alphaLength);
-            $pass[] = $alphabet[$n];
-        }
-
-        return implode($pass);
     }
 }

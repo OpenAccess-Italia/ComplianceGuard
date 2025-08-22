@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use Auth;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 
@@ -53,44 +55,44 @@ class LoginController extends Controller
         $password = $request->input('password');
         if (filter_var($username, FILTER_VALIDATE_EMAIL)) {
             // IF IS AN EMAIL ADDRESS
-            if (\App\Models\User::where('email', $username)->first()) {
-                $salt = \App\Models\User::where('email', $username)->first()->salt;
+            if (User::where('email', $username)->first()) {
+                $salt = User::where('email', $username)->first()->salt;
                 $saltedpassword = hash('sha512', $password.$salt);
                 $credentials = ['email' => $username, 'password' => $saltedpassword];
-                if (\Auth::attempt($credentials, $request->has('remember'))) {
-                    if (\Auth::user()->enabled == 1) {
+                if (Auth::attempt($credentials, $request->has('remember'))) {
+                    if (Auth::user()->enabled == 1) {
                         return redirect()->intended($this->redirectPath());
-                    } else {
-                        \Auth::logout();
-
-                        return redirect()->back()->withInput()->withErrors(['email' => 'User not authorized for the platform']);
                     }
-                } else {
-                    return redirect()->back()->withInput()->withErrors(['email' => 'Incorrect login credentials']);
-                }
-            } else {
-                return redirect()->back()->withInput()->withErrors(['email' => 'Incorrect login credential']);
-            }
-        } else {
-            // IF IS AN USERNAME
-            if (\App\Models\User::where('name', $username)->first()) {
-                $salt = \App\Models\User::where('name', $username)->first()->salt;
-                $saltedpassword = hash('sha512', $password.$salt);
-                $credentials = ['name' => $username, 'password' => $saltedpassword];
-                if (\Auth::attempt($credentials, $request->has('remember'))) {
-                    if (\Auth::user()->enabled == 1) {
-                        return redirect()->intended($this->redirectPath());
-                    } else {
-                        \Auth::logout();
 
-                        return redirect()->back()->withInput()->withErrors(['email' => 'User not authorized for the platform']);
-                    }
-                } else {
-                    return redirect()->back()->withInput()->withErrors(['email' => 'Incorrect login credentials']);
+                    Auth::logout();
+
+                    return redirect()->back()->withInput()->withErrors(['email' => 'User not authorized for the platform']);
                 }
-            } else {
-                return redirect()->back()->withInput()->withErrors(['email' => 'Incorrect login credential']);
+
+                return redirect()->back()->withInput()->withErrors(['email' => 'Incorrect login credentials']);
             }
+
+            return redirect()->back()->withInput()->withErrors(['email' => 'Incorrect login credential']);
         }
+
+        // IF IS A USERNAME
+        if (User::where('name', $username)->first()) {
+            $salt = User::where('name', $username)->first()->salt;
+            $saltedpassword = hash('sha512', $password.$salt);
+            $credentials = ['name' => $username, 'password' => $saltedpassword];
+            if (Auth::attempt($credentials, $request->has('remember'))) {
+                if (Auth::user()->enabled == 1) {
+                    return redirect()->intended($this->redirectPath());
+                }
+
+                Auth::logout();
+
+                return redirect()->back()->withInput()->withErrors(['email' => 'User not authorized for the platform']);
+            }
+
+            return redirect()->back()->withInput()->withErrors(['email' => 'Incorrect login credentials']);
+        }
+
+        return redirect()->back()->withInput()->withErrors(['email' => 'Incorrect login credential']);
     }
 }

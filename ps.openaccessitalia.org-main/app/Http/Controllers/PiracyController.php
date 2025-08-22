@@ -20,11 +20,6 @@ use Illuminate\Http\Request;
 class PiracyController extends Controller
 {
     //
-    public function __construct()
-    {
-        $this->middleware('auth.piracy');
-    }
-
     public function run()
     {
         if (env('PIRACY_SHIELD_ENABLED') == '1') {

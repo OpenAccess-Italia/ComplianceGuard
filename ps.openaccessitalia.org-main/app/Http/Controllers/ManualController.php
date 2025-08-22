@@ -12,12 +12,6 @@ use Illuminate\Http\Request;
 
 class ManualController extends Controller
 {
-    //
-    public function __construct()
-    {
-        $this->middleware('auth.manual');
-    }
-
     public function datatable_fqdn(Request $request)
     {
         if ($request->ajax()) {

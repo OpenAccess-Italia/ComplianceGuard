@@ -15,11 +15,6 @@ use Response;
 
 class ADMController extends Controller
 {
-    //
-    public function __construct()
-    {
-        $this->middleware('auth.adm');
-    }
 
     private static function get_href($html)
     {

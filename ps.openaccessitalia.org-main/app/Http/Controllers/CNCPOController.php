@@ -10,9 +10,11 @@ use Auth;
 use DataTables;
 use DateTime;
 use DB;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Process;
 use PhpMimeMailParser\Attachment;
 use PhpMimeMailParser\Parser;
 use Response;
@@ -27,12 +29,6 @@ use Webklex\PHPIMAP\Exceptions\RuntimeException;
 class CNCPOController extends Controller
 {
     private $message;
-
-    //
-    public function __construct()
-    {
-        $this->middleware('auth.cncpo');
-    }
 
     /**
      * @throws MaskNotFoundException
@@ -121,34 +117,15 @@ class CNCPOController extends Controller
     {
         $message = $this->message;
 
-        // Backup della configurazione mail corrente
-        $originalConfig = Config::get('mail');
-
-        // Configura temporaneamente il mailer per PEC
-        Config::set('mail.mailers.cncpo_pec', [
-            'transport' => 'smtp',
-            'host' => env('CNCPO_PEC_IMAP_HOST'),
-            'port' => 465,
-            'encryption' => 'ssl',
-            'username' => env('CNCPO_PEC_EMAIL'),
-            'password' => env('CNCPO_PEC_PASSWORD'),
-            'timeout' => null,
-        ]);
-
-        Config::set('mail.default', 'cncpo_pec');
-        Config::set('mail.from.address', env('CNCPO_PEC_EMAIL'));
-
         $reply = new CNCPOReply($prog, $id);
 
         try {
-            Mail::to($message->getFrom()->first())
+            Mail::mailer('cncpo_pec')
+                ->to($message->getFrom()->first())
                 ->send($reply->subject('Re: '.$message->getSubject()->first()));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             ActionLogController::log(0, 'cncpo_system', 'Failed to send reply: '.$e->getMessage());
         }
-
-        // Ripristora la configurazione originale
-        Config::set('mail', $originalConfig);
     }
 
     private function decrypt_file(Attachment $attachment)
@@ -157,8 +134,9 @@ class CNCPOController extends Controller
 
         $password = env('CNCPO_GPG_PRIVATE_KEY_PASSWORD');
 
-        $gpgPath = preg_replace("/\r\n|\r|\n/", '', shell_exec('which gpg'));
-        if (preg_match('/not found/', $gpgPath)) {
+        $res = Process::run(['which gpg']);
+        $gpgPath = trim($res->output());
+        if (str_contains($gpgPath, 'not found')) {
             ActionLogController::log(0, 'system', 'GPG is not installed.');
 
             return null;
@@ -170,7 +148,15 @@ class CNCPOController extends Controller
 
         file_put_contents($file, $attachment->getContent());
 
-        exec("$gpgPath --batch --pinentry-mode loopback --passphrase \"$password\" --decrypt --output \"$decrypted_file\" \"$file\" 2>&1", $retArr, $retVal);
+        $result = Process::run([
+            $gpgPath,
+            '--batch',
+            '--pinentry-mode', 'loopback',
+            '--passphrase', $password,
+            '--decrypt',
+            '--output', $decrypted_file,
+            $file
+        ]);
 
         if (! is_file($decrypted_file)) {
             ActionLogController::log(0, 'system', 'Error while decrypting file');

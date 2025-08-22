@@ -6,12 +6,6 @@ use App\Http\Controllers\Controller;
 
 class BGPController extends Controller
 {
-    //
-    public function __construct()
-    {
-        $this->middleware('auth.admin');
-    }
-
     public function make_ipv4_list_file()
     {
         ActionLogController::log(0, 'bgp_system', "trying to make ipv4 bgp file in '".base_path('storage/download/').'ipv4.txt'."'");

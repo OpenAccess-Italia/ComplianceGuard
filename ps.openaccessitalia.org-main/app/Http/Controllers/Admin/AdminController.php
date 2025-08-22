@@ -4,25 +4,27 @@ namespace App\Http\Controllers\Admin;
 
 use App\Events\GpgKeyUpdated;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\PiracyController;
+use App\Models\ActionLog;
+use App\Models\Piracy\APIAccessTokens;
+use App\Models\Piracy\APILog;
+use App\Models\Piracy\APIRefreshTokens;
 use Carbon\Carbon;
 use DataTables;
 use Illuminate\Http\Request;
+use Illuminate\Mail\Message;
+use Mail;
 
 class AdminController extends Controller
 {
-    //
-    public function __construct()
-    {
-        $this->middleware('auth.admin');
-    }
 
     public function datatable_actions_log(Request $request)
     {
         if ($request->ajax()) {
             if ($request->input('hide_system_cron') == 'true') {
-                $data = \App\Models\ActionLog::where('timestamp', '>=', Carbon::now()->subDay())->where('user_id', '<>', '0')->orderBy('id', 'desc')->get();
+                $data = ActionLog::where('timestamp', '>=', Carbon::now()->subDay())->where('user_id', '<>', '0')->orderBy('id', 'desc')->get();
             } else {
-                $data = \App\Models\ActionLog::where('timestamp', '>=', Carbon::now()->subDay())->orderBy('id', 'desc')->get();
+                $data = ActionLog::where('timestamp', '>=', Carbon::now()->subDay())->orderBy('id', 'desc')->get();
             }
 
             return Datatables::of($data)->addColumn('action', function ($row) {
@@ -33,21 +35,21 @@ class AdminController extends Controller
 
     public function datatable_ps_api_log(Request $request)
     {
-        $data = \App\Models\Piracy\APILog::where('timestamp', '>=', Carbon::now()->subDay())->orderBy('id', 'desc')->get();
+        $data = APILog::where('timestamp', '>=', Carbon::now()->subDay())->orderBy('id', 'desc')->get();
 
         return Datatables::of($data)->make(true);
     }
 
     public function datatable_ps_access_tokens(Request $request)
     {
-        $data = \App\Models\Piracy\APIAccessTokens::orderBy('id', 'desc')->get();
+        $data = APIAccessTokens::orderBy('id', 'desc')->get();
 
         return Datatables::of($data)->make(true);
     }
 
     public function datatable_ps_refresh_tokens(Request $request)
     {
-        $data = \App\Models\Piracy\APIRefreshTokens::orderBy('id', 'desc')->get();
+        $data = APIRefreshTokens::orderBy('id', 'desc')->get();
 
         return Datatables::of($data)->make(true);
     }
@@ -61,7 +63,7 @@ class AdminController extends Controller
                 $value = ($value == 'null') ? null : $value;
                 if (env($key) != $value) {
                     self::update_env($key, $value);
-                    \App\Http\Controllers\Admin\ActionLogController::log(\Auth::user()->id, \Auth::user()->name, "updated setting $key from ".env($key)." to $value");
+                    ActionLogController::log(\Auth::user()->id, \Auth::user()->name, "updated setting $key from ".env($key)." to $value");
                     $updated[] = $key;
                 }
             }
@@ -76,9 +78,9 @@ class AdminController extends Controller
 
         // settings files updates
         self::make_network_settings_file();
-        \App\Http\Controllers\Admin\BGPController::make_settings_file();
+        BGPController::make_settings_file();
         if (env('PIRACY_SHIELD_ENABLED') == '1') {
-            \App\Http\Controllers\PiracyController::make_piracy_settings_files();
+            PiracyController::make_piracy_settings_files();
         }
 
         return redirect('/admin/settings/edit');
@@ -87,7 +89,7 @@ class AdminController extends Controller
     private static function update_env($key, $value)
     {
         $path = base_path('.env');
-        if (file_exists($path)) {
+        if (is_file($path)) {
             switch ($key) {
                 case 'MAIL_USERNAME':
                 case 'MAIL_PASSWORD':
@@ -98,12 +100,10 @@ class AdminController extends Controller
                         } else {
                             file_put_contents($path, str_replace("$key=null", "$key=\"$value\"", file_get_contents($path)));
                         }
+                    } elseif ($value == '' || $value == 'null' || $value == null) {
+                        file_put_contents($path, str_replace("$key=\"".env($key).'"', "$key=null", file_get_contents($path)));
                     } else {
-                        if ($value == '' || $value == 'null' || $value == null) {
-                            file_put_contents($path, str_replace("$key=\"".env($key).'"', "$key=null", file_get_contents($path)));
-                        } else {
-                            file_put_contents($path, str_replace("$key=\"".env($key).'"', "$key=\"$value\"", file_get_contents($path)));
-                        }
+                        file_put_contents($path, str_replace("$key=\"".env($key).'"', "$key=\"$value\"", file_get_contents($path)));
                     }
                     break;
                 default:
@@ -196,30 +196,30 @@ class AdminController extends Controller
     {
         $check_env = self::check_env_dns();
         if (count($check_env) == 0) {
-            $dns1 = new \App\Http\Controllers\Admin\DNSController(env('DNS_SERVER_PRIMARY_IP'), env('DNS_SERVER_PRIMARY_PORT'), env('DNS_SERVER_PRIMARY_USER'), env('DNS_SERVER_PRIMARY_PSW'), env('DNS_SERVER_PRIMARY_PATH'), env('DNS_SERVER_PRIMARY_RELOAD'), env('DNS_SERVER_PRIMARY_EXPORT_PLAIN'));
+            $dns1 = new DNSController(env('DNS_SERVER_PRIMARY_IP'), env('DNS_SERVER_PRIMARY_PORT'), env('DNS_SERVER_PRIMARY_USER'), env('DNS_SERVER_PRIMARY_PSW'), env('DNS_SERVER_PRIMARY_PATH'), env('DNS_SERVER_PRIMARY_RELOAD'), env('DNS_SERVER_PRIMARY_EXPORT_PLAIN'));
             $dns1->update();
             if (env('DNS_SERVER_SECONDARY_IP')) {
-                $dns2 = new \App\Http\Controllers\Admin\DNSController(env('DNS_SERVER_SECONDARY_IP'), env('DNS_SERVER_SECONDARY_PORT'), env('DNS_SERVER_SECONDARY_USER'), env('DNS_SERVER_SECONDARY_PSW'), env('DNS_SERVER_SECONDARY_PATH'), env('DNS_SERVER_SECONDARY_RELOAD'), env('DNS_SERVER_PRIMARY_EXPORT_PLAIN'));
+                $dns2 = new DNSController(env('DNS_SERVER_SECONDARY_IP'), env('DNS_SERVER_SECONDARY_PORT'), env('DNS_SERVER_SECONDARY_USER'), env('DNS_SERVER_SECONDARY_PSW'), env('DNS_SERVER_SECONDARY_PATH'), env('DNS_SERVER_SECONDARY_RELOAD'), env('DNS_SERVER_PRIMARY_EXPORT_PLAIN'));
                 $dns2->update();
             } else {
-                \App\Http\Controllers\Admin\ActionLogController::log(0, 'dns_cron', 'secondary DNS server IP not set, skipping run');
+                ActionLogController::log(0, 'dns_cron', 'secondary DNS server IP not set, skipping run');
             }
         } else {
-            \App\Http\Controllers\Admin\ActionLogController::log(0, 'dns_cron', 'run not started because of: '.implode(', ', $check_env));
+            ActionLogController::log(0, 'dns_cron', 'run not started because of: '.implode(', ', $check_env));
         }
     }
 
     public function update_bgp()
     {
-        $check_env = \App\Http\Controllers\Admin\BGPController::check_env();
+        $check_env = BGPController::check_env();
         if (count($check_env) == 0) {
-            \App\Http\Controllers\Admin\ActionLogController::log(0, 'bgp_cron', 'starting run');
-            $c = new \App\Http\Controllers\Admin\BGPController;
+            ActionLogController::log(0, 'bgp_cron', 'starting run');
+            $c = new BGPController;
             $c->make_ipv4_list_file();
             $c->make_ipv6_list_file();
-            \App\Http\Controllers\Admin\ActionLogController::log(0, 'bgp_cron', 'run ended');
+            ActionLogController::log(0, 'bgp_cron', 'run ended');
         } else {
-            \App\Http\Controllers\Admin\ActionLogController::log(0, 'bgp_cron', 'run not started because of: '.implode(', ', $check_env));
+            ActionLogController::log(0, 'bgp_cron', 'run not started because of: '.implode(', ', $check_env));
         }
     }
 
@@ -350,10 +350,10 @@ class AdminController extends Controller
         $obj->settings->passed = (count($env_test) == 0);
         $obj->settings->messages = (count($env_test) == 0) ? ['Settings formally correct'] : $env_test;
         if ($obj->settings->passed) {
-            $dns1 = new \App\Http\Controllers\Admin\DNSController(env('DNS_SERVER_PRIMARY_IP'), env('DNS_SERVER_PRIMARY_PORT'), env('DNS_SERVER_PRIMARY_USER'), env('DNS_SERVER_PRIMARY_PSW'), env('DNS_SERVER_PRIMARY_PATH'), env('DNS_SERVER_PRIMARY_RELOAD'), env('DNS_SERVER_PRIMARY_EXPORT_PLAIN'));
+            $dns1 = new DNSController(env('DNS_SERVER_PRIMARY_IP'), env('DNS_SERVER_PRIMARY_PORT'), env('DNS_SERVER_PRIMARY_USER'), env('DNS_SERVER_PRIMARY_PSW'), env('DNS_SERVER_PRIMARY_PATH'), env('DNS_SERVER_PRIMARY_RELOAD'), env('DNS_SERVER_PRIMARY_EXPORT_PLAIN'));
             $obj->primary = $dns1->test();
             if (env('DNS_SERVER_SECONDARY_IP')) {
-                $dns2 = new \App\Http\Controllers\Admin\DNSController(env('DNS_SERVER_SECONDARY_IP'), env('DNS_SERVER_SECONDARY_PORT'), env('DNS_SERVER_SECONDARY_USER'), env('DNS_SERVER_SECONDARY_PSW'), env('DNS_SERVER_SECONDARY_PATH'), env('DNS_SERVER_SECONDARY_RELOAD'), env('DNS_SERVER_PRIMARY_EXPORT_PLAIN'));
+                $dns2 = new DNSController(env('DNS_SERVER_SECONDARY_IP'), env('DNS_SERVER_SECONDARY_PORT'), env('DNS_SERVER_SECONDARY_USER'), env('DNS_SERVER_SECONDARY_PSW'), env('DNS_SERVER_SECONDARY_PATH'), env('DNS_SERVER_SECONDARY_RELOAD'), env('DNS_SERVER_PRIMARY_EXPORT_PLAIN'));
                 $obj->secondary = $dns2->test();
             }
         }
@@ -365,7 +365,7 @@ class AdminController extends Controller
     {
         $obj = new \StdClass;
         // env
-        $env_test = \App\Http\Controllers\Admin\BGPController::check_env();
+        $env_test = BGPController::check_env();
         $obj->settings = new \StdClass;
         $obj->settings->passed = (count($env_test) == 0);
         $obj->settings->messages = (count($env_test) == 0) ? ['Settings formally correct'] : $env_test;
@@ -383,10 +383,10 @@ class AdminController extends Controller
         $obj->settings->messages = (count($env_test) == 0) ? ['Settings formally correct'] : $env_test;
         if ($obj->settings->passed) {
             $obj->testmail = new \StdClass;
-            $to_send = \App\Http\Controllers\Admin\ActionLogController::notify_to_send();
+            $to_send = ActionLogController::notify_to_send();
             try {
-                \Mail::send('mail.notify_error', ['system' => 'testmail', 'error' => 'testmail'],
-                    function (\Illuminate\Mail\Message $message) use ($to_send) {
+                Mail::send('mail.notify_error', ['system' => 'testmail', 'error' => 'testmail'],
+                    function (Message $message) use ($to_send) {
                         $message->subject(env('APP_NAME').': test mail');
                         $message->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
                         $message->to($to_send);
@@ -408,27 +408,27 @@ class AdminController extends Controller
         $pattern = "/(?=^.{1,254}$)(^(?:(?!\d+\.|-)[a-zA-Z0-9_\-]{1,63}(?<!-)\.?)+(?:[a-zA-Z]{2,})$)/";
         if (preg_match($pattern, $domain)) {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     public function log_retention()
     {
-        $check_env = \App\Http\Controllers\Admin\ActionLogController::check_env();
+        $check_env = ActionLogController::check_env();
         if (count($check_env) == 0) {
-            \App\Http\Controllers\Admin\ActionLogController::log(0, 'log_retention_cron', 'starting run');
-            $c = new \App\Http\Controllers\Admin\ActionLogController;
+            ActionLogController::log(0, 'log_retention_cron', 'starting run');
+            $c = new ActionLogController;
             $c->log_retention();
-            \App\Http\Controllers\Admin\ActionLogController::log(0, 'log_retention_cron', 'run ended');
+            ActionLogController::log(0, 'log_retention_cron', 'run ended');
         } else {
-            \App\Http\Controllers\Admin\ActionLogController::log(0, 'log_retention_cron', 'run not started because of: '.implode(', ', $check_env));
+            ActionLogController::log(0, 'log_retention_cron', 'run not started because of: '.implode(', ', $check_env));
         }
     }
 
     private static function make_network_settings_file()
     {
-        \App\Http\Controllers\Admin\ActionLogController::log(0, 'system', "trying to make network settings file in '".base_path('storage/settings/').'network.csv'."'");
+        ActionLogController::log(0, 'system', "trying to make network settings file in '".base_path('storage/settings/').'network.csv'."'");
         $check_env = self::check_env_network();
         if (count($check_env) == 0) {
             $content = '';
@@ -437,16 +437,16 @@ class AdminController extends Controller
             $content .= 'GW,'.env('NET_GATEWAY')."\n";
             try {
                 file_put_contents(base_path('storage/settings/').'network.csv', $content);
-                \App\Http\Controllers\Admin\ActionLogController::log(0, 'system', "succeded to make network settings file in '".base_path('storage/settings/').'network.csv'."'");
+                ActionLogController::log(0, 'system', "succeded to make network settings file in '".base_path('storage/settings/').'network.csv'."'");
 
                 return true;
             } catch (\Exception $e) {
-                \App\Http\Controllers\Admin\ActionLogController::log(0, 'system', "failed to make network settings file in '".base_path('storage/settings/').'network.csv'."' (".$e->getMessage().')', true);
+                ActionLogController::log(0, 'system', "failed to make network settings file in '".base_path('storage/settings/').'network.csv'."' (".$e->getMessage().')', true);
 
                 return false;
             }
         } else {
-            \App\Http\Controllers\Admin\ActionLogController::log(0, 'system', 'network settings file not made because of: '.implode(', ', $check_env));
+            ActionLogController::log(0, 'system', 'network settings file not made because of: '.implode(', ', $check_env));
         }
     }
 }

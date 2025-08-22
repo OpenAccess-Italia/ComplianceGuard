@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Foundation\Auth\ResetsPasswords;
 use Illuminate\Http\Request;
 
@@ -44,9 +45,9 @@ class ResetPasswordController extends Controller
         $email = $request->input('email');
         $password = $request->input('password');
         $password_conf = $request->input('password_confirmation');
-        if (\App\Models\User::where('email', $email)->first()) {
-            if (\App\Models\User::where('email', $email)->first()->enabled == 1) {
-                $salt = \App\Models\User::where('email', $email)->first()->salt;
+        if (User::where('email', $email)->first()) {
+            if (User::where('email', $email)->first()->enabled == 1) {
+                $salt = User::where('email', $email)->first()->salt;
                 $saltedpassword = hash('sha512', $password.$salt);
                 $saltedpassword_conf = hash('sha512', $password_conf.$salt);
                 $credentials = $request->only(
@@ -67,11 +68,11 @@ class ResetPasswordController extends Controller
                 return $response == \Password::PASSWORD_RESET
                 ? $this->sendResetResponse($request, $response)
                 : $this->sendResetFailedResponse($request, $response);
-            } else {
-                return $this->sendResetFailedResponse($request, 'Utente non abilitato alla piattaforma');
             }
-        } else {
-            return $this->sendResetFailedResponse($request, 'Indirizzo email non trovato');
+
+            return $this->sendResetFailedResponse($request, 'Utente non abilitato alla piattaforma');
         }
+
+        return $this->sendResetFailedResponse($request, 'Indirizzo email non trovato');
     }
 }
