@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Admin\ActionLogController;
+use App\Http\Controllers\Admin\AdminController;
 use App\Models\Piracy\APIAccessTokens;
 use App\Models\Piracy\APILog;
 use App\Models\Piracy\FQDNs;
@@ -2208,7 +2209,7 @@ class PiracyController extends Controller
     {
         ActionLogController::log(0, 'piracy_system', "trying to make piracy shield settings file in '".base_path('storage/settings/').'vpn.conf'."'");
         $check_env_ps = self::check_env();
-        $check_env_network = \App\Http\Controllers\Admin\AdminController::check_env_network();
+        $check_env_network = AdminController::check_env_network();
         $check_env = array_merge($check_env_ps, $check_env_network);
         if (count($check_env) == 0) {
             // ipsec_conf.add

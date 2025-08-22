@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -20,4 +21,19 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-    })->create();
+    })
+    ->withSchedule(function (Schedule $schedule) {
+        // UPDATE CNCPO BLACKLIST
+        $schedule->call('App\Http\Controllers\CNCPOController@update_blacklist')->timezone('Europe/Rome')->dailyAt('10:00');
+        // UPDATE ADM BLACKLISTS
+        $schedule->call('App\Http\Controllers\ADMController@update_blacklists')->timezone('Europe/Rome')->dailyAt('9:00');
+        // UPDATE PIRACY SHIELD
+        $schedule->call('App\Http\Controllers\PiracyController@run')->timezone('Europe/Rome')->everyTenMinutes();
+        // UPDATE DNS
+        $schedule->call('App\Http\Controllers\Admin\AdminController@update_dns')->timezone('Europe/Rome')->everyTenMinutes();
+        // UPDATE BGP
+        $schedule->call('App\Http\Controllers\Admin\AdminController@update_bgp')->timezone('Europe/Rome')->everyTenMinutes();
+        // LOG RETENTION
+        $schedule->call('App\Http\Controllers\Admin\AdminController@log_retention')->timezone('Europe/Rome')->hourly();
+    })
+    ->create();

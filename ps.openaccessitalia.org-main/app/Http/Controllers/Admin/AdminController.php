@@ -14,6 +14,7 @@ use DataTables;
 use Illuminate\Http\Request;
 use Illuminate\Mail\Message;
 use Mail;
+use MirazMac\DotEnv\Writer;
 
 class AdminController extends Controller
 {
@@ -58,15 +59,22 @@ class AdminController extends Controller
     {
         $data = $request->except('_token');
         $updated = [];
+
+        $writer = new Writer(base_path('.env'));
+
         foreach ($data as $key => $value) {
-            if (self::env_exist($key) && self::env_auth($key)) {
-                $value = ($value == 'null') ? null : $value;
-                if (env($key) != $value) {
-                    self::update_env($key, $value);
+            if ($writer->exists($key) && self::env_auth($key)) {
+                $value = ($value === 'null') ? null : $value;
+                if (env($key) !== $value) {
+                    $writer->set($key, $value);
                     ActionLogController::log(\Auth::user()->id, \Auth::user()->name, "updated setting $key from ".env($key)." to $value");
                     $updated[] = $key;
                 }
             }
+        }
+
+        if ($writer->hasChanged()) {
+            $writer->write();
         }
 
         if (
@@ -84,48 +92,6 @@ class AdminController extends Controller
         }
 
         return redirect('/admin/settings/edit');
-    }
-
-    private static function update_env($key, $value)
-    {
-        $path = base_path('.env');
-        if (is_file($path)) {
-            switch ($key) {
-                case 'MAIL_USERNAME':
-                case 'MAIL_PASSWORD':
-                case 'MAIL_ENCRYPTION':
-                    if (env($key) == null) {
-                        if ($value == '' || $value == 'null' || $value == null) {
-                            file_put_contents($path, str_replace("$key=null", "$key=null", file_get_contents($path)));
-                        } else {
-                            file_put_contents($path, str_replace("$key=null", "$key=\"$value\"", file_get_contents($path)));
-                        }
-                    } elseif ($value == '' || $value == 'null' || $value == null) {
-                        file_put_contents($path, str_replace("$key=\"".env($key).'"', "$key=null", file_get_contents($path)));
-                    } else {
-                        file_put_contents($path, str_replace("$key=\"".env($key).'"', "$key=\"$value\"", file_get_contents($path)));
-                    }
-                    break;
-                default:
-                    file_put_contents($path, str_replace("$key=\"".env($key).'"', "$key=\"$value\"", file_get_contents($path)));
-                    $_ENV[$key] = $value;
-                    break;
-            }
-        }
-    }
-
-    private static function env_exist($key)
-    {
-        switch ($key) {
-            case 'MAIL_USERNAME':
-            case 'MAIL_PASSWORD':
-            case 'MAIL_ENCRYPTION':
-                return true;
-                break;
-            default:
-                return env($key) !== null;
-                break;
-        }
     }
 
     private static function env_auth($key)
@@ -431,8 +397,7 @@ class AdminController extends Controller
         ActionLogController::log(0, 'system', "trying to make network settings file in '".base_path('storage/settings/').'network.csv'."'");
         $check_env = self::check_env_network();
         if (count($check_env) == 0) {
-            $content = '';
-            $content .= 'IP,'.env('NET_IP')."\n";
+            $content = 'IP,'.env('NET_IP')."\n";
             $content .= 'MASK,'.env('NET_MASK')."\n";
             $content .= 'GW,'.env('NET_GATEWAY')."\n";
             try {
@@ -442,11 +407,10 @@ class AdminController extends Controller
                 return true;
             } catch (\Exception $e) {
                 ActionLogController::log(0, 'system', "failed to make network settings file in '".base_path('storage/settings/').'network.csv'."' (".$e->getMessage().')', true);
-
-                return false;
             }
         } else {
             ActionLogController::log(0, 'system', 'network settings file not made because of: '.implode(', ', $check_env));
         }
+        return false;
     }
 }

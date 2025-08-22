@@ -8,20 +8,20 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.1",
+        "php": "^8.2",
         "ext-json": "*",
-        "ext-ssh2": "*",
         "ext-mailparse": "*",
+        "ext-ssh2": "*",
         "guzzlehttp/guzzle": "^7.8",
-        "laravel/framework": "^11.0",
+        "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "laravel/ui": "^4.2",
+        "mirazmac/dotenvwriter": "^0.6.0",
         "php-mime-mail-parser/php-mime-mail-parser": "^9.0.1",
-        "webklex/laravel-imap": "^5.3.0",
+        "webklex/laravel-imap": "^6.2.0",
         "yadahan/laravel-authentication-log": "^1.4",
-        "yajra/laravel-datatables-oracle": "^11.0"
-
+        "yajra/laravel-datatables-oracle": "^12.0"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
