@@ -11,11 +11,10 @@ class Tickets extends Model
 
     public $timestamps = false;
 
-    protected $dates = ['timestamp'];
-
     protected $primaryKey = 'ticket_id';
 
     protected $casts = [
         'ticket_id' => 'string',
+        'timestamp' => 'datetime',
     ];
 }

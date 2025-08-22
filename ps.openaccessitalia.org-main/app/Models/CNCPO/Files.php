@@ -11,7 +11,10 @@ class Files extends Model
 
     public $timestamps = false;
 
-    protected $dates = ['timestamp', 'blacklist_timestamp'];
+    protected $casts = [
+        'timestamp' => 'datetime',
+        'blacklist_timestamp' => 'datetime',
+    ];
 
     protected $primaryKey = 'id';
 }

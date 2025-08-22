@@ -11,11 +11,10 @@ class IPv4s extends Model
 
     public $timestamps = false;
 
-    protected $dates = ['timestamp'];
-
     protected $primaryKey = 'ipv4';
 
     protected $casts = [
         'ipv4' => 'string',
+        'timestamp' => 'datetime',
     ];
 }

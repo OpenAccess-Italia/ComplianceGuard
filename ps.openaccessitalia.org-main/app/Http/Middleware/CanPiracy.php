@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use Auth;
 use Closure;
 
 class CanPiracy
@@ -14,14 +15,14 @@ class CanPiracy
      */
     public function handle($request, Closure $next)
     {
-        if (\Auth::check()) {
-            if (! \Auth::user()->piracy) {
-                \Auth::logout();
+        if (Auth::check()) {
+            if (! Auth::user()->piracy) {
+                Auth::logout();
 
                 return redirect('/');
             }
         } else {
-            \Auth::logout();
+            Auth::logout();
 
             return redirect('/');
         }

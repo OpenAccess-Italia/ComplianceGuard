@@ -11,13 +11,12 @@ use DataTables;
 use DateTime;
 use DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
 use PhpMimeMailParser\Attachment;
 use PhpMimeMailParser\Parser;
 use Response;
 use StdClass;
-use Swift_Mailer;
-use Swift_SmtpTransport;
 use Webklex\IMAP\Facades\Client;
 use Webklex\PHPIMAP\Exceptions\ConnectionFailedException;
 use Webklex\PHPIMAP\Exceptions\FolderFetchingException;
@@ -122,21 +121,34 @@ class CNCPOController extends Controller
     {
         $message = $this->message;
 
-        // Backup your default mailer
-        $backup = Mail::getSwiftMailer();
-        $transport = new Swift_SmtpTransport(env('CNCPO_PEC_IMAP_HOST'), 465, 'ssl');
-        $transport->setUsername(env('CNCPO_PEC_EMAIL'));
-        $transport->setPassword(env('CNCPO_PEC_PASSWORD'));
-        Mail::setSwiftMailer(new Swift_Mailer($transport));
+        // Backup della configurazione mail corrente
+        $originalConfig = Config::get('mail');
+
+        // Configura temporaneamente il mailer per PEC
+        Config::set('mail.mailers.cncpo_pec', [
+            'transport' => 'smtp',
+            'host' => env('CNCPO_PEC_IMAP_HOST'),
+            'port' => 465,
+            'encryption' => 'ssl',
+            'username' => env('CNCPO_PEC_EMAIL'),
+            'password' => env('CNCPO_PEC_PASSWORD'),
+            'timeout' => null,
+        ]);
+
+        Config::set('mail.default', 'cncpo_pec');
+        Config::set('mail.from.address', env('CNCPO_PEC_EMAIL'));
 
         $reply = new CNCPOReply($prog, $id);
-        $reply
-            ->to($message->getFrom()->first())
-            ->subject('Re: '.$message->getSubject()->first());
 
-        Mail::send($reply);
-        Mail::setSwiftMailer($backup);
+        try {
+            Mail::to($message->getFrom()->first())
+                ->send($reply->subject('Re: '.$message->getSubject()->first()));
+        } catch (\Exception $e) {
+            ActionLogController::log(0, 'cncpo_system', 'Failed to send reply: '.$e->getMessage());
+        }
 
+        // Ripristora la configurazione originale
+        Config::set('mail', $originalConfig);
     }
 
     private function decrypt_file(Attachment $attachment)

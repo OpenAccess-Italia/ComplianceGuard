@@ -4,6 +4,7 @@ namespace App\Http\Controllers\ApiTools;
 
 use App\Http\Controllers\Controller;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\BadResponseException;
 
 class IP extends Controller
 {
@@ -19,15 +20,13 @@ class IP extends Controller
         $client = new Client;
         try {
             $response = $client->get($url);
-        } catch (\GuzzleHttp\Exception\BadResponseException $e) {
+        } catch (BadResponseException $e) {
             return null;
         }
-        if ($response->getStatusCode() == 200) {
-            if ($response->getBody()) {
-                $data = json_decode($response->getBody());
-                if ($data->status == 'success') {
-                    return $data;
-                }
+        if (($response->getStatusCode() == 200) && $response->getBody()) {
+            $data = json_decode($response->getBody());
+            if ($data->status == 'success') {
+                return $data;
             }
         }
 

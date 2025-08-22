@@ -11,7 +11,7 @@ class APIAccessTokens extends Model
 
     public $timestamps = false;
 
-    protected $dates = ['timestamp'];
-
-    protected $primaryKey = 'id';
+    protected $casts = [
+        'timestamp' => 'datetime',
+    ];
 }

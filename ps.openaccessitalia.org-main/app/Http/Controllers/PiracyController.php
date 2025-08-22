@@ -3,12 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Admin\ActionLogController;
+use App\Models\Piracy\APIAccessTokens;
+use App\Models\Piracy\APILog;
+use App\Models\Piracy\FQDNs;
+use App\Models\Piracy\IPv4s;
 use App\Models\Piracy\IPv6s;
-use App\Piracy\APILog;
-use App\Piracy\FQDNs;
-use App\Piracy\IPv4s;
-use App\Piracy\TicketItemsLog;
-use App\Piracy\Tickets;
+use App\Models\Piracy\TicketItemsLog;
+use App\Models\Piracy\Tickets;
 use Auth;
 use Carbon\Carbon;
 use DataTables;
@@ -813,7 +814,7 @@ class PiracyController extends Controller
                 $new_access_token = self::refresh_login($last_refresh_token->refresh_token);
                 if ($new_access_token) {
                     // if successfully refreshed
-                    $new_access_token_db = new \App\Models\Piracy\APIAccessTokens;
+                    $new_access_token_db = new APIAccessTokens;
                     $new_access_token_db->access_token = $new_access_token->access_token;
                     $new_access_token_db->save();
 
@@ -824,7 +825,7 @@ class PiracyController extends Controller
                 $new_access_token = self::new_login();
                 if ($new_access_token) {
                     // if new login success
-                    $new_access_token_db = new \App\Models\Piracy\APIAccessTokens;
+                    $new_access_token_db = new APIAccessTokens;
                     $new_access_token_db->access_token = $new_access_token->access_token;
                     $new_access_token_db->save();
                     $new_refresh_token_db = new \App\Models\Piracy\APIRefreshTokens;
@@ -842,7 +843,7 @@ class PiracyController extends Controller
             $new_access_token = self::new_login();
             if ($new_access_token) {
                 // if new login success
-                $new_access_token_db = new \App\Models\Piracy\APIAccessTokens;
+                $new_access_token_db = new APIAccessTokens;
                 $new_access_token_db->access_token = $new_access_token->access_token;
                 $new_access_token_db->save();
                 $new_refresh_token_db = new \App\Models\Piracy\APIRefreshTokens;
@@ -857,7 +858,7 @@ class PiracyController extends Controller
         }
 
         // if not forced new token check if the last access token is valid
-        $last_access_token = \App\Models\Piracy\APIAccessTokens::where('timestamp', '>', now()->subHours(1))->orderBy('id', 'desc')->get()->first();
+        $last_access_token = APIAccessTokens::where('timestamp', '>', now()->subHours(1))->orderBy('id', 'desc')->get()->first();
         if ($last_access_token) {
             // if the last access token is still valid, return it
             return $last_access_token->access_token;
@@ -870,7 +871,7 @@ class PiracyController extends Controller
             $new_access_token = self::refresh_login($last_refresh_token->refresh_token);
             if ($new_access_token) {
                 // if successfully refreshed
-                $new_access_token_db = new \App\Models\Piracy\APIAccessTokens;
+                $new_access_token_db = new APIAccessTokens;
                 $new_access_token_db->access_token = $new_access_token->access_token;
                 $new_access_token_db->save();
 
@@ -881,7 +882,7 @@ class PiracyController extends Controller
             $new_access_token = self::new_login();
             if ($new_access_token) {
                 // if new login success
-                $new_access_token_db = new \App\Models\Piracy\APIAccessTokens;
+                $new_access_token_db = new APIAccessTokens;
                 $new_access_token_db->access_token = $new_access_token->access_token;
                 $new_access_token_db->save();
                 $new_refresh_token_db = new \App\Models\Piracy\APIRefreshTokens;
@@ -899,7 +900,7 @@ class PiracyController extends Controller
         $new_access_token = self::new_login();
         if ($new_access_token) {
             // if new login success
-            $new_access_token_db = new \App\Models\Piracy\APIAccessTokens;
+            $new_access_token_db = new APIAccessTokens;
             $new_access_token_db->access_token = $new_access_token->access_token;
             $new_access_token_db->save();
             $new_refresh_token_db = new \App\Models\Piracy\APIRefreshTokens;
@@ -2197,7 +2198,7 @@ class PiracyController extends Controller
     private static function check_dns_resolution($fqdn)
     {
         try {
-            $result = dns_get_record($fqdn,DNS_A);
+            $result = dns_get_record($fqdn, DNS_A);
             if ((count($result) > 0) && array_key_exists('ip', $result[0])) {
                 return $result[0]['ip'];
             }
@@ -2210,10 +2211,10 @@ class PiracyController extends Controller
 
     public static function make_piracy_settings_files()
     {
-        ActionLogController::log(0,'piracy_system',"trying to make piracy shield settings file in '".base_path('storage/settings/').'vpn.conf'."'");
+        ActionLogController::log(0, 'piracy_system', "trying to make piracy shield settings file in '".base_path('storage/settings/').'vpn.conf'."'");
         $check_env_ps = self::check_env();
         $check_env_network = \App\Http\Controllers\Admin\AdminController::check_env_network();
-        $check_env = array_merge($check_env_ps,$check_env_network);
+        $check_env = array_merge($check_env_ps, $check_env_network);
         if (count($check_env) == 0) {
             // ipsec_conf.add
             $left = env('NET_IP');
@@ -2238,10 +2239,10 @@ conn agcom@ps
     rightsubnet=$rightsubnet
 EOD;
             try {
-                file_put_contents(base_path('storage/settings/').'ipsec_conf.add',$content);
-                ActionLogController::log(0,'piracy_system',"succeded to make piracy shield vpn ipsec conf file in '".base_path('storage/settings/').'ipsec_conf.add'."'");
+                file_put_contents(base_path('storage/settings/').'ipsec_conf.add', $content);
+                ActionLogController::log(0, 'piracy_system', "succeded to make piracy shield vpn ipsec conf file in '".base_path('storage/settings/').'ipsec_conf.add'."'");
             } catch (\Exception $e) {
-                ActionLogController::log(0,'piracy_system',"failed to make piracy shield vpn ipsec conf file in '".base_path('storage/settings/').'ipsec_conf.add'."' (".$e->getMessage().')',true);
+                ActionLogController::log(0, 'piracy_system', "failed to make piracy shield vpn ipsec conf file in '".base_path('storage/settings/').'ipsec_conf.add'."' (".$e->getMessage().')', true);
             }
             // ipsec_secret.add
             $psk = env('PIRACY_SHIELD_VPN_PSK');
@@ -2249,10 +2250,10 @@ EOD;
 $right : PSK "$psk"
 EOD;
             try {
-                file_put_contents(base_path('storage/settings/').'ipsec_secrets.add',$content);
-                ActionLogController::log(0,'piracy_system',"succeded to make piracy shield vpn ipsec secrets file in '".base_path('storage/settings/').'ipsec_secrets.add'."'");
+                file_put_contents(base_path('storage/settings/').'ipsec_secrets.add', $content);
+                ActionLogController::log(0, 'piracy_system', "succeded to make piracy shield vpn ipsec secrets file in '".base_path('storage/settings/').'ipsec_secrets.add'."'");
             } catch (\Exception $e) {
-                ActionLogController::log(0,'piracy_system',"failed to make piracy shield vpn ipsec secrets file in '".base_path('storage/settings/').'ipsec_secrets.add'."' (".$e->getMessage().')',true);
+                ActionLogController::log(0, 'piracy_system', "failed to make piracy shield vpn ipsec secrets file in '".base_path('storage/settings/').'ipsec_secrets.add'."' (".$e->getMessage().')', true);
             }
             // iptables.add
             $source = env('PIRACY_SHIELD_VPN_LOCAL_LAN_IP');
@@ -2260,23 +2261,23 @@ EOD;
 iptables -t nat -A POSTROUTING -d $rightsubnet -j SNAT --to-source $source
 EOD;
             try {
-                file_put_contents(base_path('storage/settings/').'iptables.add',$content);
-                ActionLogController::log(0,'piracy_system',"succeded to make piracy shield vpn ipsec iptables command file in '".base_path('storage/settings/').'iptables.add'."'");
+                file_put_contents(base_path('storage/settings/').'iptables.add', $content);
+                ActionLogController::log(0, 'piracy_system', "succeded to make piracy shield vpn ipsec iptables command file in '".base_path('storage/settings/').'iptables.add'."'");
             } catch (\Exception $e) {
-                ActionLogController::log(0,'piracy_system',"failed to make piracy shield vpn ipsec iptables command file in '".base_path('storage/settings/').'iptables.add'."' (".$e->getMessage().')',true);
+                ActionLogController::log(0, 'piracy_system', "failed to make piracy shield vpn ipsec iptables command file in '".base_path('storage/settings/').'iptables.add'."' (".$e->getMessage().')', true);
             }
             // hosts.add
             $host_ip = env('PIRACY_SHIELD_VPN_REMOTE_LAN_IP');
             $host_name = parse_url(env('PIRACY_SHIELD_API_URL'), PHP_URL_HOST);
             $content = "$host_ip\t$host_name\n";
             try {
-                file_put_contents(base_path('storage/settings/').'hosts.add',$content);
-                ActionLogController::log(0,'piracy_system',"succeded to make piracy shield hosts file in '".base_path('storage/settings/').'hosts.add'."'");
+                file_put_contents(base_path('storage/settings/').'hosts.add', $content);
+                ActionLogController::log(0, 'piracy_system', "succeded to make piracy shield hosts file in '".base_path('storage/settings/').'hosts.add'."'");
             } catch (\Exception $e) {
-                ActionLogController::log(0,'piracy_system',"failed to make piracy shield hosts file in '".base_path('storage/settings/').'hosts.add'."' (".$e->getMessage().')',true);
+                ActionLogController::log(0, 'piracy_system', "failed to make piracy shield hosts file in '".base_path('storage/settings/').'hosts.add'."' (".$e->getMessage().')', true);
             }
         } else {
-            ActionLogController::log(0,'piracy_system','piracy shield settings file not made because of: '.implode(', ',$check_env));
+            ActionLogController::log(0, 'piracy_system', 'piracy shield settings file not made because of: '.implode(', ', $check_env));
         }
 
     }

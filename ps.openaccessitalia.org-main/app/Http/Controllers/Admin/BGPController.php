@@ -14,7 +14,7 @@ class BGPController extends Controller
 
     public function make_ipv4_list_file()
     {
-        \App\Http\Controllers\Admin\ActionLogController::log(0, 'bgp_system', "trying to make ipv4 bgp file in '".base_path('storage/download/').'ipv4.txt'."'");
+        ActionLogController::log(0, 'bgp_system', "trying to make ipv4 bgp file in '".base_path('storage/download/').'ipv4.txt'."'");
         $content = '';
         $ipv4s_piracy = \App\Models\Piracy\IPv4s::select('ipv4')->distinct()->pluck('ipv4')->toArray();
         $ipv4s_manual = \App\Models\Manual\IPv4s::select('ipv4')->distinct()->pluck('ipv4')->toArray();
@@ -33,11 +33,11 @@ class BGPController extends Controller
         }
         try {
             file_put_contents(base_path('storage/download/').'ipv4.txt', $content);
-            \App\Http\Controllers\Admin\ActionLogController::log(0, 'bgp_system', "succeded to make ipv4 bgp file in '".base_path('storage/download/').'ipv4.txt'."'");
+            ActionLogController::log(0, 'bgp_system', "succeded to make ipv4 bgp file in '".base_path('storage/download/').'ipv4.txt'."'");
 
             return true;
         } catch (\Exception $e) {
-            \App\Http\Controllers\Admin\ActionLogController::log(0, 'bgp_system', "failed to make ipv4 bgp file in '".base_path('storage/download/').'ipv4.txt'."' (".$e->getMessage().')', true);
+            ActionLogController::log(0, 'bgp_system', "failed to make ipv4 bgp file in '".base_path('storage/download/').'ipv4.txt'."' (".$e->getMessage().')', true);
 
             return false;
         }
@@ -45,7 +45,7 @@ class BGPController extends Controller
 
     public function make_ipv6_list_file()
     {
-        \App\Http\Controllers\Admin\ActionLogController::log(0, 'bgp_system', "trying to make ipv6 bgp file in '".base_path('storage/download/').'ipv6.txt'."'");
+        ActionLogController::log(0, 'bgp_system', "trying to make ipv6 bgp file in '".base_path('storage/download/').'ipv6.txt'."'");
         $content = '';
         $ipv6s_piracy = \App\Models\Piracy\IPv6s::select('ipv6')->distinct()->pluck('ipv6')->toArray();
         $ipv6s_manual = \App\Models\Manual\IPv6s::select('ipv6')->distinct()->pluck('ipv6')->toArray();
@@ -64,11 +64,11 @@ class BGPController extends Controller
         }
         try {
             file_put_contents(base_path('storage/download/').'ipv6.txt', $content);
-            \App\Http\Controllers\Admin\ActionLogController::log(0, 'bgp_system', "succeded to make ipv6 bgp file in '".base_path('storage/download/').'ipv6.txt'."'");
+            ActionLogController::log(0, 'bgp_system', "succeded to make ipv6 bgp file in '".base_path('storage/download/').'ipv6.txt'."'");
 
             return true;
         } catch (\Exception $e) {
-            \App\Http\Controllers\Admin\ActionLogController::log(0, 'bgp_system', "failed to make ipv6 bgp file in '".base_path('storage/download/').'ipv6.txt'."' (".$e->getMessage().')', true);
+            ActionLogController::log(0, 'bgp_system', "failed to make ipv6 bgp file in '".base_path('storage/download/').'ipv6.txt'."' (".$e->getMessage().')', true);
 
             return false;
         }
@@ -76,11 +76,10 @@ class BGPController extends Controller
 
     public static function make_settings_file()
     {
-        \App\Http\Controllers\Admin\ActionLogController::log(0, 'bgp_system', "trying to make bgp settings file in '".base_path('storage/settings/').'network.csv'."'");
+        ActionLogController::log(0, 'bgp_system', "trying to make bgp settings file in '".base_path('storage/settings/').'network.csv'."'");
         $check_env = self::check_env();
         if (count($check_env) == 0) {
-            $content = '';
-            $content .= 'NEI,'.env('BGP_ROUTER_IP')."\n";
+            $content = 'NEI,'.env('BGP_ROUTER_IP')."\n";
             $content .= 'AS,'.env('BGP_ASN')."\n";
             $content .= 'IP,'.env('BGP_LOCAL_IP')."\n";
             $content .= 'MASK,'.env('BGP_LOCAL_MASK')."\n";
@@ -88,17 +87,19 @@ class BGPController extends Controller
             $content .= 'NS,'.env('EXTERNAL_DNS_SERVERS')."\n";
             try {
                 file_put_contents(base_path('storage/settings/').'bgp.csv', $content);
-                \App\Http\Controllers\Admin\ActionLogController::log(0, 'bgp_system', "succeded to make bgp settings file in '".base_path('storage/settings/').'bgp.csv'."'");
+                ActionLogController::log(0, 'bgp_system', "succeded to make bgp settings file in '".base_path('storage/settings/').'bgp.csv'."'");
 
                 return true;
             } catch (\Exception $e) {
-                \App\Http\Controllers\Admin\ActionLogController::log(0, 'bgp_system', "failed to make bgp settings file in '".base_path('storage/settings/').'bgp.csv'."' (".$e->getMessage().')', true);
+                ActionLogController::log(0, 'bgp_system', "failed to make bgp settings file in '".base_path('storage/settings/').'bgp.csv'."' (".$e->getMessage().')', true);
 
                 return false;
             }
         } else {
-            \App\Http\Controllers\Admin\ActionLogController::log(0, 'bgp_system', 'network bgp file not made because of: '.implode(', ', $check_env));
+            ActionLogController::log(0, 'bgp_system', 'network bgp file not made because of: '.implode(', ', $check_env));
         }
+
+        return false;
     }
 
     public static function check_env()
@@ -106,38 +107,28 @@ class BGPController extends Controller
         $errors = [];
         if (! env('BGP_ROUTER_IP')) {
             $errors[] = 'BGP router IP not filled';
-        } else {
-            if (! filter_var(env('BGP_ROUTER_IP'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-                $errors[] = 'BGP router IP not valid';
-            }
+        } elseif (! filter_var(env('BGP_ROUTER_IP'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            $errors[] = 'BGP router IP not valid';
         }
         if (! env('BGP_ASN')) {
             $errors[] = 'ASN not filled';
-        } else {
-            if (! is_numeric(env('BGP_ASN'))) {
-                $errors[] = 'ASN not valid';
-            }
+        } elseif (! is_numeric(env('BGP_ASN'))) {
+            $errors[] = 'ASN not valid';
         }
         if (! env('BGP_LOCAL_IP')) {
             $errors[] = 'BGP router IP not filled';
-        } else {
-            if (! filter_var(env('BGP_LOCAL_IP'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-                $errors[] = 'BGP local IP not valid';
-            }
+        } elseif (! filter_var(env('BGP_LOCAL_IP'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            $errors[] = 'BGP local IP not valid';
         }
         if (! env('BGP_LOCAL_MASK')) {
             $errors[] = 'BGP router IP not filled';
-        } else {
-            if (! filter_var(env('BGP_LOCAL_MASK'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-                $errors[] = 'BGP mask not valid';
-            }
+        } elseif (! filter_var(env('BGP_LOCAL_MASK'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            $errors[] = 'BGP mask not valid';
         }
         if (! env('BGP_LOCAL_GATEWAY')) {
             $errors[] = 'BGP router IP not filled';
-        } else {
-            if (! filter_var(env('BGP_LOCAL_GATEWAY'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-                $errors[] = 'BGP gateway not valid';
-            }
+        } elseif (! filter_var(env('BGP_LOCAL_GATEWAY'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            $errors[] = 'BGP gateway not valid';
         }
 
         return $errors;

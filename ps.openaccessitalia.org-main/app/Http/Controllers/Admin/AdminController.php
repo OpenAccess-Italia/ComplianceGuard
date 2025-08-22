@@ -20,9 +20,9 @@ class AdminController extends Controller
     {
         if ($request->ajax()) {
             if ($request->input('hide_system_cron') == 'true') {
-                $data = \App\ActionLog::where('timestamp', '>=', Carbon::now()->subDay())->where('user_id', '<>', '0')->orderBy('id', 'desc')->get();
+                $data = \App\Models\ActionLog::where('timestamp', '>=', Carbon::now()->subDay())->where('user_id', '<>', '0')->orderBy('id', 'desc')->get();
             } else {
-                $data = \App\ActionLog::where('timestamp', '>=', Carbon::now()->subDay())->orderBy('id', 'desc')->get();
+                $data = \App\Models\ActionLog::where('timestamp', '>=', Carbon::now()->subDay())->orderBy('id', 'desc')->get();
             }
 
             return Datatables::of($data)->addColumn('action', function ($row) {
@@ -441,12 +441,12 @@ class AdminController extends Controller
 
                 return true;
             } catch (\Exception $e) {
-                \App\Http\Controllers\Admin\ActionLogController::log(0,'system',"failed to make network settings file in '".base_path('storage/settings/').'network.csv'."' (".$e->getMessage().')',true);
+                \App\Http\Controllers\Admin\ActionLogController::log(0, 'system', "failed to make network settings file in '".base_path('storage/settings/').'network.csv'."' (".$e->getMessage().')', true);
 
                 return false;
             }
         } else {
-            \App\Http\Controllers\Admin\ActionLogController::log(0,'system','network settings file not made because of: '.implode(', ',$check_env));
+            \App\Http\Controllers\Admin\ActionLogController::log(0, 'system', 'network settings file not made because of: '.implode(', ', $check_env));
         }
     }
 }

@@ -11,11 +11,10 @@ class IPv6s extends Model
 
     public $timestamps = false;
 
-    protected $dates = ['timestamp'];
-
     protected $primaryKey = 'ipv6';
 
     protected $casts = [
         'ipv6' => 'string',
+        'timestamp' => 'datetime',
     ];
 }

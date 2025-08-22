@@ -4,8 +4,6 @@ namespace App\Exceptions;
 
 use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -25,19 +23,18 @@ class Handler extends ExceptionHandler
      * @var array
      */
     protected $dontFlash = [
+        'current_password',
         'password',
         'password_confirmation',
     ];
 
     /**
-     * Render an exception into an HTTP response.
-     *
-     * @param  Request  $request
-     *
-     * @throws Throwable
+     * Register the exception handling callbacks for the application.
      */
-    public function render($request, Throwable $e)
+    public function register(): void
     {
-        return parent::render($request, $e);
+        $this->reportable(function (Throwable $e) {
+            //
+        });
     }
 }

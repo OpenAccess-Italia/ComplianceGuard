@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -17,6 +17,13 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name', 'email', 'password',
+        'friendly_name',
+        'admin',
+        'enabled',
+        'piracy',
+        'cncpo',
+        'adm',
+        'manual',
     ];
 
     /**
@@ -35,7 +42,6 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'created_ad' => 'datetime',
     ];
-
-    protected $dates = ['created_ad'];
 }

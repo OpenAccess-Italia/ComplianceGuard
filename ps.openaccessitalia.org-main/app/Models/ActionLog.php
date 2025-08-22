@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -11,7 +11,7 @@ class ActionLog extends Model
 
     public $timestamps = false;
 
-    protected $dates = ['timestamp'];
-
-    protected $primaryKey = 'id';
+    protected $casts = [
+        'timestamp' => 'datetime',
+    ];
 }

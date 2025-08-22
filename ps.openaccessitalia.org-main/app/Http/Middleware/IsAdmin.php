@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use Auth;
 use Closure;
 
 class IsAdmin
@@ -14,14 +15,14 @@ class IsAdmin
      */
     public function handle($request, Closure $next)
     {
-        if (\Auth::check()) {
-            if (! \Auth::user()->admin) {
-                \Auth::logout();
+        if (Auth::check()) {
+            if (! Auth::user()->admin) {
+                Auth::logout();
 
                 return redirect('/');
             }
         } else {
-            \Auth::logout();
+            Auth::logout();
 
             return redirect('/');
         }

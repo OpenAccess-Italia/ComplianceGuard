@@ -15,7 +15,7 @@ class ActionLogController extends Controller
 
     public static function log($user_id, $username, $action, $notify_error = false)
     {
-        $log = new \App\ActionLog;
+        $log = new \App\Models\ActionLog;
         $log->user_id = $user_id;
         $log->username = $username;
         $log->action = $action;
@@ -95,7 +95,7 @@ class ActionLogController extends Controller
     {
         if (env('LOGS_DAYS_ACTION') > 0) {
             \App\Http\Controllers\Admin\ActionLogController::log(0, 'log_system', 'trying to execute action logs retention, max days: '.env('LOGS_DAYS_ACTION'));
-            \App\ActionLog::where('timestamp', '<', Carbon::now()->subDay(env('LOGS_DAYS_ACTION')))->delete();
+            \App\Models\ActionLog::where('timestamp', '<', Carbon::now()->subDay(env('LOGS_DAYS_ACTION')))->delete();
             \App\Http\Controllers\Admin\ActionLogController::log(0, 'log_system', 'succeded to execute action logs retention');
         }
         if (env('LOGS_DAYS_PS_API') > 0) {
@@ -111,7 +111,7 @@ class ActionLogController extends Controller
         if (env('LOGS_DAYS_PS_API_REFRESH_TOKENS') > 0) {
             \App\Http\Controllers\Admin\ActionLogController::log(0, 'log_system', 'trying to execute PiracyShield API refresh tokens retention, max days: '.env('LOGS_DAYS_PS_API_REFRESH_TOKENS'));
             \App\Models\Piracy\APIRefreshTokens::where('timestamp', '<', Carbon::now()->subDay(env('LOGS_DAYS_PS_API_REFRESH_TOKENS')))->delete();
-            \App\Http\Controllers\Admin\ActionLogController::log(0,'log_system','succeded to execute PiracyShield API refresh tokens retention');
+            \App\Http\Controllers\Admin\ActionLogController::log(0, 'log_system', 'succeded to execute PiracyShield API refresh tokens retention');
         }
     }
 }

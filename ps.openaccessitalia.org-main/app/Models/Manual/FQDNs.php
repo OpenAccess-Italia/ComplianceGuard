@@ -11,11 +11,10 @@ class FQDNs extends Model
 
     public $timestamps = false;
 
-    protected $dates = ['timestamp'];
-
-    protected $primaryKey = 'fqdn';
-
     protected $casts = [
+        'timestamp' => 'datetime',
         'fqdn' => 'string',
     ];
+
+    protected $primaryKey = 'fqdn';
 }

@@ -23,7 +23,7 @@ class WordGenerator extends Controller
         $file_arr = file($file);
         $num_lines = count($file_arr);
         $last_arr_index = $num_lines - 1;
-        $rand_index = rand(0, $last_arr_index);
+        $rand_index = random_int(0, $last_arr_index);
         $rand_text = $file_arr[$rand_index];
 
         return trim(preg_replace('/\s\s+/', '', $rand_text));
@@ -33,7 +33,7 @@ class WordGenerator extends Controller
     {
         $result = '';
         for ($i = 0; $i < $length; $i++) {
-            $result .= mt_rand(0, 9);
+            $result .= random_int(0, 9);
         }
 
         return $result;
@@ -65,7 +65,7 @@ class WordGenerator extends Controller
         $filter = (int) (1 << $bits) - 1; // set all lower bits to 1
         do {
             $rnd = hexdec(bin2hex(openssl_random_pseudo_bytes($bytes)));
-            $rnd = $rnd & $filter; // discard irrelevant bits
+            $rnd &= $filter; // discard irrelevant bits
         } while ($rnd > $range);
 
         return $min + $rnd;

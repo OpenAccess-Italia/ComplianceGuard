@@ -53,8 +53,8 @@ class LoginController extends Controller
         $password = $request->input('password');
         if (filter_var($username, FILTER_VALIDATE_EMAIL)) {
             // IF IS AN EMAIL ADDRESS
-            if (\App\User::where('email', $username)->first()) {
-                $salt = \App\User::where('email', $username)->first()->salt;
+            if (\App\Models\User::where('email', $username)->first()) {
+                $salt = \App\Models\User::where('email', $username)->first()->salt;
                 $saltedpassword = hash('sha512', $password.$salt);
                 $credentials = ['email' => $username, 'password' => $saltedpassword];
                 if (\Auth::attempt($credentials, $request->has('remember'))) {
@@ -73,8 +73,8 @@ class LoginController extends Controller
             }
         } else {
             // IF IS AN USERNAME
-            if (\App\User::where('name', $username)->first()) {
-                $salt = \App\User::where('name', $username)->first()->salt;
+            if (\App\Models\User::where('name', $username)->first()) {
+                $salt = \App\Models\User::where('name', $username)->first()->salt;
                 $saltedpassword = hash('sha512', $password.$salt);
                 $credentials = ['name' => $username, 'password' => $saltedpassword];
                 if (\Auth::attempt($credentials, $request->has('remember'))) {

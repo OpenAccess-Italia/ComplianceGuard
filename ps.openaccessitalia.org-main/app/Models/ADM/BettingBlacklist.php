@@ -10,6 +10,4 @@ class BettingBlacklist extends Model
     protected $table = 'adm_betting_blacklist';
 
     public $timestamps = false;
-
-    protected $primaryKey = 'id';
 }

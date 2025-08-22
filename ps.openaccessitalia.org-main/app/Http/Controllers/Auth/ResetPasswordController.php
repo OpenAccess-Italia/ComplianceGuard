@@ -44,9 +44,9 @@ class ResetPasswordController extends Controller
         $email = $request->input('email');
         $password = $request->input('password');
         $password_conf = $request->input('password_confirmation');
-        if (\App\User::where('email', $email)->first()) {
-            if (\App\User::where('email', $email)->first()->enabled == 1) {
-                $salt = \App\User::where('email', $email)->first()->salt;
+        if (\App\Models\User::where('email', $email)->first()) {
+            if (\App\Models\User::where('email', $email)->first()->enabled == 1) {
+                $salt = \App\Models\User::where('email', $email)->first()->salt;
                 $saltedpassword = hash('sha512', $password.$salt);
                 $saltedpassword_conf = hash('sha512', $password_conf.$salt);
                 $credentials = $request->only(
