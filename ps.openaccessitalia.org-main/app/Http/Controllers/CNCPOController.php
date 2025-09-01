@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\ActionLogController;
 use App\Mail\CNCPOReply;
 use App\Models\CNCPO\Blacklist;
 use App\Models\CNCPO\Files;
+use App\SettingKeys;
 use Auth;
 use DataTables;
 use DateTime;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\Process;
 use PhpMimeMailParser\Attachment;
 use PhpMimeMailParser\Parser;
 use Response;
+use Settings;
 use StdClass;
 use Webklex\IMAP\Facades\Client;
 use Webklex\PHPIMAP\Exceptions\ConnectionFailedException;
@@ -50,8 +52,7 @@ class CNCPOController extends Controller
 
                 return null;
             }
-
-            $message = $folder->messages()->whereFrom(env('CNCPO_FROM_EMAIL'))->get()->first();
+            $message = $folder->messages()->whereFrom(Settings::get(SettingKeys::CNCPO_FROM_EMAIL))->get()->first();
 
         } catch (ConnectionFailedException $e) {
             ActionLogController::log(0, 'cncpo_system', 'connection to mail server failed');
@@ -120,11 +121,17 @@ class CNCPOController extends Controller
         $reply = new CNCPOReply($prog, $id);
 
         try {
-            Mail::mailer('cncpo_pec')
+            $mail = Mail::mailer('cncpo_pec')
                 ->to($message->getFrom()->first())
                 ->send($reply->subject('Re: '.$message->getSubject()->first()));
         } catch (Exception $e) {
             ActionLogController::log(0, 'cncpo_system', 'Failed to send reply: '.$e->getMessage());
+            return;
+        }
+
+        if (Settings::get(SettingKeys::CNCPO_REPLY_SAVE_SENT) == '1') {
+            $folder = $message->getClient()->getFolderByName(Settings::get(SettingKeys::CNCPO_REPLY_SENT_FOLDER));
+            $folder->appendMessage($mail->getSymfonySentMessage()->toString(), ['\Seen'], now()->format('d-M-Y h:i:s O'));
         }
     }
 
@@ -132,9 +139,9 @@ class CNCPOController extends Controller
     {
         ActionLogController::log(0, 'cncpo_system', 'decrypting file');
 
-        $password = env('CNCPO_GPG_PRIVATE_KEY_PASSWORD');
+        $password = Settings::get(SettingKeys::CNCPO_GPG_PRIVATE_KEY_PASSWORD);
 
-        $res = Process::run(['which gpg']);
+        $res = Process::run(['which', 'gpg']);
         $gpgPath = trim($res->output());
         if (str_contains($gpgPath, 'not found')) {
             ActionLogController::log(0, 'system', 'GPG is not installed.');
@@ -143,8 +150,8 @@ class CNCPOController extends Controller
         }
         $file = storage_path('app/tmp/'.$attachment->getFilename());
         $decrypted_file = storage_path('app/tmp/blacklist.csv');
-        unlink($file);
-        unlink($decrypted_file);
+        @unlink($file);
+        @unlink($decrypted_file);
 
         file_put_contents($file, $attachment->getContent());
 
@@ -159,7 +166,7 @@ class CNCPOController extends Controller
         ]);
 
         if (! is_file($decrypted_file)) {
-            ActionLogController::log(0, 'system', 'Error while decrypting file');
+            ActionLogController::log(0, 'system', 'Error while decrypting file '. $result->errorOutput());
 
             return null;
         }
@@ -214,7 +221,7 @@ class CNCPOController extends Controller
         fwrite($tmp, $save);
         rewind($tmp);
         $count = $total = $success = 0;
-        while ($row = fgetcsv($tmp, 5000, "\n")) {
+        while ($row = fgetcsv($tmp, 5000, "\n", escape: "")) {
             $row_arr = explode(' ;', $row[0]);
             $url = substr($row_arr[0], 0, 254);
             $fqdn = $row_arr[1];
@@ -234,7 +241,7 @@ class CNCPOController extends Controller
 
     public function update_blacklist()
     {
-        if (env('CNCPO_ENABLED') == '1') {
+        if (Settings::get(SettingKeys::CNCPO_ENABLED) == 1) {
             $check_env = self::check_env();
             if (count($check_env) == 0) {
                 ActionLogController::log(0, 'cncpo_cron', 'starting run');
@@ -253,11 +260,11 @@ class CNCPOController extends Controller
                         } else {
                             ActionLogController::log(0, 'cncpo_cron', 'file save failed', true);
                         }
-                        if (env('CNCPO_SEND_REPLY') == '1') {
+                        if (Settings::get(SettingKeys::CNCPO_REPLY_ENABLED) == '1') {
                             $this->send_reply($decripted['blacklist_id'], $decripted['balcklist_timestamp']);
                         }
                         $this->message->setFlag('Seen');
-                        $this->message->move($this->message->getClient()->getFolderByName(env('CNCPO_PEC_IMAP_ARCHIVE_FOLDER'))->path);
+                        $this->message->move($this->message->getClient()->getFolderByName(Settings::get(SettingKeys::CNCPO_PEC_IMAP_ARCHIVE_FOLDER))->path);
                     } else {
                         ActionLogController::log(0, 'cncpo_cron', 'downloaded file is invalid', true);
                     }
@@ -377,21 +384,24 @@ class CNCPOController extends Controller
     private static function check_env()
     {
         $errors = [];
-        if (! env('CNCPO_PEC_EMAIL')) {
+        if (! Settings::get(SettingKeys::CNCPO_PEC_EMAIL)) {
             $errors[] = 'PEC email not filled';
         }
-        if (! env('CNCPO_PEC_PASSWORD')) {
+        if (! Settings::get(SettingKeys::CNCPO_FROM_EMAIL)) {
+            $errors[] = 'Incoming email not filled';
+        }
+        if (! Settings::get(SettingKeys::CNCPO_PEC_IMAP_PASSWORD)) {
             $errors[] = 'PEC password not filled';
         }
-        if (! env('CNCPO_PEC_IMAP_HOST')) {
+        if (! Settings::get(SettingKeys::CNCPO_PEC_IMAP_HOST)) {
             $errors[] = 'IMAP host not filled';
         }
-        if (! env('CNCPO_GPG_PRIVATE_KEY')) {
+        if (! Settings::get(SettingKeys::CNCPO_GPG_PRIVATE_KEY)) {
             $errors[] = 'GPG private key not filled';
         }
-        if (! env('CNCPO_DNS_REDIRECT_IP')) {
+        if (! Settings::get(SettingKeys::CNCPO_DNS_REDIRECT_IP)) {
             $errors[] = 'DNS redirect IP not filled';
-        } elseif (! filter_var(env('CNCPO_DNS_REDIRECT_IP'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+        } elseif (! filter_var(Settings::get(SettingKeys::CNCPO_DNS_REDIRECT_IP), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
             $errors[] = 'DNS redirect IP not valid';
         }
 

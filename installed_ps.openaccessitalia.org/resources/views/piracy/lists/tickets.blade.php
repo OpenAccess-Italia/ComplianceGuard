@@ -30,9 +30,6 @@
                         <thead>
                             <tr>
                                 <th>Ticket ID</th>
-                                <th>FQDNs</th>
-                                <th>IPv4s</th>
-                                <th>IPv6s</th>
                                 <th>Status when downloaded</th>
                                 <th>Timestamp</th>
                             </tr>
@@ -59,16 +56,13 @@
             ajax: "/piracy/lists/tickets/get",
             columns: [
                 {data: 'ticket_id', name: 'ticket_id'},
-                {data: 'fqdn_count', name: 'fqdn_count'},
-                {data: 'ipv4_count', name: 'ipv4_count'},
-                {data: 'ipv6_count', name: 'ipv6_count'},
                 {data: 'status', name: 'status'},
                 {data: 'timestamp', name: 'timestamp'}
             ],
             language: {
                 "processing": "<i class=\"fas fa-2x fa-spin fa-spinner\"></i>"
             },
-            "order": [[ 5, 'desc' ]],
+            "order": [[ 2, 'desc' ]],
             "drawCallback": function( settings, json ) {
                 $('#datatable_wrapper').addClass('row');
                 $('#datatable_filter').addClass('col-sm-12 col-md-6');

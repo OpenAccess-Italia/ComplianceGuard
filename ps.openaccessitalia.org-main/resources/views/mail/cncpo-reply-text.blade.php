@@ -7,4 +7,4 @@ con la presente si segnala che in data {{ now()->format('d/m/Y') }} e' avvenuta 
 Il messaggio e' stato generato automaticamente, pertanto vi preghiamo di segnalare qualsiasi eventuale problema o incorrettezza del presente riscontro.
 
 Cordiali Saluti,
-{{ env('CNCPO_REPLY_SIGNATURE')  }}
+{{ \Settings::get(\App\SettingKeys::CNCPO_REPLY_SIGNATURE)  }}

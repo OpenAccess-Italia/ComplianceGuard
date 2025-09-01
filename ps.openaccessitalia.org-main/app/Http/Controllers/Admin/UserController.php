@@ -132,8 +132,8 @@ class UserController extends Controller
                                 'password' => $password,
                             ],
                             static function (Message $message) use ($newuser) {
-                                $message->subject('Welcome in '.env('APP_NAME'));
-                                $message->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
+                                $message->subject('Welcome in '.config('app.name'));
+                                $message->from(\Settings::get(\App\SettingKeys::MAIL_FROM_ADDRESS), env('MAIL_FROM_NAME'));
                                 $message->to($newuser->email);
                             }
                         )

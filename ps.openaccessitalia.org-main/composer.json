@@ -8,7 +8,7 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.2",
+        "php": "^8.3",
         "ext-json": "*",
         "ext-mailparse": "*",
         "ext-ssh2": "*",
@@ -17,8 +17,8 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "laravel/ui": "^4.2",
-        "mirazmac/dotenvwriter": "^0.6.0",
         "php-mime-mail-parser/php-mime-mail-parser": "^9.0.1",
+        "rawilk/laravel-settings": "^3.4",
         "webklex/laravel-imap": "^6.2.0",
         "yadahan/laravel-authentication-log": "^1.4",
         "yajra/laravel-datatables-oracle": "^12.0"

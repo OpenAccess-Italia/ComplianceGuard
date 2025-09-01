@@ -10,5 +10,5 @@
         o incorrettezza del presente riscontro.<br>
     <br>
     Cordiali Saluti.<br>
-    {{ env('CNCPO_REPLY_SIGNATURE')  }}
+    {{ \Settings::get(\App\SettingKeys::CNCPO_REPLY_SIGNATURE)  }}
 </div>

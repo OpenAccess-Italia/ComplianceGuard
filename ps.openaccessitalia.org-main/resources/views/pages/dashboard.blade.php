@@ -71,7 +71,7 @@
                         </div>
                         <!--end::Stats Widget 1-->
                     </div>
-                    @if(\Auth::user()->piracy && env("PIRACY_SHIELD_ENABLED") == "1")
+                    @if(\Auth::user()->piracy && \Settings::get(\App\SettingKeys::PIRACY_SHIELD_ENABLED) == "1")
                         <div class="col-lg-4">
                             <!--begin::Stats Widget 2-->
                             <div class="card card-custom card-stretch gutter-b">
@@ -117,7 +117,7 @@
                         </div>
                     @endif
 
-                    @if(\Auth::user()->cncpo && env("CNCPO_ENABLED") == "1")
+                    @if(\Auth::user()->cncpo && \Settings::get(\App\SettingKeys::CNCPO_ENABLED) == "1")
                         <div class="col-lg-4">
                             <!--begin::Stats Widget 2-->
                             <div class="card card-custom card-stretch gutter-b">
@@ -164,7 +164,7 @@
                             <!--end::Stats Widget 2-->
                         </div>
                     @endif
-                    @if(\Auth::user()->adm && env("ADM_ENABLED") == "1")
+                    @if(\Auth::user()->adm && \Settings::get(\App\SettingKeys::ADM_ENABLED) == "1")
                         <div class="col-lg-4">
                             <!--begin::Stats Widget 2-->
                             <div class="card card-custom card-stretch gutter-b">
@@ -224,7 +224,7 @@
                             <!--end::Stats Widget 2-->
                         </div>
                     @endif
-                    @if(\Auth::user()->manual && env("MANUAL_ENABLED") == "1")
+                    @if(\Auth::user()->manual && \Settings::get(\App\SettingKeys::MANUAL_ENABLED) == "1")
                         <div class="col-lg-5">
                             <!--begin::Stats Widget 2-->
                             <div class="card card-custom card-stretch gutter-b">

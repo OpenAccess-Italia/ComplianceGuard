@@ -14,7 +14,7 @@ class ManualController extends Controller
 
     public function datatable_fqdn(Request $request){
         if($request->ajax()){
-            $data = \App\Manual\FQDNs::orderBy("timestamp","desc")->get();
+            $data = \App\Manual\FQDNs::query();
             return Datatables::of($data)
                 ->rawColumns(
                     ['fqdn','comment','timestamp']
@@ -24,7 +24,7 @@ class ManualController extends Controller
 
     public function datatable_ipv4(Request $request){
         if($request->ajax()){
-            $data = \App\Manual\IPv4s::orderBy("timestamp","desc")->get();
+            $data = \App\Manual\IPv4s::query();
             return Datatables::of($data)
                 ->rawColumns(
                     ['ipv4','comment','timestamp']
@@ -34,7 +34,7 @@ class ManualController extends Controller
 
     public function datatable_ipv6(Request $request){
         if($request->ajax()){
-            $data = \App\Manual\IPv6s::orderBy("timestamp","desc")->get();
+            $data = \App\Manual\IPv6s::query();
             return Datatables::of($data)
                 ->rawColumns(
                     ['ipv6','comment','timestamp']

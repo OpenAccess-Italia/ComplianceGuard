@@ -191,7 +191,7 @@ class CNCPOController extends Controller
 
     public function datatable_files(Request $request){
         if($request->ajax()){
-            $data = \App\CNCPO\Files::orderBy("timestamp","desc")->get();
+            $data = \App\CNCPO\Files::query();
             return Datatables::of($data)
                 ->rawColumns(
                     ['blacklist_id',
@@ -204,7 +204,7 @@ class CNCPOController extends Controller
 
     public function datatable_blacklist(Request $request){
         if($request->ajax()){
-            $data = \App\CNCPO\Blacklist::orderBy("fqdn","asc")->get();
+            $data = \App\CNCPO\Blacklist::query();
             return Datatables::of($data)
                 ->rawColumns(
                     ['url',

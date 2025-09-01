@@ -28,7 +28,6 @@ Route::group(['prefix' => 'piracy'], function () {
     Route::get('/lists/ipv4/download/{line}', [PiracyController::class,'download_ipv4']);
     Route::get('/lists/ipv6/get', [PiracyController::class,'datatable_ipv6']);
     Route::get('/lists/ipv6/download/{line}', [PiracyController::class,'download_ipv6']);
-    Route::post('/lists/{type}/crud/{action}', [PiracyController::class,'crud']);
 })->middleware('auth.piracy');
 
 // CNCPO
@@ -109,3 +108,6 @@ Route::middleware('auth')->group(function () {
 
 // AUTH
 Auth::routes(['register' => false]);
+
+
+Route::get('/xdebug', function () { xdebug_info(); });

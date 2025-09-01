@@ -15,6 +15,4 @@ class Files extends Model
         'timestamp' => 'datetime',
         'blacklist_timestamp' => 'datetime',
     ];
-
-    protected $primaryKey = 'id';
 }

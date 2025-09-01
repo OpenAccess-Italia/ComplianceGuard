@@ -91,11 +91,11 @@ return [
 
         'cncpo_pec' => [
             'transport' => 'smtp',
-            'host' => env('CNCPO_PEC_IMAP_HOST'),
-            'port' => 465,
+            'host' => env('CNCPO_PEC_IMAP_HOST', ''),
+            'port' => env('CNCPO_PEC_IMAP_PORT', 465),
             'encryption' => 'ssl',
-            'username' => env('CNCPO_PEC_EMAIL'),
-            'password' => env('CNCPO_PEC_PASSWORD'),
+            'username' => env('CNCPO_PEC_SMTP_USERNAME', ''),
+            'password' => env('CNCPO_PEC_PASSWORD', ''),
             'timeout' => null,
         ],
     ],

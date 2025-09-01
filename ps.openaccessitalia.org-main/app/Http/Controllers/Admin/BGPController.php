@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\SettingKeys;
+use Settings;
 
 class BGPController extends Controller
 {
@@ -73,12 +75,12 @@ class BGPController extends Controller
         ActionLogController::log(0, 'bgp_system', "trying to make bgp settings file in '".base_path('storage/settings/').'network.csv'."'");
         $check_env = self::check_env();
         if (count($check_env) == 0) {
-            $content = 'NEI,'.env('BGP_ROUTER_IP')."\n";
-            $content .= 'AS,'.env('BGP_ASN')."\n";
-            $content .= 'IP,'.env('BGP_LOCAL_IP')."\n";
-            $content .= 'MASK,'.env('BGP_LOCAL_MASK')."\n";
-            $content .= 'GW,'.env('BGP_LOCAL_GATEWAY')."\n";
-            $content .= 'NS,'.env('EXTERNAL_DNS_SERVERS')."\n";
+            $content = 'NEI,'.Settings::get(SettingKeys::BGP_ROUTER_IP)."\n";
+            $content .= 'AS,'.Settings::get(SettingKeys::BGP_ASN)."\n";
+            $content .= 'IP,'.Settings::get(SettingKeys::BGP_LOCAL_IP)."\n";
+            $content .= 'MASK,'.Settings::get(SettingKeys::BGP_LOCAL_MASK)."\n";
+            $content .= 'GW,'.Settings::get(SettingKeys::BGP_LOCAL_GATEWAY)."\n";
+            $content .= 'NS,'.Settings::get(SettingKeys::EXTERNAL_DNS_SERVERS)."\n";
             try {
                 file_put_contents(base_path('storage/settings/').'bgp.csv', $content);
                 ActionLogController::log(0, 'bgp_system', "succeded to make bgp settings file in '".base_path('storage/settings/').'bgp.csv'."'");
@@ -99,29 +101,29 @@ class BGPController extends Controller
     public static function check_env()
     {
         $errors = [];
-        if (! env('BGP_ROUTER_IP')) {
+        if (! Settings::get(SettingKeys::BGP_ROUTER_IP)) {
             $errors[] = 'BGP router IP not filled';
-        } elseif (! filter_var(env('BGP_ROUTER_IP'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+        } elseif (! filter_var(Settings::get(SettingKeys::BGP_ROUTER_IP), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
             $errors[] = 'BGP router IP not valid';
         }
-        if (! env('BGP_ASN')) {
+        if (! Settings::get(SettingKeys::BGP_ASN)) {
             $errors[] = 'ASN not filled';
-        } elseif (! is_numeric(env('BGP_ASN'))) {
+        } elseif (! is_numeric(Settings::get(SettingKeys::BGP_ASN))) {
             $errors[] = 'ASN not valid';
         }
-        if (! env('BGP_LOCAL_IP')) {
+        if (! Settings::get(SettingKeys::BGP_LOCAL_IP)) {
             $errors[] = 'BGP router IP not filled';
-        } elseif (! filter_var(env('BGP_LOCAL_IP'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+        } elseif (! filter_var(Settings::get(SettingKeys::BGP_LOCAL_IP), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
             $errors[] = 'BGP local IP not valid';
         }
-        if (! env('BGP_LOCAL_MASK')) {
+        if (! Settings::get(SettingKeys::BGP_LOCAL_MASK)) {
             $errors[] = 'BGP router IP not filled';
-        } elseif (! filter_var(env('BGP_LOCAL_MASK'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+        } elseif (! filter_var(Settings::get(SettingKeys::BGP_LOCAL_MASK), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
             $errors[] = 'BGP mask not valid';
         }
-        if (! env('BGP_LOCAL_GATEWAY')) {
+        if (! Settings::get(SettingKeys::BGP_LOCAL_GATEWAY)) {
             $errors[] = 'BGP router IP not filled';
-        } elseif (! filter_var(env('BGP_LOCAL_GATEWAY'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+        } elseif (! filter_var(Settings::get(SettingKeys::BGP_LOCAL_GATEWAY), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
             $errors[] = 'BGP gateway not valid';
         }
 

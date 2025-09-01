@@ -16,3 +16,4 @@ yarn-error.log
 .idea
 .vagrant
 docker-compose.yml
+/docker/

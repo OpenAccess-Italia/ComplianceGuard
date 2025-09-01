@@ -7,11 +7,14 @@ use App\Models\ADM\BettingBlacklist;
 use App\Models\ADM\BettingFiles;
 use App\Models\ADM\SmokingBlacklist;
 use App\Models\ADM\SmokingFiles;
+use App\SettingKeys;
 use DataTables;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Response;
+use Settings;
 
 class ADMController extends Controller
 {
@@ -33,7 +36,7 @@ class ADMController extends Controller
         ActionLogController::log(0, 'adm_system', 'trying to find betting adm blacklist links');
         $client = new Client;
         try {
-            $response = $client->get(env('ADM_BETTING_URL'));
+            $response = $client->get(Settings::get(SettingKeys::ADM_BETTING_URL));
         } catch (BadResponseException $e) {
             ActionLogController::log(0, 'adm_system', 'failed to find betting adm blacklist links ('.$e->getMessage().')');
 
@@ -81,44 +84,29 @@ class ADMController extends Controller
             'sha256' => false,
         ];
         ActionLogController::log(0, 'adm_system', 'trying to download betting adm blacklist');
-        $ch = \curl_init();
 
-        curl_setopt($ch, CURLOPT_URL, $links['txt']);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36');
+        $response = Http::get($links['txt']);
 
-        $result = curl_exec($ch);
-        if (curl_errno($ch)) {
-            ActionLogController::log(0, 'adm_system', 'failed to download betting adm blacklist (curl error: '.curl_error($ch).')');
-            curl_close($ch);
-        } else {
+        if ($response->successful()) {
             ActionLogController::log(0, 'adm_system', 'succeded to download betting adm blacklist');
-            curl_close($ch);
-            $files['txt'] = $result;
+            $files['txt'] = $response->body();
+        } else {
+            ActionLogController::log(0, 'adm_system',
+                'failed to download betting adm blacklist (error: '.$response->status().')');
         }
 
         ActionLogController::log(0, 'adm_system', 'trying to download betting adm blacklist sha256');
-        $ch = \curl_init();
 
-        curl_setopt($ch, CURLOPT_URL, $links['sha256']);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36');
+        $response = Http::get($links['sha256']);
 
-        $result = curl_exec($ch);
-        if (curl_errno($ch)) {
-            ActionLogController::log(0, 'adm_system', 'failed to download betting adm blacklist sha256 (curl error: '.curl_error($ch).')');
-            curl_close($ch);
-        } else {
+        if ($response->successful()) {
             ActionLogController::log(0, 'adm_system', 'succeded to download betting adm blacklist sha256');
-            curl_close($ch);
-            $files['sha256'] = $result;
+            $files['sha256'] = $response->body();
+        } else {
+            ActionLogController::log(0, 'adm_system',
+                'failed to download betting adm blacklist sha256 (error: '.$response->status().')');
         }
+
         if ($files['txt'] && $files['sha256']) {
             return $files;
         }
@@ -178,7 +166,7 @@ class ADMController extends Controller
         ActionLogController::log(0, 'adm_system', 'trying to find smoking adm blacklist links');
         $client = new Client;
         try {
-            $response = $client->get(env('ADM_SMOKING_URL'));
+            $response = $client->get(Settings::get(SettingKeys::ADM_SMOKING_URL));
         } catch (BadResponseException $e) {
             ActionLogController::log(0, 'adm_system', 'failed to find smoking adm blacklist links ('.$e->getMessage().')');
 
@@ -226,44 +214,26 @@ class ADMController extends Controller
             'sha256' => false,
         ];
         ActionLogController::log(0, 'adm_system', 'trying to download smoking adm blacklist');
-        $ch = \curl_init();
 
-        curl_setopt($ch, CURLOPT_URL, $links['txt']);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36');
+        $response = Http::get($links['txt']);
 
-        $result = curl_exec($ch);
-        if (curl_errno($ch)) {
-            ActionLogController::log(0, 'adm_system', 'failed to download smoking adm blacklist (curl error: '.curl_error($ch).')');
-            curl_close($ch);
-        } else {
+        if ($response->successful()) {
+            $files['txt'] = $response->body();
             ActionLogController::log(0, 'adm_system', 'succeded to download smoking adm blacklist');
-            curl_close($ch);
-            $files['txt'] = $result;
+        } else {
+            ActionLogController::log(0, 'adm_system', 'failed to download smoking adm blacklist (error: '.$response->status().')');
         }
 
         ActionLogController::log(0, 'adm_system', 'trying to download smoking adm blacklist sha256');
-        $ch = \curl_init();
+        $response = Http::get($links['sha256']);
 
-        curl_setopt($ch, CURLOPT_URL, $links['sha256']);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36');
-
-        $result = curl_exec($ch);
-        if (curl_errno($ch)) {
-            ActionLogController::log(0, 'adm_system', 'failed to download smoking adm blacklist sha256 (curl error: '.curl_error($ch).')');
-            curl_close($ch);
-        } else {
+        if ($response->successful()) {
+            $files['sha256'] = $response->body();
             ActionLogController::log(0, 'adm_system', 'succeded to download smoking adm blacklist sha256');
-            curl_close($ch);
-            $files['sha256'] = $result;
+        } else {
+            ActionLogController::log(0, 'adm_system', 'failed to download smoking adm blacklist sha256 (error: '.$response->status().')');
         }
+
         if ($files['txt'] && $files['sha256']) {
             return $files;
         }
@@ -320,7 +290,7 @@ class ADMController extends Controller
 
     public function update_blacklists()
     {
-        if (env('ADM_ENABLED') == '1') {
+        if (Settings::get(SettingKeys::ADM_ENABLED) == '1') {
             $check_env = self::check_env();
             if (count($check_env) == 0) {
                 ActionLogController::log(0, 'adm_cron', 'starting run');
@@ -541,19 +511,19 @@ class ADMController extends Controller
     private static function check_env()
     {
         $errors = [];
-        if (! env('ADM_BETTING_URL')) {
+        if (! Settings::get(SettingKeys::ADM_BETTING_URL)) {
             $errors[] = 'Betting URL not filled';
-        } elseif (! filter_var(env('ADM_BETTING_URL'), FILTER_VALIDATE_URL)) {
+        } elseif (! filter_var(Settings::get(SettingKeys::ADM_BETTING_URL), FILTER_VALIDATE_URL)) {
             $errors[] = 'Betting URL not valid';
         }
-        if (! env('ADM_SMOKING_URL')) {
+        if (! Settings::get(SettingKeys::ADM_SMOKING_URL)) {
             $errors[] = 'Smoking URL not filled';
-        } elseif (! filter_var(env('ADM_SMOKING_URL'), FILTER_VALIDATE_URL)) {
+        } elseif (! filter_var(Settings::get(SettingKeys::ADM_SMOKING_URL), FILTER_VALIDATE_URL)) {
             $errors[] = 'Smoking URL not valid';
         }
-        if (! env('ADM_DNS_REDIRECT_IP')) {
+        if (! Settings::get(SettingKeys::ADM_DNS_REDIRECT_IP)) {
             $errors[] = 'DNS redirect IP not filled';
-        } elseif (! filter_var(env('ADM_DNS_REDIRECT_IP'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+        } elseif (! filter_var(Settings::get(SettingKeys::ADM_DNS_REDIRECT_IP), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
             $errors[] = 'DNS redirect IP not valid';
         }
 

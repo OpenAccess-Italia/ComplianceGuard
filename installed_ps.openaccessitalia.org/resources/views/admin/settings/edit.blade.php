@@ -67,6 +67,14 @@
                                 <span class="nav-text">General</span>
                             </a>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" id="log-retention-tab" data-toggle="tab" href="#log-retention" role="tab" aria-controls="log-retention" aria-selected="false">
+                                <span class="nav-icon">
+                                    <i class="fas fa-hdd"></i>
+                                </span>
+                                <span class="nav-text">Log retention</span>
+                            </a>
+                        </li>
                     </ul>
                     <form action="/admin/setting/edit/save" method="POST">
                     @csrf
@@ -186,23 +194,10 @@
                                         <div class="form-group col-md-12">
                                             <label for="PIRACY_SHIELD_VPN_PSK">VPN pre-shared key</label>
                                             <div class="input-group">
-                                                <input type="password" class="form-control" id="PIRACY_SHIELD_VPN_PSK" name="PIRACY_SHIELD_VPN_PSK" value="{{env("PIRACY_SHIELD_VPN_PSK")}}" placeholder="127.0.0.1">
+                                                <input type="password" class="form-control" id="PIRACY_SHIELD_VPN_PSK" name="PIRACY_SHIELD_VPN_PSK" value="{{base64_decode(env("PIRACY_SHIELD_VPN_PSK"))}}" placeholder="127.0.0.1">
                                                 <div class="input-group-append">
                                                     <div class="input-group-text">
                                                         <i class="fas fa-key text-dark mr-1"></i>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="form-group col-md-12">
-                                            <label for="PIRACY_SHIELD_ITEMS_VALIDITY_MONTHS">Items validity (in months)</label>
-                                            <div class="input-group">
-                                                <input class="form-control" id="PIRACY_SHIELD_ITEMS_VALIDITY_MONTHS" name="PIRACY_SHIELD_ITEMS_VALIDITY_MONTHS" value="{{env("PIRACY_SHIELD_ITEMS_VALIDITY_MONTHS")}}" placeholder="6" type="number" min="1" step="1">
-                                                <div class="input-group-append">
-                                                    <div class="input-group-text">
-                                                        <i class="fas fa-history text-dark mr-1"></i>
                                                     </div>
                                                 </div>
                                             </div>
@@ -623,7 +618,21 @@
                                                         </div>
                                                     </div>
                                                     <div class="row">
-                                                        <div class="form-group col-md-12">
+                                                        <div class="col-md-12">
+                                                            <small class="form-text">Please specify either SSH private key path or password for authentication (private key will take precedence)</small>
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label for="DNS_SERVER_PRIMARY_PRIVKEY">SSH private key</label>
+                                                            <div class="input-group">
+                                                                <input class="form-control" id="DNS_SERVER_PRIMARY_PRIVKEY" name="DNS_SERVER_PRIMARY_PRIVKEY" value="{{env("DNS_SERVER_PRIMARY_PRIVKEY")}}" placeholder="~/.ssh/id_rsa">
+                                                                <div class="input-group-append">
+                                                                    <div class="input-group-text">
+                                                                        <i class="fas fa-user-lock text-dark mr-1"></i>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group col-md-6">
                                                             <label for="DNS_SERVER_PRIMARY_PSW">SSH password</label>
                                                             <div class="input-group">
                                                                 <input type="password" class="form-control" id="DNS_SERVER_PRIMARY_PSW" name="DNS_SERVER_PRIMARY_PSW" value="{{env("DNS_SERVER_PRIMARY_PSW")}}">
@@ -656,6 +665,22 @@
                                                                 <div class="input-group-append">
                                                                     <div class="input-group-text">
                                                                         <i class="fas fa-terminal text-dark mr-1"></i>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="form-group col-md-12">
+                                                            <label for="DNS_SERVER_PRIMARY_EXPORT_PLAIN">Enable plain export (CSV)</label>
+                                                            <div class="input-group">
+                                                                <select class="form-control" id="DNS_SERVER_PRIMARY_EXPORT_PLAIN" name="DNS_SERVER_PRIMARY_EXPORT_PLAIN">
+                                                                    <option value="0" @if(env("DNS_SERVER_PRIMARY_EXPORT_PLAIN") == "0") selected @endif>Disabled</option>
+                                                                    <option value="1" @if(env("DNS_SERVER_PRIMARY_EXPORT_PLAIN") == "1") selected @endif>Enabled</option>
+                                                                </select>
+                                                                <div class="input-group-append">
+                                                                    <div class="input-group-text">
+                                                                        <i class="fas fa-at text-dark mr-1"></i>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -709,7 +734,21 @@
                                                         </div>
                                                     </div>
                                                     <div class="row">
-                                                        <div class="form-group col-md-12">
+                                                        <div class="col-md-12">
+                                                            <small class="form-text">Please specify either SSH private key path or password for authentication (private key will take precedence)</small>
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label for="DNS_SERVER_SECONDARY_PRIVKEY">SSH private key</label>
+                                                            <div class="input-group">
+                                                                <input class="form-control" id="DNS_SERVER_SECONDARY_PRIVKEY" name="DNS_SERVER_SECONDARY_PRIVKEY" value="{{env("DNS_SERVER_SECONDARY_PRIVKEY")}}" placeholder="~/.ssh/id_rsa">
+                                                                <div class="input-group-append">
+                                                                    <div class="input-group-text">
+                                                                        <i class="fas fa-user-lock text-dark mr-1"></i>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group col-md-6">
                                                             <label for="DNS_SERVER_SECONDARY_PSW">SSH password</label>
                                                             <div class="input-group">
                                                                 <input type="password" class="form-control" id="DNS_SERVER_SECONDARY_PSW" name="DNS_SERVER_SECONDARY_PSW" value="{{env("DNS_SERVER_SECONDARY_PSW")}}">
@@ -742,6 +781,22 @@
                                                                 <div class="input-group-append">
                                                                     <div class="input-group-text">
                                                                         <i class="fas fa-terminal text-dark mr-1"></i>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="form-group col-md-12">
+                                                            <label for="DNS_SERVER_SECONDARY_EXPORT_PLAIN">Enable plain export (CSV)</label>
+                                                            <div class="input-group">
+                                                                <select class="form-control" id="DNS_SERVER_SECONDARY_EXPORT_PLAIN" name="DNS_SERVER_SECONDARY_EXPORT_PLAIN">
+                                                                    <option value="0" @if(env("DNS_SERVER_SECONDARY_EXPORT_PLAIN") == "0") selected @endif>Disabled</option>
+                                                                    <option value="1" @if(env("DNS_SERVER_SECONDARY_EXPORT_PLAIN") == "1") selected @endif>Enabled</option>
+                                                                </select>
+                                                                <div class="input-group-append">
+                                                                    <div class="input-group-text">
+                                                                        <i class="fas fa-at text-dark mr-1"></i>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -857,6 +912,83 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="log-retention" role="tabpanel" aria-labelledby="log-retention-tab">
+                            <div class="card card-custom">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <label for="LOGS_DAYS_ACTION">Action logs (0: infinite)</label>
+                                            <div class="input-group">
+                                                <input class="form-control" id="LOGS_DAYS_ACTION" name="LOGS_DAYS_ACTION" value="{{env("LOGS_DAYS_ACTION")}}" placeholder="0" type="number" min="0" step="1">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <i class="fas fa-hashtag text-dark mr-1"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <span class="form-text text-dark">Max number of days to keep action logs, 0 to disable retention.</span>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <label for="LOGS_DAYS_AUTHENTICATION">Authentication logs (0: infinite)</label>
+                                            <div class="input-group">
+                                                <input class="form-control" id="LOGS_DAYS_AUTHENTICATION" name="LOGS_DAYS_AUTHENTICATION" value="{{env("LOGS_DAYS_AUTHENTICATION")}}" placeholder="0" type="number" min="0" step="1">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <i class="fas fa-hashtag text-dark mr-1"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <span class="form-text text-dark">Max number of days to keep authentication logs, 0 to disable retention.</span>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <label for="LOGS_DAYS_PS_API">PiracyShield API logs (0: infinite)</label>
+                                            <div class="input-group">
+                                                <input class="form-control" id="LOGS_DAYS_PS_API" name="LOGS_DAYS_PS_API" value="{{env("LOGS_DAYS_PS_API")}}" placeholder="0" type="number" min="0" step="1">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <i class="fas fa-hashtag text-dark mr-1"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <span class="form-text text-dark">Max number of days to keep PiracyShield API logs, 0 to disable retention.</span>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <label for="LOGS_DAYS_PS_API_ACCESS_TOKENS">PiracyShield Access Tokens (0: infinite)</label>
+                                            <div class="input-group">
+                                                <input class="form-control" id="LOGS_DAYS_PS_API_ACCESS_TOKENS" name="LOGS_DAYS_PS_API_ACCESS_TOKENS" value="{{env("LOGS_DAYS_PS_API_ACCESS_TOKENS")}}" placeholder="0" type="number" min="0" step="1">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <i class="fas fa-hashtag text-dark mr-1"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <span class="form-text text-dark">Max number of days to keep PiracyShield API access tokens, 0 to disable retention.</span>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group col-md-12">
+                                            <label for="LOGS_DAYS_PS_API_REFRESH_TOKENS">PiracyShield Refresh Tokens (0: infinite)</label>
+                                            <div class="input-group">
+                                                <input class="form-control" id="LOGS_DAYS_PS_API_REFRESH_TOKENS" name="LOGS_DAYS_PS_API_REFRESH_TOKENS" value="{{env("LOGS_DAYS_PS_API_REFRESH_TOKENS")}}" placeholder="2" type="number" min="0" step="1">
+                                                <div class="input-group-append">
+                                                    <div class="input-group-text">
+                                                        <i class="fas fa-hashtag text-dark mr-1"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <span class="form-text text-dark">Max number of days to keep PiracyShield API refresh tokens, 0 to disable retention.<br>
+                                            NOTE: API refresh tokens are refreshed every day, keep at least 2 days to allow access tokens to be generated.</span>
                                         </div>
                                     </div>
                                 </div>

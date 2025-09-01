@@ -41,7 +41,7 @@ class ADMController extends Controller
                     if(strpos($row, "Elenco dei siti soggetti ad inibizione - txt") !== false){
                         $txt = self::get_href(trim($row));
                     }
-                    if(strpos($row, "File di controllo - txt") !== false){
+                    if(strpos($row, "File di controllo (SHA 256) - txt") !== false){
                         $sha256 = self::get_href(trim($row));
                     }
                 }
@@ -173,7 +173,7 @@ class ADMController extends Controller
                     if(strpos($row, "Elenco dei siti soggetti ad inibizione - txt") !== false){
                         $txt = self::get_href(trim($row));
                     }
-                    if(strpos($row, "File di controllo - txt") !== false){
+                    if(strpos($row, "File di controllo (SHA 256) - txt") !== false){
                         $sha256 = self::get_href(trim($row));
                     }
                 }
@@ -453,7 +453,7 @@ class ADMController extends Controller
 
     public function datatable_betting_blacklist(Request $request){
         if($request->ajax()){
-            $data = \App\ADM\BettingBlacklist::orderBy("fqdn","asc")->get();
+            $data = \App\ADM\BettingBlacklist::query();
             return Datatables::of($data)
                 ->rawColumns(
                     ['fqdn']
@@ -463,7 +463,7 @@ class ADMController extends Controller
 
     public function datatable_betting_files(Request $request){
         if($request->ajax()){
-            $data = \App\ADM\BettingFiles::orderBy("timestamp","desc")->get();
+            $data = \App\ADM\BettingFiles::query();
             return Datatables::of($data)
                 ->rawColumns(
                     ['timestamp',
@@ -474,7 +474,7 @@ class ADMController extends Controller
 
     public function datatable_smoking_blacklist(Request $request){
         if($request->ajax()){
-            $data = \App\ADM\SmokingBlacklist::orderBy("fqdn","asc")->get();
+            $data = \App\ADM\SmokingBlacklist::query();
             return Datatables::of($data)
                 ->rawColumns(
                     ['fqdn']
@@ -484,7 +484,7 @@ class ADMController extends Controller
 
     public function datatable_smoking_files(Request $request){
         if($request->ajax()){
-            $data = \App\ADM\SmokingFiles::orderBy("timestamp","desc")->get();
+            $data = \App\ADM\SmokingFiles::query();
             return Datatables::of($data)
                 ->rawColumns(
                     ['timestamp',

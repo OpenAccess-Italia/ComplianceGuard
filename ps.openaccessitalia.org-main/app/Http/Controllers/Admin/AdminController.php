@@ -9,49 +9,42 @@ use App\Models\ActionLog;
 use App\Models\Piracy\APIAccessTokens;
 use App\Models\Piracy\APILog;
 use App\Models\Piracy\APIRefreshTokens;
+use App\SettingKeys;
+use Auth;
 use Carbon\Carbon;
 use DataTables;
 use Illuminate\Http\Request;
 use Illuminate\Mail\Message;
 use Mail;
-use MirazMac\DotEnv\Writer;
+use Settings;
 
 class AdminController extends Controller
 {
-
-    public function datatable_actions_log(Request $request)
-    {
-        if ($request->ajax()) {
-            if ($request->input('hide_system_cron') == 'true') {
-                $data = ActionLog::where('timestamp', '>=', Carbon::now()->subDay())->where('user_id', '<>', '0')->orderBy('id', 'desc')->get();
-            } else {
-                $data = ActionLog::where('timestamp', '>=', Carbon::now()->subDay())->orderBy('id', 'desc')->get();
+    public function datatable_actions_log(Request $request){
+        if($request->ajax()){
+            if($request->input('hide_system_cron') == "true"){
+                $data = ActionLog::where("user_id","<>","0");
+            }else{
+                $data = ActionLog::query();
             }
-
-            return Datatables::of($data)->addColumn('action', function ($row) {
+            return Datatables::of($data)->addColumn('action',function($row){
                 return htmlspecialchars($row->action, ENT_QUOTES | ENT_HTML5);
             })->make(true);
         }
     }
 
-    public function datatable_ps_api_log(Request $request)
-    {
-        $data = APILog::where('timestamp', '>=', Carbon::now()->subDay())->orderBy('id', 'desc')->get();
-
+    public function datatable_ps_api_log(Request $request){
+        $data = APILog::query();
         return Datatables::of($data)->make(true);
     }
 
-    public function datatable_ps_access_tokens(Request $request)
-    {
-        $data = APIAccessTokens::orderBy('id', 'desc')->get();
-
+    public function datatable_ps_access_tokens(Request $request){
+        $data = APIAccessTokens::query();
         return Datatables::of($data)->make(true);
     }
 
-    public function datatable_ps_refresh_tokens(Request $request)
-    {
-        $data = APIRefreshTokens::orderBy('id', 'desc')->get();
-
+    public function datatable_ps_refresh_tokens(Request $request){
+        $data = APIRefreshTokens::query();
         return Datatables::of($data)->make(true);
     }
 
@@ -60,26 +53,20 @@ class AdminController extends Controller
         $data = $request->except('_token');
         $updated = [];
 
-        $writer = new Writer(base_path('.env'));
+        $valid = collect(SettingKeys::cases())->pluck('name')->toArray();
 
         foreach ($data as $key => $value) {
-            if ($writer->exists($key) && self::env_auth($key)) {
-                $value = ($value === 'null') ? null : $value;
-                if (env($key) !== $value) {
-                    $writer->set($key, $value);
-                    ActionLogController::log(\Auth::user()->id, \Auth::user()->name, "updated setting $key from ".env($key)." to $value");
-                    $updated[] = $key;
-                }
+            if (in_array($key, $valid, true) && $value != settings(SettingKeys::{$key})) {
+                ActionLogController::log(Auth::user()->id, Auth::user()->name, "updated setting $key from ".settings(SettingKeys::{$key})." to $value");
+                Settings::set(SettingKeys::{$key}, $value);
+                $updated[] = $key;
             }
-        }
-
-        if ($writer->hasChanged()) {
-            $writer->write();
         }
 
         if (
             (in_array('CNCPO_GPG_PRIVATE_KEY', $updated) || in_array('CNCPO_GPG_PRIVATE_KEY_PASSWORD', $updated))
-            && env('CNCPO_ENABLED') === '1') {
+            && Settings::get(SettingKeys::CNCPO_ENABLED) == '1')
+        {
             // Trigger event to import GPG key
             GpgKeyUpdated::dispatch();
         }
@@ -87,85 +74,22 @@ class AdminController extends Controller
         // settings files updates
         self::make_network_settings_file();
         BGPController::make_settings_file();
-        if (env('PIRACY_SHIELD_ENABLED') == '1') {
+        if (Settings::get(SettingKeys::PIRACY_SHIELD_ENABLED)) {
             PiracyController::make_piracy_settings_files();
         }
 
         return redirect('/admin/settings/edit');
     }
 
-    private static function env_auth($key)
-    {
-        return in_array($key, [
-            'PIRACY_SHIELD_VPN_PEER_IP',
-            'PIRACY_SHIELD_VPN_REMOTE_LAN_IP',
-            'PIRACY_SHIELD_VPN_LOCAL_LAN_IP',
-            'PIRACY_SHIELD_VPN_PSK',
-            'PIRACY_SHIELD_ITEMS_VALIDITY_MONTHS',
-            'NET_IP',
-            'NET_MASK',
-            'NET_GATEWAY',
-            'BGP_ROUTER_IP',
-            'BGP_ASN',
-            'BGP_LOCAL_IP',
-            'BGP_LOCAL_MASK',
-            'BGP_LOCAL_GATEWAY',
-            'DNS_SERVER_PRIMARY_IP',
-            'DNS_SERVER_PRIMARY_PORT',
-            'DNS_SERVER_PRIMARY_USER',
-            'DNS_SERVER_PRIMARY_PSW',
-            'DNS_SERVER_PRIMARY_PATH',
-            'DNS_SERVER_PRIMARY_RELOAD',
-            'DNS_SERVER_SECONDARY_IP',
-            'DNS_SERVER_SECONDARY_PORT',
-            'DNS_SERVER_SECONDARY_USER',
-            'DNS_SERVER_SECONDARY_PSW',
-            'DNS_SERVER_SECONDARY_PATH',
-            'DNS_SERVER_SECONDARY_RELOAD',
-            'PIRACY_SHIELD_MAIL',
-            'PIRACY_SHIELD_PSW',
-            'PIRACY_SHIELD_API_URL',
-            'EXTERNAL_DNS_SERVERS',
-            'ADM_BETTING_URL',
-            'ADM_SMOKING_URL',
-            'ADM_DNS_REDIRECT_IP',
-            'PIRACY_SHIELD_DNS_REDIRECT_IP',
-            'CNCPO_ENABLED',
-            'CNCPO_PEC_EMAIL',
-            'CNCPO_PEC_IMAP_HOST',
-            'CNCPO_PEC_IMAP_ARCHIVE_FOLDER',
-            'CNCPO_PEC_PASSWORD',
-            'CNCPO_PEC_SMTP_HOST',
-            'CNCPO_PEC_SMTP_PASSWORD',
-            'CNCPO_FROM_EMAIL',
-            'CNCPO_GPG_PRIVATE_KEY',
-            'CNCPO_GPG_PRIVATE_KEY_PASSWORD',
-            'CNCPO_DNS_REDIRECT_IP',
-            'CNCPO_REPLY_ENABLED',
-            'CNCPO_REPLY_SIGNATURE',
-            'ADM_ENABLED',
-            'PIRACY_SHIELD_ENABLED',
-            'MANUAL_ENABLED',
-            'MANUAL_DNS_REDIRECT_IP',
-            'MAIL_HOST',
-            'MAIL_PORT',
-            'MAIL_USERNAME',
-            'MAIL_PASSWORD',
-            'MAIL_ENCRYPTION',
-            'MAIL_FROM_ADDRESS',
-            'MAIL_FROM_NAME',
-            'MAIL_TO_ADDRESSES',
-        ]);
-    }
 
     public function update_dns()
     {
         $check_env = self::check_env_dns();
         if (count($check_env) == 0) {
-            $dns1 = new DNSController(env('DNS_SERVER_PRIMARY_IP'), env('DNS_SERVER_PRIMARY_PORT'), env('DNS_SERVER_PRIMARY_USER'), env('DNS_SERVER_PRIMARY_PSW'), env('DNS_SERVER_PRIMARY_PATH'), env('DNS_SERVER_PRIMARY_RELOAD'), env('DNS_SERVER_PRIMARY_EXPORT_PLAIN'));
+            $dns1 = new DNSController(Settings::get(SettingKeys::DNS_SERVER_PRIMARY_IP), Settings::get(SettingKeys::DNS_SERVER_PRIMARY_PORT), Settings::get(SettingKeys::DNS_SERVER_PRIMARY_USER), Settings::get(SettingKeys::DNS_SERVER_PRIMARY_PSW), Settings::get(SettingKeys::DNS_SERVER_PRIMARY_PRIVKEY), Settings::get(SettingKeys::DNS_SERVER_PRIMARY_PATH), Settings::get(SettingKeys::DNS_SERVER_PRIMARY_RELOAD), Settings::get(SettingKeys::DNS_SERVER_PRIMARY_EXPORT_PLAIN));
             $dns1->update();
-            if (env('DNS_SERVER_SECONDARY_IP')) {
-                $dns2 = new DNSController(env('DNS_SERVER_SECONDARY_IP'), env('DNS_SERVER_SECONDARY_PORT'), env('DNS_SERVER_SECONDARY_USER'), env('DNS_SERVER_SECONDARY_PSW'), env('DNS_SERVER_SECONDARY_PATH'), env('DNS_SERVER_SECONDARY_RELOAD'), env('DNS_SERVER_PRIMARY_EXPORT_PLAIN'));
+            if (Settings::get(SettingKeys::DNS_SERVER_SECONDARY_IP)) {
+                $dns2 = new DNSController(Settings::get(SettingKeys::DNS_SERVER_SECONDARY_IP), Settings::get(SettingKeys::DNS_SERVER_SECONDARY_PORT), Settings::get(SettingKeys::DNS_SERVER_SECONDARY_USER), Settings::get(SettingKeys::DNS_SERVER_SECONDARY_PSW), Settings::get(SettingKeys::DNS_SERVER_SECONDARY_PRIVKEY), Settings::get(SettingKeys::DNS_SERVER_SECONDARY_PATH), Settings::get(SettingKeys::DNS_SERVER_SECONDARY_RELOAD), Settings::get(SettingKeys::DNS_SERVER_PRIMARY_EXPORT_PLAIN));
                 $dns2->update();
             } else {
                 ActionLogController::log(0, 'dns_cron', 'secondary DNS server IP not set, skipping run');
@@ -192,55 +116,58 @@ class AdminController extends Controller
     private static function check_env_dns()
     {
         $errors = [];
-        if (! env('DNS_SERVER_PRIMARY_IP')) {
+        if (! Settings::get(SettingKeys::DNS_SERVER_PRIMARY_IP)) {
             $errors[] = 'Primary DNS server IP not filled';
+        } elseif (! filter_var(Settings::get(SettingKeys::DNS_SERVER_PRIMARY_IP), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            $errors[] = 'Primary DNS server IP not valid';
         } else {
-            if (! filter_var(env('DNS_SERVER_PRIMARY_IP'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-                $errors[] = 'Primary DNS server IP not valid';
+            if (! Settings::get(SettingKeys::DNS_SERVER_PRIMARY_PORT)) {
+                $errors[] = 'Primary DNS server SSH port not filled';
             } else {
-                if (! env('DNS_SERVER_PRIMARY_PORT')) {
+                if (! is_numeric(Settings::get(SettingKeys::DNS_SERVER_PRIMARY_PORT))) {
+                    $errors[] = 'Primary DNS server SSH port not valid';
+                }
+            }
+            if (! Settings::get(SettingKeys::DNS_SERVER_PRIMARY_USER)) {
+                $errors[] = 'Primary DNS server SSH username not filled';
+            }
+            if (! Settings::get(SettingKeys::DNS_SERVER_PRIMARY_PSW) && !Settings::get(SettingKeys::DNS_SERVER_PRIMARY_PRIVKEY)) {
+                $errors[] = 'Either primary DNS server SSH password or private key must be filled';
+            }
+            if (! Settings::get(SettingKeys::DNS_SERVER_PRIMARY_PATH)) {
+                $errors[] = 'Primary DNS server zone path not filled';
+            }
+            if (! Settings::get(SettingKeys::DNS_SERVER_PRIMARY_RELOAD)) {
+                $errors[] = 'Primary DNS server reload command not filled';
+            }
+            if(! Settings::get(SettingKeys::DNS_SERVER_PRIMARY_EXPORT_PLAIN)){
+                $errors[] = "Primary DNS server export plain flag not filled";
+            }
+            if (Settings::get(SettingKeys::DNS_SERVER_SECONDARY_IP)) {
+                if (! filter_var(Settings::get(SettingKeys::DNS_SERVER_SECONDARY_IP), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+                    $errors[] = 'Secondary DNS server IP not valid';
+                }
+                if (! Settings::get(SettingKeys::DNS_SERVER_SECONDARY_PORT)) {
                     $errors[] = 'Primary DNS server SSH port not filled';
-                } else {
-                    if (! is_numeric(env('DNS_SERVER_PRIMARY_PORT'))) {
-                        $errors[] = 'Primary DNS server SSH port not valid';
-                    }
+                } elseif (! is_numeric(Settings::get(SettingKeys::DNS_SERVER_SECONDARY_PORT))) {
+                    $errors[] = 'Primary DNS server SSH port not valid';
                 }
-                if (! env('DNS_SERVER_PRIMARY_USER')) {
-                    $errors[] = 'Primary DNS server SSH username not filled';
+                if (! Settings::get(SettingKeys::DNS_SERVER_SECONDARY_USER)) {
+                    $errors[] = 'Secondary DNS server SSH username not filled';
                 }
-                if (! env('DNS_SERVER_PRIMARY_PSW')) {
-                    $errors[] = 'Primary DNS server SSH password not filled';
+                if (! Settings::get(SettingKeys::DNS_SERVER_SECONDARY_PSW) && !Settings::get(SettingKeys::DNS_SERVER_SECONDARY_PRIVKEY)) {
+                    $errors[] = 'Either secondary DNS server SSH password or private key must be filled';
                 }
-                if (! env('DNS_SERVER_PRIMARY_PATH')) {
-                    $errors[] = 'Primary DNS server zone path not filled';
+                if (! Settings::get(SettingKeys::DNS_SERVER_SECONDARY_PATH)) {
+                    $errors[] = 'Secondary DNS server zone path not filled';
                 }
-                if (! env('DNS_SERVER_PRIMARY_RELOAD')) {
-                    $errors[] = 'Primary DNS server reload command not filled';
+                if (! Settings::get(SettingKeys::DNS_SERVER_SECONDARY_RELOAD)) {
+                    $errors[] = 'Secondary DNS server reload command not filled';
                 }
-                if (env('DNS_SERVER_SECONDARY_IP')) {
-                    if (! filter_var(env('DNS_SERVER_SECONDARY_IP'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-                        $errors[] = 'Secondary DNS server IP not valid';
-                    }
-                    if (! env('DNS_SERVER_SECONDARY_PORT')) {
-                        $errors[] = 'Primary DNS server SSH port not filled';
-                    } else {
-                        if (! is_numeric(env('DNS_SERVER_SECONDARY_PORT'))) {
-                            $errors[] = 'Primary DNS server SSH port not valid';
-                        }
-                    }
-                    if (! env('DNS_SERVER_SECONDARY_USER')) {
-                        $errors[] = 'Secondary DNS server SSH username not filled';
-                    }
-                    if (! env('DNS_SERVER_SECONDARY_PSW')) {
-                        $errors[] = 'Secondary DNS server SSH password not filled';
-                    }
-                    if (! env('DNS_SERVER_SECONDARY_PATH')) {
-                        $errors[] = 'Secondary DNS server zone path not filled';
-                    }
-                    if (! env('DNS_SERVER_SECONDARY_RELOAD')) {
-                        $errors[] = 'Secondary DNS server reload command not filled';
-                    }
+                if(! Settings::get(SettingKeys::DNS_SERVER_SECONDARY_EXPORT_PLAIN)){
+                    $errors[] = "Secondary DNS server export plain flag not filled";
                 }
+
             }
         }
 
@@ -250,23 +177,22 @@ class AdminController extends Controller
     private static function check_env_smtp()
     {
         $errors = [];
-        if (! filter_var(env('MAIL_HOST'), FILTER_VALIDATE_URL)) {
-            if (! self::validateFQDN(env('MAIL_HOST'))) {
-                $errors[] = "'STMP server host' is neither a valid host nor a valid IP";
-            }
+        if (!filter_var(Settings::get(SettingKeys::MAIL_HOST),FILTER_VALIDATE_URL)
+            && !self::validateFQDN(Settings::get(SettingKeys::MAIL_HOST)))
+        {
+            $errors[] = "'STMP server host' is neither a valid host nor a valid IP";
         }
-        if (! filter_var(env('MAIL_FROM_ADDRESS'), FILTER_VALIDATE_EMAIL)) {
+        if (! filter_var(Settings::get(SettingKeys::MAIL_FROM_ADDRESS), FILTER_VALIDATE_EMAIL)) {
             $errors[] = "'From address' is not a valid mail address";
         }
-        if (env('MAIL_FROM_NAME') == '' || ! env('MAIL_FROM_NAME')) {
+        if (Settings::get(SettingKeys::MAIL_FROM_NAME) == '' || ! Settings::get(SettingKeys::MAIL_FROM_NAME)) {
             $errors[] = "'From name' not filled";
         }
-        if (env('MAIL_TO_ADDRESSES') == '' || ! env('MAIL_TO_ADDRESSES')) {
+        if (Settings::get(SettingKeys::MAIL_TO_ADDRESSES) == '' || ! Settings::get(SettingKeys::MAIL_TO_ADDRESSES)) {
             $errors[] = "'To addresses' not filled";
         } else {
             $invalid_addresses = [];
-            $raw_to_send = explode(',', env('MAIL_TO_ADDRESSES'));
-            foreach ($raw_to_send as $address) {
+            foreach (explode(',', Settings::get(SettingKeys::MAIL_TO_ADDRESSES)) as $address) {
                 if (! filter_var($address, FILTER_VALIDATE_EMAIL)) {
                     $invalid_addresses[] = $address;
                 }
@@ -282,26 +208,22 @@ class AdminController extends Controller
     public static function check_env_network()
     {
         $errors = [];
-        if (! env('NET_IP')) {
+        if (! Settings::get(SettingKeys::NET_IP)) {
             $errors[] = 'Network IP not filled';
-        } else {
-            if (! filter_var(env('NET_IP'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-                $errors[] = 'Network IP not valid';
-            }
+        } elseif (! filter_var(Settings::get(SettingKeys::NET_IP), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            $errors[] = 'Network IP not valid';
         }
-        if (! env('NET_MASK')) {
+        if (! Settings::get(SettingKeys::NET_MASK)) {
             $errors[] = 'Network netmask not filled';
         } else {
-            if (! filter_var(env('NET_MASK'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            if (! filter_var(Settings::get(SettingKeys::NET_MASK), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
                 $errors[] = 'Network netmask not valid';
             }
         }
-        if (! env('NET_GATEWAY')) {
+        if (! Settings::get(SettingKeys::NET_GATEWAY)) {
             $errors[] = 'Network gateway not filled';
-        } else {
-            if (! filter_var(env('NET_GATEWAY'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-                $errors[] = 'Network gateway not valid';
-            }
+        } elseif (! filter_var(Settings::get(SettingKeys::NET_GATEWAY), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            $errors[] = 'Network gateway not valid';
         }
 
         return $errors;
@@ -316,10 +238,10 @@ class AdminController extends Controller
         $obj->settings->passed = (count($env_test) == 0);
         $obj->settings->messages = (count($env_test) == 0) ? ['Settings formally correct'] : $env_test;
         if ($obj->settings->passed) {
-            $dns1 = new DNSController(env('DNS_SERVER_PRIMARY_IP'), env('DNS_SERVER_PRIMARY_PORT'), env('DNS_SERVER_PRIMARY_USER'), env('DNS_SERVER_PRIMARY_PSW'), env('DNS_SERVER_PRIMARY_PATH'), env('DNS_SERVER_PRIMARY_RELOAD'), env('DNS_SERVER_PRIMARY_EXPORT_PLAIN'));
+            $dns1 = new DNSController(Settings::get(SettingKeys::DNS_SERVER_PRIMARY_IP), Settings::get(SettingKeys::DNS_SERVER_PRIMARY_PORT), Settings::get(SettingKeys::DNS_SERVER_PRIMARY_USER), Settings::get(SettingKeys::DNS_SERVER_PRIMARY_PSW), Settings::get(SettingKeys::DNS_SERVER_PRIMARY_PRIVKEY), Settings::get(SettingKeys::DNS_SERVER_PRIMARY_PATH), Settings::get(SettingKeys::DNS_SERVER_PRIMARY_RELOAD), Settings::get(SettingKeys::DNS_SERVER_PRIMARY_EXPORT_PLAIN));
             $obj->primary = $dns1->test();
-            if (env('DNS_SERVER_SECONDARY_IP')) {
-                $dns2 = new DNSController(env('DNS_SERVER_SECONDARY_IP'), env('DNS_SERVER_SECONDARY_PORT'), env('DNS_SERVER_SECONDARY_USER'), env('DNS_SERVER_SECONDARY_PSW'), env('DNS_SERVER_SECONDARY_PATH'), env('DNS_SERVER_SECONDARY_RELOAD'), env('DNS_SERVER_PRIMARY_EXPORT_PLAIN'));
+            if (Settings::get(SettingKeys::DNS_SERVER_SECONDARY_IP)) {
+                $dns2 = new DNSController(Settings::get(SettingKeys::DNS_SERVER_SECONDARY_IP), Settings::get(SettingKeys::DNS_SERVER_SECONDARY_PORT), Settings::get(SettingKeys::DNS_SERVER_SECONDARY_USER), Settings::get(SettingKeys::DNS_SERVER_SECONDARY_PSW), Settings::get(SettingKeys::DNS_SERVER_SECONDARY_PRIVKEY), Settings::get(SettingKeys::DNS_SERVER_SECONDARY_PATH), Settings::get(SettingKeys::DNS_SERVER_SECONDARY_RELOAD), Settings::get(SettingKeys::DNS_SERVER_PRIMARY_EXPORT_PLAIN));
                 $obj->secondary = $dns2->test();
             }
         }
@@ -353,8 +275,8 @@ class AdminController extends Controller
             try {
                 Mail::send('mail.notify_error', ['system' => 'testmail', 'error' => 'testmail'],
                     function (Message $message) use ($to_send) {
-                        $message->subject(env('APP_NAME').': test mail');
-                        $message->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
+                        $message->subject(config('app.name').': test mail');
+                        $message->from(Settings::get(SettingKeys::MAIL_FROM_ADDRESS), Settings::get(SettingKeys::MAIL_FROM_NAME));
                         $message->to($to_send);
                     }
                 );
@@ -397,9 +319,9 @@ class AdminController extends Controller
         ActionLogController::log(0, 'system', "trying to make network settings file in '".base_path('storage/settings/').'network.csv'."'");
         $check_env = self::check_env_network();
         if (count($check_env) == 0) {
-            $content = 'IP,'.env('NET_IP')."\n";
-            $content .= 'MASK,'.env('NET_MASK')."\n";
-            $content .= 'GW,'.env('NET_GATEWAY')."\n";
+            $content = 'IP,'.Settings::get(SettingKeys::NET_IP)."\n";
+            $content .= 'MASK,'.Settings::get(SettingKeys::NET_MASK)."\n";
+            $content .= 'GW,'.Settings::get(SettingKeys::NET_GATEWAY)."\n";
             try {
                 file_put_contents(base_path('storage/settings/').'network.csv', $content);
                 ActionLogController::log(0, 'system', "succeded to make network settings file in '".base_path('storage/settings/').'network.csv'."'");

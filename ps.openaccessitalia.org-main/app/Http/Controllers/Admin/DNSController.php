@@ -14,7 +14,7 @@ use function ssh2_connect;
 
 class DNSController extends Controller
 {
-    public function __construct(private $ip, private $port, private $user, private $psw, private $path, private $reload, private $export_plain)
+    public function __construct(private $ip, private $port, private $user, private $psw, private $privkey, private $path, private $reload, private $export_plain)
     {
     }
 
@@ -23,7 +23,14 @@ class DNSController extends Controller
         ActionLogController::log(0, 'dns_system', "trying to connect via ssh to $this->ip (port $this->port)");
         try {
             $ssh_connection = ssh2_connect($this->ip, $this->port);
-            if (ssh2_auth_password($ssh_connection, $this->user, $this->psw)) {
+            if($this->privkey){
+                ActionLogController::log(0,"dns_system","trying to authenticate with private key $this->privkey");
+                $ssh_auth = ssh2_auth_pubkey_file($ssh_connection,$this->user,$this->privkey.".pub",$this->privkey);
+            }else{
+                ActionLogController::log(0,"dns_system","trying to authenticate with password");
+                $ssh_auth = ssh2_auth_password($ssh_connection,$this->user,$this->psw);
+            }
+            if ($ssh_auth) {
                 ActionLogController::log(0, 'dns_system', "connected via ssh to $this->ip (port $this->port)");
 
                 return $ssh_connection;
@@ -159,7 +166,7 @@ EOD;
         ActionLogController::log(0, 'dns_cron', "beginning to check if all dns record dbs exists in DNS server $this->ip");
         $directory = self::zones_directory($this->path);
         // CNCPO -  db.cncpoblocked
-        $cncpo_db_content = self::make_db_content(env('CNCPO_DNS_REDIRECT_IP', '127.0.0.1'));
+        $cncpo_db_content = self::make_db_content(\Settings::get(\App\SettingKeys::CNCPO_DNS_REDIRECT_IP, '127.0.0.1'));
         if ($this->sftp_file_exists($directory.'/db.cncpoblocked')) {
             ActionLogController::log(0, 'dns_cron', "db.cncpoblocked already exists in DNS server $this->ip");
             if ($this->sftp_read_file($directory.'/db.cncpoblocked') != $cncpo_db_content) {
@@ -173,7 +180,7 @@ EOD;
             $this->sftp_write_file($directory.'/db.cncpoblocked', $cncpo_db_content);
         }
         // ADM - db.admblocked
-        $adm_db_content = self::make_db_content(env('ADM_DNS_REDIRECT_IP', '127.0.0.1'));
+        $adm_db_content = self::make_db_content(\Settings::get(\App\SettingKeys::ADM_DNS_REDIRECT_IP, '127.0.0.1'));
         if ($this->sftp_file_exists($directory.'/db.admblocked')) {
             ActionLogController::log(0, 'dns_cron', "db.admblocked already exists in DNS server $this->ip");
             if ($this->sftp_read_file($directory.'/db.admblocked') != $adm_db_content) {
@@ -187,7 +194,7 @@ EOD;
             $this->sftp_write_file($directory.'/db.admblocked', $adm_db_content);
         }
         // PIRACY - db.psblocked
-        $ps_db_content = self::make_db_content(env('PIRACY_SHIELD_DNS_REDIRECT_IP', '127.0.0.1'));
+        $ps_db_content = self::make_db_content(\Settings::get(\App\SettingKeys::PIRACY_SHIELD_DNS_REDIRECT_IP, '127.0.0.1'));
         if ($this->sftp_file_exists($directory.'/db.psblocked')) {
             ActionLogController::log(0, 'dns_cron', "db.psblocked already exists in DNS server $this->ip");
             if ($this->sftp_read_file($directory.'/db.psblocked') != $ps_db_content) {
@@ -201,7 +208,7 @@ EOD;
             $this->sftp_write_file($directory.'/db.psblocked', $ps_db_content);
         }
         // MANUAL - db.manblocked
-        $man_db_content = self::make_db_content(env('MANUAL_DNS_REDIRECT_IP', '127.0.0.1'));
+        $man_db_content = self::make_db_content(\Settings::get(\App\SettingKeys::MANUAL_DNS_REDIRECT_IP, '127.0.0.1'));
         if ($this->sftp_file_exists($directory.'/db.manblocked')) {
             ActionLogController::log(0, 'dns_cron', "db.manblocked already exists in DNS server $this->ip");
             if ($this->sftp_read_file($directory.'/db.manblocked') != $man_db_content) {
@@ -274,6 +281,62 @@ EOD;
         return $need_reload;
     }
 
+    private function install_plain(){
+        ActionLogController::log(0,"dns_cron","beginning to make dns plain content in DNS server $this->ip");
+        $content = '';
+        $plain_path = self::zones_directory($this->path) . "/piracyshield.csv";
+        $admbettingblacklist = BettingBlacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
+        $admsmokingblacklist = SmokingBlacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
+        $cncpoblacklist = Blacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
+        $piracyshield = FQDNs::select('fqdn')->distinct()->pluck('fqdn')->toArray();
+        $manual = \App\Models\Manual\FQDNs::select('fqdn')->distinct()->pluck('fqdn')->toArray();
+        $done = [];
+        foreach ($admbettingblacklist as $fqdn) {
+            if(!in_array($fqdn,$done)){
+                $content .= $fqdn.","."ADM_BETTING".PHP_EOL;
+                $done[] = $fqdn;
+            }
+        }
+        foreach ($admsmokingblacklist as $fqdn) {
+            if(!in_array($fqdn,$done)){
+                $content .= $fqdn.","."ADM_SMOKING".PHP_EOL;
+                $done[] = $fqdn;
+            }
+        }
+        foreach ($cncpoblacklist as $fqdn) {
+            if(!in_array($fqdn,$done)){
+                $content .= $fqdn.","."CNCPO".PHP_EOL;
+                $done[] = $fqdn;
+            }
+        }
+        foreach ($piracyshield as $fqdn) {
+            if(!in_array($fqdn,$done)){
+                $content .= $fqdn.","."PS".PHP_EOL;
+                $done[] = $fqdn;
+            }
+        }
+        foreach ($manual as $fqdn) {
+            if(!in_array($fqdn,$done)){
+                $content .= $fqdn.","."MAN".PHP_EOL;
+                $done[] = $fqdn;
+            }
+        }
+        if($this->sftp_read_file($plain_path) != $content){
+            ActionLogController::log(0,"dns_cron","$plain_path is not updated in DNS server $this->ip");
+            if($this->sftp_write_file($plain_path,$content)){
+                $need_reload = true;
+                ActionLogController::log(0,"dns_cron","succeded to make dns plain content in DNS server $this->ip (reload needed)");
+            }else{
+                $need_reload = false;
+                ActionLogController::log(0,"dns_cron","failed to make dns plain content in DNS server $this->ip (reload not needed)");
+            }
+        }else{
+            $need_reload = false;
+            ActionLogController::log(0,"dns_cron","$plain_path is already updated in DNS server $this->ip (reload not needed)");
+        }
+        return $need_reload;
+    }
+
     private function reload_service()
     {
         ActionLogController::log(0, 'dns_system', "trying to execute command '$this->reload' in DNS server $this->ip");
@@ -328,7 +391,7 @@ EOD;
         $obj = new \StdClass;
         // connection
         $obj->connection = new \StdClass;
-        $connection = self::connect();
+        $connection = $this->connect();
         if ($connection !== false) {
             $obj->connection->passed = true;
             $obj->connection->messages = ['SSH connection succeded'];
@@ -341,7 +404,7 @@ EOD;
             $dir = $path_infos['dirname'];
             // write privileges
             $obj->write = new \StdClass;
-            if (self::sftp_write_file("$dir/dummy", 'dummy')) {
+            if ($this->sftp_write_file("$dir/dummy", 'dummy')) {
                 $obj->write->passed = true;
                 $obj->write->messages = ["SSH user has write privileges in directory $dir"];
             } else {
@@ -351,7 +414,7 @@ EOD;
             if ($obj->write->passed) {
                 // read privileges
                 $obj->read = new \StdClass;
-                if (self::sftp_read_file("$dir/dummy") === 'dummy') {
+                if ($this->sftp_read_file("$dir/dummy") === 'dummy') {
                     $obj->read->passed = true;
                     $obj->read->messages = ["SSH user has read privileges in directory $dir"];
                 } else {
@@ -363,7 +426,7 @@ EOD;
             }
             // service reload
             $obj->reload = new \StdClass;
-            if (self::reload_service()) {
+            if ($this->reload_service()) {
                 $obj->reload->passed = true;
                 $obj->reload->messages = ["Service reload success ($this->reload)"];
             } else {

@@ -34,7 +34,7 @@ class CNCPOReply extends Mailable
      */
     public function build()
     {
-        return $this->from(env('CNCPO_PEC_EMAIL'))
+        return $this->from(\Settings::get(\App\SettingKeys::CNCPO_PEC_EMAIL))
             ->view('mail.cncpo-reply')
             ->text('mail.cncpo-reply-text');
     }

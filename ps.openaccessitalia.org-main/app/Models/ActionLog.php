@@ -12,6 +12,6 @@ class ActionLog extends Model
     public $timestamps = false;
 
     protected $casts = [
-        'timestamp' => 'datetime',
+        'timestamp' => 'datetime:d/m/Y H:i:s',
     ];
 }

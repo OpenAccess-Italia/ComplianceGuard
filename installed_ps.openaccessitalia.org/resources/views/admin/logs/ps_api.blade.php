@@ -38,7 +38,7 @@
                                 <span class="nav-icon">
                                     <i class="fas fa-question"></i>
                                 </span>
-                                <span class="nav-text">Requests (last 24h)</span>
+                                <span class="nav-text">Requests</span>
                             </a>
                         </li>
                         <li class="nav-item" role="presentation">

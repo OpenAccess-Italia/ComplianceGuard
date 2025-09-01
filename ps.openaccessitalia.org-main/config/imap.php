@@ -49,11 +49,11 @@ return [
 
         'cncpo' => [// account identifier
             'host' => env('CNCPO_PEC_IMAP_HOST', 'localhost'),
-            'port' => env('IMAP_PORT', 993),
+            'port' => env('CNCPO_PEC_IMAP_PORT', 993),
             'protocol' => env('IMAP_PROTOCOL', 'imap'), // might also use imap, [pop3 or nntp (untested)]
             'encryption' => env('IMAP_ENCRYPTION', 'ssl'), // Supported: false, 'ssl', 'tls', 'notls', 'starttls'
             'validate_cert' => env('IMAP_VALIDATE_CERT', true),
-            'username' => env('CNCPO_PEC_EMAIL', 'root@example.com'),
+            'username' => env('CNCPO_PEC_IMAP_USERNAME'),
             'password' => env('CNCPO_PEC_PASSWORD', ''),
             'authentication' => env('IMAP_AUTHENTICATION', null),
             'proxy' => [
