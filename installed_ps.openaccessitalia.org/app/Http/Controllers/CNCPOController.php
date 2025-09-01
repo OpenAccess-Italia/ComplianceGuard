@@ -2,266 +2,409 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use GuzzleHttp\Client;
+use App\Http\Controllers\Admin\ActionLogController;
+use App\Mail\CNCPOReply;
+use App\Models\CNCPO\Blacklist;
+use App\Models\CNCPO\Files;
+use App\SettingKeys;
+use Auth;
 use DataTables;
-use Carbon\Carbon;
+use DateTime;
+use DB;
+use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Process;
+use PhpMimeMailParser\Attachment;
+use PhpMimeMailParser\Parser;
+use Response;
+use Settings;
+use StdClass;
+use Webklex\IMAP\Facades\Client;
+use Webklex\PHPIMAP\Exceptions\ConnectionFailedException;
+use Webklex\PHPIMAP\Exceptions\FolderFetchingException;
+use Webklex\PHPIMAP\Exceptions\GetMessagesFailedException;
+use Webklex\PHPIMAP\Exceptions\MaskNotFoundException;
+use Webklex\PHPIMAP\Exceptions\RuntimeException;
 
 class CNCPOController extends Controller
 {
-    //
-    public function __construct(){
-        $this->middleware('auth.cncpo');
-    }
+    private $message;
 
-    private function download_file(){
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"cncpo_system","trying to download cncpo blacklist");
-        $ch = \curl_init();
+    /**
+     * @throws MaskNotFoundException
+     * @throws ConnectionFailedException
+     */
+    private function download_file(): ?Attachment
+    {
+        ActionLogController::log(0, 'cncpo_system', 'trying to download cncpo blacklist');
 
-        curl_setopt($ch, CURLOPT_URL, env("CNCPO_DOWNLOAD_URL"));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_SSLCERTTYPE, "P12");
-        curl_setopt($ch, CURLOPT_SSLCERTPASSWD, env("CNCPO_PFX_PASS"));
-        curl_setopt($ch, CURLOPT_SSLCERT, env("CNCPO_PFX_PATH"));
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36');
-        
-        $result = curl_exec($ch);
-        if(curl_errno($ch)){
-            \App\Http\Controllers\Admin\ActionLogController::log(0,"cncpo_system","failed to download cncpo blacklist (curl error: ".curl_error($ch).")");
-            curl_close($ch);
-            return false;
-        }else{
-            \App\Http\Controllers\Admin\ActionLogController::log(0,"cncpo_system","succeded to download cncpo blacklist");
-            curl_close($ch);
-            return $result;
+        // Open mail session
+        $client = Client::account('cncpo');
+        $client->connect();
+
+        // Search for possible cncpo blacklist mails
+        try {
+            $folder = $client->getFolder('INBOX');
+            if (! $folder) {
+                ActionLogController::log(0, 'cncpo_system', 'INBOX folder fetching failed');
+
+                return null;
+            }
+            $message = $folder->messages()->whereFrom(Settings::get(SettingKeys::CNCPO_FROM_EMAIL))->get()->first();
+
+        } catch (ConnectionFailedException $e) {
+            ActionLogController::log(0, 'cncpo_system', 'connection to mail server failed');
+
+            return null;
+        } catch (FolderFetchingException $e) {
+            ActionLogController::log(0, 'cncpo_system', 'INBOX folder fetching failed');
+
+            return null;
+        } catch (GetMessagesFailedException $e) {
+            ActionLogController::log(0, 'cncpo_system', 'messages fetch failed');
+
+            return null;
+        } catch (RuntimeException $e) {
+            ActionLogController::log(0, 'cncpo_system', 'generic error');
+
+            return null;
         }
-        
+
+        if ($message === null) {
+            ActionLogController::log(0, 'cncpo_system', 'there is no cncpo blacklist mail to read, try again later');
+
+            return null;
+        }
+
+        $msg = new Parser;
+        $msg->setText($message->getRawBody());
+
+        $attachments = collect($msg->getAttachments());
+
+        if ($attachments->count() === 0) {
+            ActionLogController::log(0, 'cncpo_system', 'found a mail with no attachments');
+
+            return null;
+        }
+
+        $attachment = null;
+        $attachments->each(function ($att) use (&$attachment) {
+            if ($att->getContentType() === 'message/rfc822') {
+                $attachment = $att;
+            }
+        });
+
+        if ($attachment === null) {
+            ActionLogController::log(0, 'cncpo_system', 'found a mail with no rfc822 attachments');
+
+            return null;
+        }
+
+        $parser = new Parser;
+        $parser->setText($attachment->getContent());
+
+        $file = $parser->getAttachments()[0];
+
+        $this->message = $message;
+
+        ActionLogController::log(0, 'cncpo_system', 'succeded to download cncpo blacklist');
+
+        return $file;
     }
 
-    private function validate_file($content){
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"cncpo_system","validating cncpo blacklist");
-        $tmp = fopen('php://temp', 'r+');
-        fwrite($tmp,$content);
-        rewind($tmp);
+    private function send_reply(string $prog, string $id)
+    {
+        $message = $this->message;
+
+        $reply = new CNCPOReply($prog, $id);
+
+        try {
+            $mail = Mail::mailer('cncpo_pec')
+                ->to($message->getFrom()->first())
+                ->send($reply->subject('Re: '.$message->getSubject()->first()));
+        } catch (Exception $e) {
+            ActionLogController::log(0, 'cncpo_system', 'Failed to send reply: '.$e->getMessage());
+            return;
+        }
+
+        if (Settings::get(SettingKeys::CNCPO_REPLY_SAVE_SENT) == '1') {
+            $folder = $message->getClient()->getFolderByName(Settings::get(SettingKeys::CNCPO_REPLY_SENT_FOLDER));
+            $folder->appendMessage($mail->getSymfonySentMessage()->toString(), ['\Seen'], now()->format('d-M-Y h:i:s O'));
+        }
+    }
+
+    private function decrypt_file(Attachment $attachment)
+    {
+        ActionLogController::log(0, 'cncpo_system', 'decrypting file');
+
+        $password = Settings::get(SettingKeys::CNCPO_GPG_PRIVATE_KEY_PASSWORD);
+
+        $res = Process::run(['which', 'gpg']);
+        $gpgPath = trim($res->output());
+        if (str_contains($gpgPath, 'not found')) {
+            ActionLogController::log(0, 'system', 'GPG is not installed.');
+
+            return null;
+        }
+        $file = storage_path('app/tmp/'.$attachment->getFilename());
+        $decrypted_file = storage_path('app/tmp/blacklist.csv');
+        @unlink($file);
+        @unlink($decrypted_file);
+
+        file_put_contents($file, $attachment->getContent());
+
+        $result = Process::run([
+            $gpgPath,
+            '--batch',
+            '--pinentry-mode', 'loopback',
+            '--passphrase', $password,
+            '--decrypt',
+            '--output', $decrypted_file,
+            $file
+        ]);
+
+        if (! is_file($decrypted_file)) {
+            ActionLogController::log(0, 'system', 'Error while decrypting file '. $result->errorOutput());
+
+            return null;
+        }
+
+        $tmp = fopen($decrypted_file, 'rb+');
         $first_row = fgetcsv($tmp, 5000, "\n");
-        $first_row_arr = explode(" ;",$first_row[0]);
-        if(count($first_row_arr) == 6){
-            if(is_numeric($first_row_arr[0])){
-                $blacklist_id = trim($first_row_arr[0]);
-                if(strlen(trim($first_row_arr[1])) == 12){
-                    $blacklist_timestamp = self::make_datetime(trim($first_row_arr[1]));
-                    \App\Http\Controllers\Admin\ActionLogController::log(0,"cncpo_system","cncpo blacklist is valid");
-                    return [
-                        "blacklist_id" => $blacklist_id,
-                        "balcklist_timestamp" => $blacklist_timestamp,
-                        "content" => $content
-                    ];
-                    fclose($tmp);
-                }
+        $first_row_arr = explode(' ;', $first_row[0]);
+
+        if ((count($first_row_arr) == 6) && is_numeric($first_row_arr[0])) {
+            $blacklist_id = trim($first_row_arr[0]);
+            if (strlen(trim($first_row_arr[1])) == 12) {
+                $blacklist_timestamp = self::make_datetime(trim($first_row_arr[1]));
+                ActionLogController::log(0, 'cncpo_system', 'cncpo blacklist is valid');
+
+                return [
+                    'blacklist_id' => $blacklist_id,
+                    'balcklist_timestamp' => $blacklist_timestamp,
+                    'content' => file_get_contents($decrypted_file),
+                ];
             }
         }
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"cncpo_system","cncpo blacklist is not valid");
+        ActionLogController::log(0, 'cncpo_system', 'cncpo blacklist is not valid');
         fclose($tmp);
+
+        return null;
+    }
+
+    private function save_file($validation)
+    {
+        ActionLogController::log(0, 'cncpo_system', 'saving cncpo blacklist');
+        $new = new Files;
+        $new->blacklist_id = $validation['blacklist_id'];
+        $new->blacklist_timestamp = $validation['balcklist_timestamp'];
+        $new->content = $validation['content'];
+        $new->md5 = md5($validation['content']);
+        if ($new->save()) {
+            ActionLogController::log(0, 'cncpo_system', 'cncpo blacklist saved');
+
+            return $validation['content'];
+        }
+
+        ActionLogController::log(0, 'cncpo_system', 'cncpo blacklist not saved');
+
         return false;
     }
 
-    private function save_file($validation){
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"cncpo_system","saving cncpo blacklist");
-        $new = new \App\CNCPO\Files();
-        $new->blacklist_id = $validation["blacklist_id"];
-        $new->blacklist_timestamp = $validation["balcklist_timestamp"];
-        $new->content = $validation["content"];
-        $new->md5 = md5($validation["content"]);
-        if($new->save()){
-            \App\Http\Controllers\Admin\ActionLogController::log(0,"cncpo_system","cncpo blacklist saved");
-            return $validation["content"];
-        }else{
-            \App\Http\Controllers\Admin\ActionLogController::log(0,"cncpo_system","cncpo blacklist not saved");
-            return false;
-        }
-    }
-
-    private function parse_file($save){
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"cncpo_system","started blacklist elements update");
-        \DB::connection('mysql')->table('cncpo_blacklist')->truncate();
-        $tmp = fopen('php://temp', 'r+');
-        fwrite($tmp,$save);
+    private function parse_file($save)
+    {
+        ActionLogController::log(0, 'cncpo_system', 'started blacklist elements update');
+        DB::connection('mysql')->table('cncpo_blacklist')->truncate();
+        $tmp = fopen('php://temp', 'rb+');
+        fwrite($tmp, $save);
         rewind($tmp);
         $count = $total = $success = 0;
-        while($row = fgetcsv($tmp, 5000, "\n")){
-            $row_arr = explode(" ;",$row[0]);
-            $url = $row_arr[0];
+        while ($row = fgetcsv($tmp, 5000, "\n", escape: "")) {
+            $row_arr = explode(' ;', $row[0]);
+            $url = substr($row_arr[0], 0, 254);
             $fqdn = $row_arr[1];
-            if($count > 0){
+            if ($count > 0) {
                 $total++;
-                $new = new \App\CNCPO\Blacklist();
+                $new = new Blacklist;
                 $new->url = $url;
                 $new->fqdn = $fqdn;
-                if($new->save()){
+                if ($new->save()) {
                     $success++;
                 }
             }
             $count++;
         }
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"cncpo_system","inserted $success of $total blacklist elements");
+        ActionLogController::log(0, 'cncpo_system', "inserted $success of $total blacklist elements");
     }
 
-    public function update_blacklist(){
-        if(env("CNCPO_ENABLED") == "1"){
+    public function update_blacklist()
+    {
+        if (Settings::get(SettingKeys::CNCPO_ENABLED) == 1) {
             $check_env = self::check_env();
-            if(count($check_env) == 0){
-                \App\Http\Controllers\Admin\ActionLogController::log(0,"cncpo_cron","starting run");
+            if (count($check_env) == 0) {
+                ActionLogController::log(0, 'cncpo_cron', 'starting run');
                 $file = $this->download_file();
-                if($file){
-                    \App\Http\Controllers\Admin\ActionLogController::log(0,"cncpo_cron","file downloaded");
-                    $validation = $this->validate_file($file);
-                    if($validation){
-                        \App\Http\Controllers\Admin\ActionLogController::log(0,"cncpo_cron","downloaded file is valid");
-                        $save = $this->save_file($validation);
-                        if($save){
-                            \App\Http\Controllers\Admin\ActionLogController::log(0,"cncpo_cron","file saved");
-                            \App\Http\Controllers\Admin\ActionLogController::log(0,"cncpo_cron","start parsing");
+                if ($file) {
+                    ActionLogController::log(0, 'cncpo_cron', 'file downloaded');
+                    $decripted = $this->decrypt_file($file);
+                    if ($decripted) {
+                        ActionLogController::log(0, 'cncpo_cron', 'downloaded file is valid');
+                        $save = $this->save_file($decripted);
+                        if ($save) {
+                            ActionLogController::log(0, 'cncpo_cron', 'file saved');
+                            ActionLogController::log(0, 'cncpo_cron', 'start parsing');
                             $this->parse_file($save);
-                            \App\Http\Controllers\Admin\ActionLogController::log(0,"cncpo_cron","parsing ended");
-                        }else{
-                            \App\Http\Controllers\Admin\ActionLogController::log(0,"cncpo_cron","file save failed",true);
+                            ActionLogController::log(0, 'cncpo_cron', 'parsing ended');
+                        } else {
+                            ActionLogController::log(0, 'cncpo_cron', 'file save failed', true);
                         }
-                    }else{
-                        \App\Http\Controllers\Admin\ActionLogController::log(0,"cncpo_cron","downloaded file is invalid",true);
+                        if (Settings::get(SettingKeys::CNCPO_REPLY_ENABLED) == '1') {
+                            $this->send_reply($decripted['blacklist_id'], $decripted['balcklist_timestamp']);
+                        }
+                        $this->message->setFlag('Seen');
+                        $this->message->move($this->message->getClient()->getFolderByName(Settings::get(SettingKeys::CNCPO_PEC_IMAP_ARCHIVE_FOLDER))->path);
+                    } else {
+                        ActionLogController::log(0, 'cncpo_cron', 'downloaded file is invalid', true);
                     }
-                }else{
-                    \App\Http\Controllers\Admin\ActionLogController::log(0,"cncpo_cron","file download failed",true);
+                } else {
+                    ActionLogController::log(0, 'cncpo_cron', 'file download failed');
                 }
-                \App\Http\Controllers\Admin\ActionLogController::log(0,"cncpo_cron","run ended");
-            }else{
-                \App\Http\Controllers\Admin\ActionLogController::log(0,"cncpo_cron","run not started because of: ".implode(", ",$check_env),true);
+
+                ActionLogController::log(0, 'cncpo_cron', 'run ended');
+            } else {
+                ActionLogController::log(0, 'cncpo_cron', 'run not started because of: '.implode(', ', $check_env), true);
             }
         }
     }
 
-    public function test(){
-        $obj = new \StdClass();
-        //env
+    public function test()
+    {
+        $obj = new StdClass;
+        // env
         $env_test = self::check_env();
-        $obj->settings = new \StdClass();
+        $obj->settings = new StdClass;
         $obj->settings->passed = (count($env_test) == 0);
-        $obj->settings->messages = (count($env_test) == 0) ? ["Settings formally correct"] : $env_test;
-        //download
-        if($obj->settings->passed){
-            $obj->download = new \StdClass();
+        $obj->settings->messages = (count($env_test) == 0) ? ['Settings formally correct'] : $env_test;
+        // download
+        if ($obj->settings->passed) {
+            $obj->download = new StdClass;
             $file = $this->download_file();
-            if($file !== false){
+            if ($file instanceof Attachment) {
                 $obj->download->passed = true;
-                $obj->download->messages = ["File download success"];
-            }else{
+                $obj->download->messages = ['File download success'];
+            } else {
                 $obj->download->passed = false;
-                $obj->download->messages = ["File download failed (view action log for more infos)"];
+                $obj->download->messages = ['File download failed (view action log for more infos)'];
             }
-            //validation
-            if($obj->download->passed){
-                $obj->validation = new \StdClass();
-                $validation = $this->validate_file($file);
-                if($validation){
+            // validation
+            if ($obj->download->passed) {
+                $obj->validation = new StdClass;
+                if ($this->decrypt_file($file)) {
                     $obj->validation->passed = true;
-                    $obj->validation->messages = ["File validation success"];
-                }else{
+                    $obj->validation->messages = ['File validation success'];
+                } else {
                     $obj->validation->passed = false;
-                    $obj->validation->messages = ["File validation failed (view action log for more infos)"];
+                    $obj->validation->messages = ['File validation failed (view action log for more infos)'];
                 }
             }
-            
+
         }
+
         return json_encode($obj);
     }
 
-    private static function make_datetime($string){
-        $year = intval(substr($string,0,4));
-        $month = intval(substr($string,4,2));
-        $day = intval(substr($string,6,2));
-        $hour = intval(substr($string,8,2));
-        $minute = intval(substr($string,10,2));
-        $datetime = new \DateTime();
-        $datetime->setDate($year,$month,$day);
-        $datetime->setTime($hour,$minute,0);
+    private static function make_datetime($string)
+    {
+        $year = (int) substr($string, 0, 4);
+        $month = (int) substr($string, 4, 2);
+        $day = (int) substr($string, 6, 2);
+        $hour = (int) substr($string, 8, 2);
+        $minute = (int) substr($string, 10, 2);
+        $datetime = new DateTime;
+        $datetime->setDate($year, $month, $day);
+        $datetime->setTime($hour, $minute, 0);
+
         return $datetime;
     }
 
-    public function datatable_files(Request $request){
-        if($request->ajax()){
-            $data = \App\CNCPO\Files::query();
+    public function datatable_files(Request $request)
+    {
+        if ($request->ajax()) {
+            $data = Files::query();
+
             return Datatables::of($data)
                 ->rawColumns(
                     ['blacklist_id',
-                    'md5',
-                    'timestamp',
-                    'blacklist_timestamp']
+                        'md5',
+                        'timestamp',
+                        'blacklist_timestamp']
                 )->make(true);
         }
     }
 
-    public function datatable_blacklist(Request $request){
-        if($request->ajax()){
-            $data = \App\CNCPO\Blacklist::query();
+    public function datatable_blacklist(Request $request)
+    {
+        if ($request->ajax()) {
+            $data = Blacklist::query();
+
             return Datatables::of($data)
                 ->rawColumns(
                     ['url',
-                    'fqdn']
+                        'fqdn']
                 )->make(true);
         }
     }
 
-    public function download_blacklist(Request $request,$type){
+    public function download_blacklist(Request $request, $type)
+    {
         switch ($type) {
             case 'url':
-                //by url
-                $message = "CNCPO URL blacklist downloaded";
-                $list = \App\CNCPO\Blacklist::select('url')->distinct()->pluck('url')->toArray();
-            break;
+                // by url
+                $message = 'CNCPO URL blacklist downloaded';
+                $list = Blacklist::select('url')->distinct()->pluck('url')->toArray();
+                break;
             default:
-                //by fqdn
-                $message = "CNCPO FQDN blacklist downloaded";
-                $list = \App\CNCPO\Blacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
-            break;
+                // by fqdn
+                $message = 'CNCPO FQDN blacklist downloaded';
+                $list = Blacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
+                break;
         }
-        $content = implode("\n",$list);
-        \App\Http\Controllers\Admin\ActionLogController::log(\Auth::user()->id,\Auth::user()->name,$message);
+        $content = implode("\n", $list);
+        ActionLogController::log(Auth::user()->id, Auth::user()->name, $message);
         $headers = [
-            'Content-type' => 'text/plain', 
-            'Content-Disposition' => sprintf('attachment; filename="%s"', "blacklist.txt")
+            'Content-type' => 'text/plain',
+            'Content-Disposition' => sprintf('attachment; filename="%s"', 'blacklist.txt'),
         ];
-        return \Response::make($content, 200, $headers);
+
+        return Response::make($content, 200, $headers);
     }
 
-    private static function check_env(){
+    private static function check_env()
+    {
         $errors = [];
-        if(!env('CNCPO_DOWNLOAD_URL')){
-            $errors[] = "Download URL not filled";
-        }else{
-            if(!filter_var(env('CNCPO_DOWNLOAD_URL'), FILTER_VALIDATE_URL)){
-                $errors[] = "Download URL not valid";
-            }
+        if (! Settings::get(SettingKeys::CNCPO_PEC_EMAIL)) {
+            $errors[] = 'PEC email not filled';
         }
-        if(!env('CNCPO_PFX_PATH')){
-            $errors[] = "PFX path not filled";
-        }else{
-            if(!file_exists(env('CNCPO_PFX_PATH'))){
-                $errors[] = "PFX file do not exists";
-            }
+        if (! Settings::get(SettingKeys::CNCPO_FROM_EMAIL)) {
+            $errors[] = 'Incoming email not filled';
         }
-        if(!env('CNCPO_PFX_PASS')){
-            $errors[] = "PFX password not filled";
+        if (! Settings::get(SettingKeys::CNCPO_PEC_IMAP_PASSWORD)) {
+            $errors[] = 'PEC password not filled';
         }
-        
-        if(!env('CNCPO_DNS_REDIRECT_IP')){
-            $errors[] = "DNS redirect IP not filled";
-        }else{
-            if(!filter_var(env('CNCPO_DNS_REDIRECT_IP'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)){
-                $errors[] = "DNS redirect IP not valid";
-            }
+        if (! Settings::get(SettingKeys::CNCPO_PEC_IMAP_HOST)) {
+            $errors[] = 'IMAP host not filled';
         }
+        if (! Settings::get(SettingKeys::CNCPO_GPG_PRIVATE_KEY)) {
+            $errors[] = 'GPG private key not filled';
+        }
+        if (! Settings::get(SettingKeys::CNCPO_DNS_REDIRECT_IP)) {
+            $errors[] = 'DNS redirect IP not filled';
+        } elseif (! filter_var(Settings::get(SettingKeys::CNCPO_DNS_REDIRECT_IP), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            $errors[] = 'DNS redirect IP not valid';
+        }
+
         return $errors;
     }
 }

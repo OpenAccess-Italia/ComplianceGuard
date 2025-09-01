@@ -1,0 +1,17 @@
+<?php
+
+namespace App\Models\ADM;
+
+use Illuminate\Database\Eloquent\Model;
+
+class BettingFiles extends Model
+{
+    //
+    protected $table = 'adm_betting_files';
+
+    public $timestamps = false;
+
+    protected $casts = [
+        'timestamp' => 'datetime',
+    ];
+}

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use Auth;
 use Closure;
 
 class CanManual
@@ -10,20 +11,22 @@ class CanManual
      * Handle an incoming request.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
      * @return mixed
      */
     public function handle($request, Closure $next)
     {
-        if(\Auth::check()){
-            if(!\Auth::user()->manual){
-                \Auth::logout();
+        if (Auth::check()) {
+            if (! Auth::user()->manual) {
+                Auth::logout();
+
                 return redirect('/');
             }
-        }else{
-            \Auth::logout();
+        } else {
+            Auth::logout();
+
             return redirect('/');
         }
+
         return $next($request);
     }
 }
