@@ -4,8 +4,8 @@
     @else
     Buongiorno,
     @endif
-    <br>con la presente si segnala che in data {{ now()->format('d/m/Y') }} e' avvenuta ricezione e applicazione della
-        lista dei siti da inibire per il CNCPO avente progressivo <b>{{ $listaProg }}</b> e identificativo <b>{{ $listaId }}</b>.<br>
+    <br>con la presente si segnala che in data {{ $data }} e' avvenuta ricezione e applicazione della
+        lista dei siti da inibire per il CNCPO avente identificativo <b>{{ $id }}</b>.<br>
     Il messaggio e' stato generato automaticamente, pertanto vi preghiamo di segnalare qualsiasi eventuale problema
         o incorrettezza del presente riscontro.<br>
     <br>

@@ -793,7 +793,7 @@ class PiracyController extends Controller
                     $result = trim($e->getResponse()->getBody()->getContents());
                     self::api_log('POST', '/api/v1/authentication/login', null, json_encode($body_request), $e->getResponse()->getStatusCode(), $result);
                 }
-                ActionLogController::log(0, 'piracy_system', 'failed to authenticate ('.$e->getResponse().')');
+                ActionLogController::log(0, 'piracy_system', 'failed to authenticate ('.$e->getMessage().')');
             } else {
                 ActionLogController::log(0, 'piracy_system', 'failed to authenticate (connection error)');
             }
@@ -852,7 +852,7 @@ class PiracyController extends Controller
                     $result = trim($e->getResponse()->getBody()->getContents());
                     self::api_log('POST', '/api/v1/authentication/refresh', null, json_encode($body_request), $e->getResponse()->getStatusCode(), $result);
                 }
-                ActionLogController::log(0, 'piracy_system', 'failed to refresh ('.$e->getResponse().')');
+                ActionLogController::log(0, 'piracy_system', 'failed to refresh ('.$e->getMessage().')');
             } else {
                 ActionLogController::log(0, 'piracy_system', 'failed to refresh (connection error)');
             }

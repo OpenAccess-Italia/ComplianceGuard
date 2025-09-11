@@ -10,21 +10,15 @@ class CNCPOReply extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public string $listaProg;
-
-    public string $listaId;
-
     /**
      * Create a new message instance.
      *
      * @return void
      */
     public function __construct(
-        string $listaProg,
-        string $listaId
+        public string $id,
+        public string $data
     ) {
-        $this->listaProg = $listaProg;
-        $this->listaId = $listaId;
     }
 
     /**

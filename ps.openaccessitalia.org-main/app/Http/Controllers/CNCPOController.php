@@ -114,16 +114,18 @@ class CNCPOController extends Controller
         return $file;
     }
 
-    private function send_reply(string $prog, string $id)
+    private function send_reply(string $id, DateTime $dt)
     {
         $message = $this->message;
 
-        $reply = new CNCPOReply($prog, $id);
+        $reply = new CNCPOReply($id, $dt->format('d/m/Y'));
 
         try {
             $mail = Mail::mailer('cncpo_pec')
                 ->to($message->getFrom()->first())
-                ->send($reply->subject('Re: '.$message->getSubject()->first()));
+                ->send($reply
+                    ->subject('Re: '.$message->getSubject()->first())
+                );
         } catch (Exception $e) {
             ActionLogController::log(0, 'cncpo_system', 'Failed to send reply: '.$e->getMessage());
             return;
@@ -183,7 +185,7 @@ class CNCPOController extends Controller
 
                 return [
                     'blacklist_id' => $blacklist_id,
-                    'balcklist_timestamp' => $blacklist_timestamp,
+                    'blacklist_timestamp' => $blacklist_timestamp,
                     'content' => file_get_contents($decrypted_file),
                 ];
             }
@@ -199,7 +201,7 @@ class CNCPOController extends Controller
         ActionLogController::log(0, 'cncpo_system', 'saving cncpo blacklist');
         $new = new Files;
         $new->blacklist_id = $validation['blacklist_id'];
-        $new->blacklist_timestamp = $validation['balcklist_timestamp'];
+        $new->blacklist_timestamp = $validation['blacklist_timestamp'];
         $new->content = $validation['content'];
         $new->md5 = md5($validation['content']);
         if ($new->save()) {
@@ -261,10 +263,15 @@ class CNCPOController extends Controller
                             ActionLogController::log(0, 'cncpo_cron', 'file save failed', true);
                         }
                         if (Settings::get(SettingKeys::CNCPO_REPLY_ENABLED) == '1') {
-                            $this->send_reply($decripted['blacklist_id'], $decripted['balcklist_timestamp']);
+                            ActionLogController::log(0, 'cncpo_cron', 'replying to message');
+                            $this->send_reply($decripted['blacklist_id'], $decripted['blacklist_timestamp']);
                         }
-                        $this->message->setFlag('Seen');
-                        $this->message->move($this->message->getClient()->getFolderByName(Settings::get(SettingKeys::CNCPO_PEC_IMAP_ARCHIVE_FOLDER))->path);
+                        try {
+                            $this->message->setFlag('Seen');
+                            $this->message->move($this->message->getClient()->getFolderByName(Settings::get(SettingKeys::CNCPO_PEC_IMAP_ARCHIVE_FOLDER))->path);
+                        } catch (Exception $e) {
+                            ActionLogController::log(0, 'cncpo_cron', 'error moving message to Archive, please move mail manually', true);
+                        }
                     } else {
                         ActionLogController::log(0, 'cncpo_cron', 'downloaded file is invalid', true);
                     }
