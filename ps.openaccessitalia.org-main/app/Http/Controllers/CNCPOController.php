@@ -122,9 +122,8 @@ class CNCPOController extends Controller
 
         try {
             $mail = Mail::mailer('cncpo_pec')
-                ->to($message->getFrom()->first())
-                ->send($reply
-                    ->subject('Re: '.$message->getSubject()->first())
+                ->to($message->getReplyTo()->first()->mail)
+                ->send($reply->subject('Re: '.mb_decode_mimeheader($message->getSubject()->first()))
                 );
         } catch (Exception $e) {
             ActionLogController::log(0, 'cncpo_system', 'Failed to send reply: '.$e->getMessage());

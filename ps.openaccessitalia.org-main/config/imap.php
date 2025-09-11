@@ -137,9 +137,6 @@ return [
     |                               error: "Kerberos error: No credentials cache
     |                               file found (try running kinit) (...)"
     |                               or ['GSSAPI','PLAIN'] if you are using outlook mail
-    |   -Decoder options (currently only the message subject and attachment name decoder can be set)
-    |       'utf-8' - Uses imap_utf8($string) to decode a string
-    |       'mimeheader' - Uses mb_decode_mimeheader($string) to decode a string
     |
     */
     'options' => [
@@ -158,19 +155,42 @@ return [
         'fetch_order' => 'asc',
         'dispositions' => ['attachment', 'inline'],
         'common_folders' => [
-            'root' => 'INBOX',
-            'junk' => 'INBOX/Junk',
-            'draft' => 'INBOX/Drafts',
-            'sent' => 'INBOX/Sent',
-            'trash' => 'INBOX/Trash',
-        ],
-        'decoder' => [
-            'message' => 'utf-8', // mimeheader
-            'attachment' => 'utf-8', // mimeheader
+            "root" => "INBOX",
+            "junk" => "INBOX/Junk",
+            "draft" => "INBOX/Drafts",
+            "sent" => "INBOX/Sent",
+            "trash" => "INBOX/Trash",
         ],
         'open' => [
             // 'DISABLE_AUTHENTICATOR' => 'GSSAPI'
+        ]
+    ],
+
+    /**
+     * |--------------------------------------------------------------------------
+     * | Available decoding options
+     * |--------------------------------------------------------------------------
+     * |
+     * | Available php imap config parameters are listed below
+     * |   -options: Decoder options (currently only the message subject and attachment name decoder can be set)
+     * |       'utf-8' - Uses imap_utf8($string) to decode a string
+     * |       'mimeheader' - Uses mb_decode_mimeheader($string) to decode a string
+     * |   -decoder: Decoder to be used. Can be replaced by custom decoders if needed.
+     * |       'header' - HeaderDecoder
+     * |       'message' - MessageDecoder
+     * |       'attachment' - AttachmentDecoder
+     */
+    'decoding' => [
+        'options' => [
+            'header' => 'utf-8', // mimeheader
+            'message' => 'utf-8', // mimeheader
+            'attachment' => 'utf-8' // mimeheader
         ],
+        'decoder' => [
+            'header' => \Webklex\PHPIMAP\Decoder\HeaderDecoder::class,
+            'message' => \Webklex\PHPIMAP\Decoder\MessageDecoder::class,
+            'attachment' => \Webklex\PHPIMAP\Decoder\AttachmentDecoder::class
+        ]
     ],
 
     /*
@@ -189,19 +209,19 @@ return [
     |
     */
     'events' => [
-        'message' => [
+        "message" => [
             'new' => \Webklex\IMAP\Events\MessageNewEvent::class,
             'moved' => \Webklex\IMAP\Events\MessageMovedEvent::class,
             'copied' => \Webklex\IMAP\Events\MessageCopiedEvent::class,
             'deleted' => \Webklex\IMAP\Events\MessageDeletedEvent::class,
             'restored' => \Webklex\IMAP\Events\MessageRestoredEvent::class,
         ],
-        'folder' => [
+        "folder" => [
             'new' => \Webklex\IMAP\Events\FolderNewEvent::class,
             'moved' => \Webklex\IMAP\Events\FolderMovedEvent::class,
             'deleted' => \Webklex\IMAP\Events\FolderDeletedEvent::class,
         ],
-        'flag' => [
+        "flag" => [
             'new' => \Webklex\IMAP\Events\FlagNewEvent::class,
             'deleted' => \Webklex\IMAP\Events\FlagDeletedEvent::class,
         ],
@@ -222,6 +242,6 @@ return [
     */
     'masks' => [
         'message' => \Webklex\PHPIMAP\Support\Masks\MessageMask::class,
-        'attachment' => \Webklex\PHPIMAP\Support\Masks\AttachmentMask::class,
-    ],
+        'attachment' => \Webklex\PHPIMAP\Support\Masks\AttachmentMask::class
+    ]
 ];
