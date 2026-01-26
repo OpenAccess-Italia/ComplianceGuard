@@ -427,7 +427,7 @@
 
 }</style>                 <link rel="stylesheet" href="https://us15.campaign-archive.com/css/archivebar-desktop.css" mc:nocompile>  </head>         <body style="height: 100%;margin: 0;padding: 0;width: 100%;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;background-color: #1F2934;">
         <!---->
-        <!--[if !gte mso 9]><!----><span class="mcnPreviewText" style="display:none; font-size:0px; line-height:0px; max-height:0px; max-width:0px; opacity:0; overflow:hidden; visibility:hidden; mso-hide:all;">{{\Settings::get(\App\SettingKeys::APP_NAME)}}: login credentials</span><!--<![endif]-->
+        <!--[if !gte mso 9]><!----><span class="mcnPreviewText" style="display:none; font-size:0px; line-height:0px; max-height:0px; max-width:0px; opacity:0; overflow:hidden; visibility:hidden; mso-hide:all;">{{config('app.name')}}: login credentials</span><!--<![endif]-->
         <!---->
         <center>
             <table align="center" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="bodyTable" style="border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;height: 100%;margin: 0;padding: 0;width: 100%;background-color: #1F2934;">
@@ -503,7 +503,7 @@
 we are pleased to inform you of the qualification to {{config('app.name')}}.</span></div>
 
 <div style="text-align: left;"><span style="color:#000000">&nbsp;<br>
-You can login using this credentials &nbsp;on&nbsp;</span><a href="{{config('app.url')}}" target="_blank" style="mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;color: #999999;font-weight: normal;text-decoration: underline;"><span style="color:#000000">{{\Settings::get(\App\SettingKeys::APP_URL)}}</span></a><span style="color:#000000">:</span><br>
+You can login using this credentials &nbsp;on&nbsp;</span><a href="{{config('app.url')}}" target="_blank" style="mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;color: #999999;font-weight: normal;text-decoration: underline;"><span style="color:#000000">{{config('app.url')}}</span></a><span style="color:#000000">:</span><br>
 &nbsp;</div>
 
 <ul>
