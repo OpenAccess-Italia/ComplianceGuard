@@ -1,11 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <!doctype html>
 <html xmlns:fb="http://www.facebook.com/2008/fbml" xmlns:og="http://opengraph.org/schema/"> <head>
-        
-<meta property="og:title" content="{{env('APP_NAME')}}: login credentials">
+
+<meta property="og:title" content="{{config('app.name')}}: login credentials">
 <meta property="fb:page_id" content="43929265776">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<meta name="referrer" content="origin">        
+<meta name="referrer" content="origin">
 		<!-- NAME: MEMBER WELCOME -->
 		<!--[if gte mso 15]>
 		<xml>
@@ -18,8 +18,8 @@
 		<meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>{{env('APP_NAME')}}: login credentials</title>
-        
+		<title>{{config('app.name')}}: login credentials</title>
+
     <style type="text/css">
 		p{
 			margin:10px 0;
@@ -176,7 +176,7 @@
 		}
 		#templateHeader{
 			background-color:#ffffff;
-			background-image:url("{{env('APP_URL')}}/img/mail_header.png");
+			background-image:url("{{config('app.url')}}/img/mail_header.png");
 			background-repeat:no-repeat;
 			background-position:top;
 			background-size:contain;
@@ -427,7 +427,7 @@
 
 }</style>                 <link rel="stylesheet" href="https://us15.campaign-archive.com/css/archivebar-desktop.css" mc:nocompile>  </head>         <body style="height: 100%;margin: 0;padding: 0;width: 100%;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;background-color: #1F2934;">
         <!---->
-        <!--[if !gte mso 9]><!----><span class="mcnPreviewText" style="display:none; font-size:0px; line-height:0px; max-height:0px; max-width:0px; opacity:0; overflow:hidden; visibility:hidden; mso-hide:all;">{{env('APP_NAME')}}: login credentials</span><!--<![endif]-->
+        <!--[if !gte mso 9]><!----><span class="mcnPreviewText" style="display:none; font-size:0px; line-height:0px; max-height:0px; max-width:0px; opacity:0; overflow:hidden; visibility:hidden; mso-hide:all;">{{config('app.name')}}: login credentials</span><!--<![endif]-->
         <!---->
         <center>
             <table align="center" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" id="bodyTable" style="border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;height: 100%;margin: 0;padding: 0;width: 100%;background-color: #1F2934;">
@@ -455,7 +455,7 @@
 								</td>
                             </tr>
 							<tr>
-								<td align="center" valign="top" id="templateHeader" style="background:#ffffff url(&quot;{{env('APP_URL')}}/img/mail_header.png&quot;) no-repeat top/contain;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;background-color: #ffffff;background-image: url({{env('APP_URL')}}/img/mail_header.png);background-repeat: no-repeat;background-position: top;background-size: contain;border-top: 0;border-bottom: 0;padding-top: 400px;padding-bottom: 30px;">
+								<td align="center" valign="top" id="templateHeader" style="background:#ffffff url(&quot;{{config('app.url')}}/img/mail_header.png&quot;) no-repeat top/contain;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;background-color: #ffffff;background-image: url({{config('app.url')}}/img/mail_header.png);background-repeat: no-repeat;background-position: top;background-size: contain;border-top: 0;border-bottom: 0;padding-top: 400px;padding-bottom: 30px;">
 									<!--[if (gte mso 9)|(IE)]>
 									<table align="center" border="0" cellspacing="0" cellpadding="0" width="600" style="width:600px;">
 									<tr>
@@ -490,20 +490,20 @@
 				<table align="left" border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;">
 				<tr>
 				<![endif]-->
-			    
+
 				<!--[if mso]>
 				<td valign="top" width="600" style="width:600px;">
 				<![endif]-->
                 <table align="left" border="0" cellpadding="0" cellspacing="0" style="max-width: 100%;min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;" width="100%" class="mcnTextContentContainer">
                     <tbody><tr>
-                        
+
                         <td valign="top" class="mcnTextContent" style="padding-top: 0;padding-right: 18px;padding-bottom: 9px;padding-left: 18px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;word-break: break-word;color: #666666;font-family: Georgia;font-size: 16px;line-height: 150%;text-align: center;">
-                        
+
                             <div style="text-align: left;"><span style="color:#000000">Hi {{$alias}},<br><br>
-we are pleased to inform you of the qualification to {{env('APP_NAME')}}.</span></div>
+we are pleased to inform you of the qualification to {{config('app.name')}}.</span></div>
 
 <div style="text-align: left;"><span style="color:#000000">&nbsp;<br>
-You can login using this credentials &nbsp;on&nbsp;</span><a href="{{env('APP_URL')}}" target="_blank" style="mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;color: #999999;font-weight: normal;text-decoration: underline;"><span style="color:#000000">{{env('APP_URL')}}</span></a><span style="color:#000000">:</span><br>
+You can login using this credentials &nbsp;on&nbsp;</span><a href="{{config('app.url')}}" target="_blank" style="mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;color: #999999;font-weight: normal;text-decoration: underline;"><span style="color:#000000">{{config('app.url')}}</span></a><span style="color:#000000">:</span><br>
 &nbsp;</div>
 
 <ul>
@@ -518,7 +518,7 @@ You can login using this credentials &nbsp;on&nbsp;</span><a href="{{env('APP_UR
 				<!--[if mso]>
 				</td>
 				<![endif]-->
-                
+
 				<!--[if mso]>
 				</tr>
 				</table>
@@ -534,23 +534,23 @@ You can login using this credentials &nbsp;on&nbsp;</span><a href="{{env('APP_UR
 				<table align="left" border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;">
 				<tr>
 				<![endif]-->
-			    
+
 				<!--[if mso]>
 				<td valign="top" width="600" style="width:600px;">
 				<![endif]-->
                 <table align="left" border="0" cellpadding="0" cellspacing="0" style="max-width: 100%;min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;" width="100%" class="mcnTextContentContainer">
                     <tbody><tr>
-                        
+
                         <td valign="top" class="mcnTextContent" style="padding-top: 0;padding-right: 18px;padding-bottom: 9px;padding-left: 18px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;word-break: break-word;color: #666666;font-family: Georgia;font-size: 16px;line-height: 150%;text-align: center;">
-                        
-                            
+
+
                         </td>
                     </tr>
                 </tbody></table>
 				<!--[if mso]>
 				</td>
 				<![endif]-->
-                
+
 				<!--[if mso]>
 				</tr>
 				</table>
@@ -628,15 +628,15 @@ You can login using this credentials &nbsp;on&nbsp;</span><a href="{{env('APP_UR
 				<table align="left" border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;">
 				<tr>
 				<![endif]-->
-			    
+
 				<!--[if mso]>
 				<td valign="top" width="600" style="width:600px;">
 				<![endif]-->
                 <table align="left" border="0" cellpadding="0" cellspacing="0" style="max-width: 100%;min-width: 100%;border-collapse: collapse;mso-table-lspace: 0pt;mso-table-rspace: 0pt;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;" width="100%" class="mcnTextContentContainer">
                     <tbody><tr>
-                        
+
                         <td valign="top" class="mcnTextContent" style="padding-top: 0;padding-right: 18px;padding-bottom: 9px;padding-left: 18px;mso-line-height-rule: exactly;-ms-text-size-adjust: 100%;-webkit-text-size-adjust: 100%;word-break: break-word;color: #FFFFFF;font-family: Helvetica;font-size: 12px;line-height: 150%;text-align: center;">
-                        
+
                             <em>Copyright &reg; @php echo(date("Y")) @endphp - openaccessitalia.org</em><br><br>
 &nbsp;&nbsp;
                         </td>
@@ -645,7 +645,7 @@ You can login using this credentials &nbsp;on&nbsp;</span><a href="{{env('APP_UR
 				<!--[if mso]>
 				</td>
 				<![endif]-->
-                
+
 				<!--[if mso]>
 				</tr>
 				</table>

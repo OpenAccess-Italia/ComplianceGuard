@@ -33,7 +33,7 @@
             <div class="card card-custom">
                 <div class="card-header flex-wrap py-5">
                     <div class="card-title">
-                        <h3 class="card-label">Log <small>last 24 hours shown</small></h3>
+                        <h3 class="card-label">Log</h3>
                     </div>
                     <div class="card-toolbar">
                         <label class="text-right mr-3">Hide systems and crons</label>

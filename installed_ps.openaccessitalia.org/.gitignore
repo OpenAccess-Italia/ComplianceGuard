@@ -10,3 +10,10 @@ Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
+/after.sh
+/aliases
+/Vagrantfile
+.idea
+.vagrant
+docker-compose.yml
+/docker/

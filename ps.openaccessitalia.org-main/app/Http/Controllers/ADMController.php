@@ -2,458 +2,467 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use GuzzleHttp\Client;
+use App\Http\Controllers\Admin\ActionLogController;
+use App\Models\ADM\BettingBlacklist;
+use App\Models\ADM\BettingFiles;
+use App\Models\ADM\SmokingBlacklist;
+use App\Models\ADM\SmokingFiles;
+use App\SettingKeys;
 use DataTables;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\BadResponseException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Response;
+use Settings;
 
 class ADMController extends Controller
 {
-    //
-    public function __construct(){
-        $this->middleware('auth.adm');
-    }
 
-    private static function get_href($html){
-        $doc = new \DOMDocument();
+    private static function get_href($html)
+    {
+        $doc = new \DOMDocument;
         $doc->loadHTML($html);
         $a = $doc->getElementsByTagName('a');
-        if($a->length == 1){
-            return $a[0]->getAttribute("href");
+        if ($a->length == 1) {
+            return $a[0]->getAttribute('href');
         }
+
         return false;
     }
 
-    private function find_betting_files_url(){
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","trying to find betting adm blacklist links");
-        $client = new \GuzzleHttp\Client();
+    private function find_betting_files_url()
+    {
+        ActionLogController::log(0, 'adm_system', 'trying to find betting adm blacklist links');
+        $client = new Client;
         try {
-            $response = $client->get(env("ADM_BETTING_URL"));
-        }catch(\GuzzleHttp\Exception\BadResponseException $e){
-            \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","failed to find betting adm blacklist links (".$e->getMessage().")");
+            $response = $client->get(Settings::get(SettingKeys::ADM_BETTING_URL));
+        } catch (BadResponseException $e) {
+            ActionLogController::log(0, 'adm_system', 'failed to find betting adm blacklist links ('.$e->getMessage().')');
+
             return false;
         }
-        if($response->getStatusCode() == 200){
+        if ($response->getStatusCode() == 200) {
             if ($response->getBody()) {
                 $result = $response->getBody()->getContents();
-                $rows = explode("\n",$result);
+                $rows = explode("\n", $result);
                 $txt = $sha256 = false;
                 foreach ($rows as $row) {
-                    if(strpos($row, "Elenco dei siti soggetti ad inibizione - txt") !== false){
+                    if (str_contains($row, 'Elenco dei siti soggetti ad inibizione - txt')) {
                         $txt = self::get_href(trim($row));
                     }
-                    if(strpos($row, "File di controllo - txt") !== false){
+                    if (str_contains($row, 'File di controllo (SHA 256) - txt')) {
                         $sha256 = self::get_href(trim($row));
                     }
                 }
-                if($txt && $sha256){
-                    $txt = "https://www.adm.gov.it".$txt;
-                    $sha256 = "https://www.adm.gov.it".$sha256;
-                    \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","betting adm blacklist links founded ($txt | $sha256)");
+                if ($txt && $sha256) {
+                    $txt = 'https://www.adm.gov.it'.$txt;
+                    $sha256 = 'https://www.adm.gov.it'.$sha256;
+                    ActionLogController::log(0, 'adm_system', "betting adm blacklist links founded ($txt | $sha256)");
+
                     return [
-                        "txt" => $txt,
-                        "sha256" => $sha256
+                        'txt' => $txt,
+                        'sha256' => $sha256,
                     ];
-                }else{
-                    \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","failed to find betting adm blacklist links (no links found)");
                 }
-            }else{
-                \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","failed to find betting adm blacklist links (no body)");
+
+                ActionLogController::log(0, 'adm_system', 'failed to find betting adm blacklist links (no links found)');
+            } else {
+                ActionLogController::log(0, 'adm_system', 'failed to find betting adm blacklist links (no body)');
             }
-        }else{
-            \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","failed to find betting adm blacklist links (".$response->getStatusCode().")");
+        } else {
+            ActionLogController::log(0, 'adm_system', 'failed to find betting adm blacklist links ('.$response->getStatusCode().')');
         }
+
         return false;
     }
 
-    private function download_betting_files($links){
+    private function download_betting_files($links)
+    {
         $files = [
-            "txt" => false,
-            "sha256" => false
+            'txt' => false,
+            'sha256' => false,
         ];
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","trying to download betting adm blacklist");
-        $ch = \curl_init();
+        ActionLogController::log(0, 'adm_system', 'trying to download betting adm blacklist');
 
-        curl_setopt($ch, CURLOPT_URL, $links["txt"]);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36');
-        
-        $result = curl_exec($ch);
-        if(curl_errno($ch)){
-            \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","failed to download betting adm blacklist (curl error: ".curl_error($ch).")");
-            curl_close($ch);
-        }else{
-            \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","succeded to download betting adm blacklist");
-            curl_close($ch);
-            $files["txt"] = $result;
+        $response = Http::get($links['txt']);
+
+        if ($response->successful()) {
+            ActionLogController::log(0, 'adm_system', 'succeded to download betting adm blacklist');
+            $files['txt'] = $response->body();
+        } else {
+            ActionLogController::log(0, 'adm_system',
+                'failed to download betting adm blacklist (error: '.$response->status().')');
         }
 
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","trying to download betting adm blacklist sha256");
-        $ch = \curl_init();
+        ActionLogController::log(0, 'adm_system', 'trying to download betting adm blacklist sha256');
 
-        curl_setopt($ch, CURLOPT_URL, $links["sha256"]);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36');
-        
-        $result = curl_exec($ch);
-        if(curl_errno($ch)){
-            \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","failed to download betting adm blacklist sha256 (curl error: ".curl_error($ch).")");
-            curl_close($ch);
-        }else{
-            \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","succeded to download betting adm blacklist sha256");
-            curl_close($ch);
-            $files["sha256"] = $result;
+        $response = Http::get($links['sha256']);
+
+        if ($response->successful()) {
+            ActionLogController::log(0, 'adm_system', 'succeded to download betting adm blacklist sha256');
+            $files['sha256'] = $response->body();
+        } else {
+            ActionLogController::log(0, 'adm_system',
+                'failed to download betting adm blacklist sha256 (error: '.$response->status().')');
         }
-        if($files["txt"] && $files["sha256"]){
+
+        if ($files['txt'] && $files['sha256']) {
             return $files;
         }
+
         return false;
     }
 
-    private function validate_betting_file($files){
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","validating betting adm blacklist");
-        if(hash("sha256",$files["txt"]) == $files["sha256"]){
-            \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","betting adm blacklist is valid");
+    private function validate_betting_file($files)
+    {
+        ActionLogController::log(0, 'adm_system', 'validating betting adm blacklist');
+        if (hash('sha256', $files['txt']) == $files['sha256']) {
+            ActionLogController::log(0, 'adm_system', 'betting adm blacklist is valid');
+
             return $files;
         }
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","betting adm blacklist is not valid");
+        ActionLogController::log(0, 'adm_system', 'betting adm blacklist is not valid');
+
         return false;
     }
 
-    private function save_betting_file($validation){
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","saving betting adm blacklist");
-        $new = new \App\ADM\BettingFiles();
-        $new->content = $validation["txt"];
-        $new->sha256 = $validation["sha256"];
-        if($new->save()){
-            \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","betting adm blacklist saved");
-            return $validation["txt"];
-        }else{
-            \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","betting adm blacklist not saved");
-            return false;
+    private function save_betting_file($validation)
+    {
+        ActionLogController::log(0, 'adm_system', 'saving betting adm blacklist');
+        $new = new BettingFiles;
+        $new->content = $validation['txt'];
+        $new->sha256 = $validation['sha256'];
+        if ($new->save()) {
+            ActionLogController::log(0, 'adm_system', 'betting adm blacklist saved');
+
+            return $validation['txt'];
         }
+
+        ActionLogController::log(0, 'adm_system', 'betting adm blacklist not saved');
+
+        return false;
     }
 
-    private function parse_betting_file($save){
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","started betting adm blacklist elements update");
+    private function parse_betting_file($save)
+    {
+        ActionLogController::log(0, 'adm_system', 'started betting adm blacklist elements update');
         \DB::connection('mysql')->table('adm_betting_blacklist')->truncate();
-        $rows = explode("\n",$save);
+        $rows = explode("\n", $save);
         $total = $success = 0;
         foreach ($rows as $row) {
             $total++;
-            $new = new \App\ADM\BettingBlacklist();
+            $new = new BettingBlacklist;
             $new->fqdn = trim($row);
-            if($new->save()){
+            if ($new->save()) {
                 $success++;
             }
         }
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","inserted $success of $total betting adm blacklist elements");
+        ActionLogController::log(0, 'adm_system', "inserted $success of $total betting adm blacklist elements");
     }
 
-    private function find_smoking_files_url(){
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","trying to find smoking adm blacklist links");
-        $client = new \GuzzleHttp\Client();
+    private function find_smoking_files_url()
+    {
+        ActionLogController::log(0, 'adm_system', 'trying to find smoking adm blacklist links');
+        $client = new Client;
         try {
-            $response = $client->get(env("ADM_SMOKING_URL"));
-        }catch(\GuzzleHttp\Exception\BadResponseException $e){
-            \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","failed to find smoking adm blacklist links (".$e->getMessage().")");
+            $response = $client->get(Settings::get(SettingKeys::ADM_SMOKING_URL));
+        } catch (BadResponseException $e) {
+            ActionLogController::log(0, 'adm_system', 'failed to find smoking adm blacklist links ('.$e->getMessage().')');
+
             return false;
         }
-        if($response->getStatusCode() == 200){
+        if ($response->getStatusCode() == 200) {
             if ($response->getBody()) {
                 $result = $response->getBody()->getContents();
-                $rows = explode("\n",$result);
+                $rows = explode("\n", $result);
                 $txt = $sha256 = false;
                 foreach ($rows as $row) {
-                    if(strpos($row, "Elenco dei siti soggetti ad inibizione - txt") !== false){
+                    if (strpos($row, 'Elenco dei siti soggetti ad inibizione - txt') !== false) {
                         $txt = self::get_href(trim($row));
                     }
-                    if(strpos($row, "File di controllo - txt") !== false){
+                    if (strpos($row, 'File di controllo (SHA 256) - txt') !== false) {
                         $sha256 = self::get_href(trim($row));
                     }
                 }
-                if($txt && $sha256){
-                    $txt = "https://www.adm.gov.it".$txt;
-                    $sha256 = "https://www.adm.gov.it".$sha256;
-                    \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","smoking adm blacklist links founded ($txt | $sha256)");
+                if ($txt && $sha256) {
+                    $txt = 'https://www.adm.gov.it'.$txt;
+                    $sha256 = 'https://www.adm.gov.it'.$sha256;
+                    ActionLogController::log(0, 'adm_system', "smoking adm blacklist links founded ($txt | $sha256)");
+
                     return [
-                        "txt" => $txt,
-                        "sha256" => $sha256
+                        'txt' => $txt,
+                        'sha256' => $sha256,
                     ];
-                }else{
-                    \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","failed to find smoking adm blacklist links (no links found)");
                 }
-            }else{
-                \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","failed to find smoking adm blacklist links (no body)");
+
+                ActionLogController::log(0, 'adm_system', 'failed to find smoking adm blacklist links (no links found)');
+            } else {
+                ActionLogController::log(0, 'adm_system', 'failed to find smoking adm blacklist links (no body)');
             }
-        }else{
-            \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","failed to find smoking adm blacklist links (".$response->getStatusCode().")");
+        } else {
+            ActionLogController::log(0, 'adm_system', 'failed to find smoking adm blacklist links ('.$response->getStatusCode().')');
         }
+
         return false;
     }
 
-    private function download_smoking_files($links){
+    private function download_smoking_files($links)
+    {
         $files = [
-            "txt" => false,
-            "sha256" => false
+            'txt' => false,
+            'sha256' => false,
         ];
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","trying to download smoking adm blacklist");
-        $ch = \curl_init();
+        ActionLogController::log(0, 'adm_system', 'trying to download smoking adm blacklist');
 
-        curl_setopt($ch, CURLOPT_URL, $links["txt"]);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36');
-        
-        $result = curl_exec($ch);
-        if(curl_errno($ch)){
-            \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","failed to download smoking adm blacklist (curl error: ".curl_error($ch).")");
-            curl_close($ch);
-        }else{
-            \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","succeded to download smoking adm blacklist");
-            curl_close($ch);
-            $files["txt"] = $result;
+        $response = Http::get($links['txt']);
+
+        if ($response->successful()) {
+            $files['txt'] = $response->body();
+            ActionLogController::log(0, 'adm_system', 'succeded to download smoking adm blacklist');
+        } else {
+            ActionLogController::log(0, 'adm_system', 'failed to download smoking adm blacklist (error: '.$response->status().')');
         }
 
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","trying to download smoking adm blacklist sha256");
-        $ch = \curl_init();
+        ActionLogController::log(0, 'adm_system', 'trying to download smoking adm blacklist sha256');
+        $response = Http::get($links['sha256']);
 
-        curl_setopt($ch, CURLOPT_URL, $links["sha256"]);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36');
-        
-        $result = curl_exec($ch);
-        if(curl_errno($ch)){
-            \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","failed to download smoking adm blacklist sha256 (curl error: ".curl_error($ch).")");
-            curl_close($ch);
-        }else{
-            \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","succeded to download smoking adm blacklist sha256");
-            curl_close($ch);
-            $files["sha256"] = $result;
+        if ($response->successful()) {
+            $files['sha256'] = $response->body();
+            ActionLogController::log(0, 'adm_system', 'succeded to download smoking adm blacklist sha256');
+        } else {
+            ActionLogController::log(0, 'adm_system', 'failed to download smoking adm blacklist sha256 (error: '.$response->status().')');
         }
-        if($files["txt"] && $files["sha256"]){
+
+        if ($files['txt'] && $files['sha256']) {
             return $files;
         }
+
         return false;
     }
 
-    private function validate_smoking_file($files){
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","validating smoking adm blacklist");
-        if(hash("sha256",$files["txt"]) == $files["sha256"]){
-            \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","smoking adm blacklist is valid");
+    private function validate_smoking_file($files)
+    {
+        ActionLogController::log(0, 'adm_system', 'validating smoking adm blacklist');
+        if (hash('sha256', $files['txt']) == $files['sha256']) {
+            ActionLogController::log(0, 'adm_system', 'smoking adm blacklist is valid');
+
             return $files;
         }
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","smoking adm blacklist is not valid");
+        ActionLogController::log(0, 'adm_system', 'smoking adm blacklist is not valid');
+
         return false;
     }
 
-    private function save_smoking_file($validation){
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","saving smoking adm blacklist");
-        $new = new \App\ADM\SmokingFiles();
-        $new->content = $validation["txt"];
-        $new->sha256 = $validation["sha256"];
-        if($new->save()){
-            \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","smoking adm blacklist saved");
-            return $validation["txt"];
-        }else{
-            \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","smoking adm blacklist not saved");
-            return false;
+    private function save_smoking_file($validation)
+    {
+        ActionLogController::log(0, 'adm_system', 'saving smoking adm blacklist');
+        $new = new SmokingFiles;
+        $new->content = $validation['txt'];
+        $new->sha256 = $validation['sha256'];
+        if ($new->save()) {
+            ActionLogController::log(0, 'adm_system', 'smoking adm blacklist saved');
+
+            return $validation['txt'];
         }
+
+        ActionLogController::log(0, 'adm_system', 'smoking adm blacklist not saved');
+
+        return false;
     }
 
-    private function parse_smoking_file($save){
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","started smoking adm blacklist elements update");
+    private function parse_smoking_file($save)
+    {
+        ActionLogController::log(0, 'adm_system', 'started smoking adm blacklist elements update');
         \DB::connection('mysql')->table('adm_smoking_blacklist')->truncate();
-        $rows = explode("\n",$save);
+        $rows = explode("\n", $save);
         $total = $success = 0;
         foreach ($rows as $row) {
             $total++;
-            $new = new \App\ADM\SmokingBlacklist();
+            $new = new SmokingBlacklist;
             $new->fqdn = trim($row);
-            if($new->save()){
+            if ($new->save()) {
                 $success++;
             }
         }
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","inserted $success of $total smoking adm blacklist elements");
+        ActionLogController::log(0, 'adm_system', "inserted $success of $total smoking adm blacklist elements");
     }
 
-    public function update_blacklists(){
-        if(env("ADM_ENABLED") == "1"){
+    public function update_blacklists()
+    {
+        if (Settings::get(SettingKeys::ADM_ENABLED) == '1') {
             $check_env = self::check_env();
-            if(count($check_env) == 0){
-                \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_cron","starting run");
+            if (count($check_env) == 0) {
+                ActionLogController::log(0, 'adm_cron', 'starting run');
                 $betting_links = $this->find_betting_files_url();
-                if($betting_links){
-                    \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_cron","betting links found");
+                if ($betting_links) {
+                    ActionLogController::log(0, 'adm_cron', 'betting links found');
                     $betting_files = $this->download_betting_files($betting_links);
-                    if($betting_files){
-                        \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_cron","betting files downloaded");
+                    if ($betting_files) {
+                        ActionLogController::log(0, 'adm_cron', 'betting files downloaded');
                         $betting_validation = $this->validate_betting_file($betting_files);
-                        if($betting_validation){
-                            \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_cron","betting file is valid");
+                        if ($betting_validation) {
+                            ActionLogController::log(0, 'adm_cron', 'betting file is valid');
                             $betting_save = $this->save_betting_file($betting_validation);
-                            if($betting_save){
-                                \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_cron","betting file saved");
-                                \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_cron","start betting parsing");
+                            if ($betting_save) {
+                                ActionLogController::log(0, 'adm_cron', 'betting file saved');
+                                ActionLogController::log(0, 'adm_cron', 'start betting parsing');
                                 $this->parse_betting_file($betting_save);
-                                \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_cron","parsing betting ended");
+                                ActionLogController::log(0, 'adm_cron', 'parsing betting ended');
                             }
-                        }else{
-                            \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_cron","betting file is invalid",true);
+                        } else {
+                            ActionLogController::log(0, 'adm_cron', 'betting file is invalid', true);
                         }
-                    }else{
-                        \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_cron","betting files download failed",true);
+                    } else {
+                        ActionLogController::log(0, 'adm_cron', 'betting files download failed', true);
                     }
-                }else{
-                    \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_cron","betting links not found",true);
+                } else {
+                    ActionLogController::log(0, 'adm_cron', 'betting links not found', true);
                 }
                 $smoking_links = $this->find_smoking_files_url();
-                if($smoking_links){
-                    \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_cron","smoking links found");
+                if ($smoking_links) {
+                    ActionLogController::log(0, 'adm_cron', 'smoking links found');
                     $smoking_files = $this->download_smoking_files($smoking_links);
-                    if($smoking_files){
-                        \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_cron","smoking files downloaded");
+                    if ($smoking_files) {
+                        ActionLogController::log(0, 'adm_cron', 'smoking files downloaded');
                         $smoking_validation = $this->validate_smoking_file($smoking_files);
-                        if($smoking_validation){
-                            \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_cron","smoking file is valid");
+                        if ($smoking_validation) {
+                            ActionLogController::log(0, 'adm_cron', 'smoking file is valid');
                             $smoking_save = $this->save_smoking_file($smoking_validation);
-                            if($smoking_save){
-                                \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_cron","smoking file saved");
-                                \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_cron","start smoking parsing");
+                            if ($smoking_save) {
+                                ActionLogController::log(0, 'adm_cron', 'smoking file saved');
+                                ActionLogController::log(0, 'adm_cron', 'start smoking parsing');
                                 $this->parse_smoking_file($smoking_save);
-                                \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_cron","parsing smoking ended");
+                                ActionLogController::log(0, 'adm_cron', 'parsing smoking ended');
                             }
-                        }else{
-                            \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_cron","smoking file is invalid",true);
+                        } else {
+                            ActionLogController::log(0, 'adm_cron', 'smoking file is invalid', true);
                         }
-                    }else{
-                        \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_cron","smoking files download failed",true);
+                    } else {
+                        ActionLogController::log(0, 'adm_cron', 'smoking files download failed', true);
                     }
-                }else{
-                    \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_cron","smoking links not found",true);
+                } else {
+                    ActionLogController::log(0, 'adm_cron', 'smoking links not found', true);
                 }
-                \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_cron","run ended");
-            }else{
-                \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_cron","run not started because of: ".implode(", ",$check_env),true);
+                ActionLogController::log(0, 'adm_cron', 'run ended');
+            } else {
+                ActionLogController::log(0, 'adm_cron', 'run not started because of: '.implode(', ', $check_env), true);
             }
         }
     }
 
-    public function test(){
-        $obj = new \StdClass();
-        //env
+    public function test()
+    {
+        $obj = new \StdClass;
+        // env
         $env_test = self::check_env();
-        $obj->settings = new \StdClass();
+        $obj->settings = new \StdClass;
         $obj->settings->passed = (count($env_test) == 0);
-        $obj->settings->messages = (count($env_test) == 0) ? ["Settings formally correct"] : $env_test;
-        if($obj->settings->passed){
-            //betting links
-            $obj->betting_links = new \StdClass();
+        $obj->settings->messages = (count($env_test) == 0) ? ['Settings formally correct'] : $env_test;
+        if ($obj->settings->passed) {
+            // betting links
+            $obj->betting_links = new \StdClass;
             $betting_links = $this->find_betting_files_url();
-            if($betting_links){
+            if ($betting_links) {
                 $obj->betting_links->passed = true;
-                $obj->betting_links->messages = ["Betting links founded","txt: ".$betting_links["txt"],"sha256: ".$betting_links["sha256"]];
-            }else{
+                $obj->betting_links->messages = ['Betting links founded', 'txt: '.$betting_links['txt'], 'sha256: '.$betting_links['sha256']];
+            } else {
                 $obj->betting_links->passed = false;
-                $obj->betting_links->messages = ["Betting links not founded"];
+                $obj->betting_links->messages = ['Betting links not founded'];
             }
-            if($obj->betting_links->passed){
-                //betting download
-                $obj->betting_download = new \StdClass();
+            if ($obj->betting_links->passed) {
+                // betting download
+                $obj->betting_download = new \StdClass;
                 $betting_files = $this->download_betting_files($betting_links);
-                if($betting_files){
+                if ($betting_files) {
                     $obj->betting_download->passed = true;
-                    $obj->betting_download->messages = ["Files download success"];
-                }else{
+                    $obj->betting_download->messages = ['Files download success'];
+                } else {
                     $obj->betting_download->passed = false;
-                    $obj->betting_download->messages = ["Files download failed (view action log for more infos)"];
+                    $obj->betting_download->messages = ['Files download failed (view action log for more infos)'];
                 }
-                if($obj->betting_download->passed){
-                    //betting validation
-                    $obj->betting_validation = new \StdClass();
+                if ($obj->betting_download->passed) {
+                    // betting validation
+                    $obj->betting_validation = new \StdClass;
                     $betting_validation = $this->validate_betting_file($betting_files);
-                    if($betting_validation){
+                    if ($betting_validation) {
                         $obj->betting_validation->passed = true;
-                        $obj->betting_validation->messages = ["File validation success"];
-                    }else{
+                        $obj->betting_validation->messages = ['File validation success'];
+                    } else {
                         $obj->betting_validation->passed = false;
-                        $obj->betting_validation->messages = ["File validation failed (view action log for more infos)"];
+                        $obj->betting_validation->messages = ['File validation failed (view action log for more infos)'];
                     }
                 }
             }
-            //smoking links
-            $obj->smoking_links = new \StdClass();
+            // smoking links
+            $obj->smoking_links = new \StdClass;
             $smoking_links = $this->find_smoking_files_url();
-            if($smoking_links){
+            if ($smoking_links) {
                 $obj->smoking_links->passed = true;
-                $obj->smoking_links->messages = ["smoking links founded","txt: ".$smoking_links["txt"],"sha256: ".$smoking_links["sha256"]];
-            }else{
+                $obj->smoking_links->messages = ['smoking links founded', 'txt: '.$smoking_links['txt'], 'sha256: '.$smoking_links['sha256']];
+            } else {
                 $obj->smoking_links->passed = false;
-                $obj->smoking_links->messages = ["smoking links not founded"];
+                $obj->smoking_links->messages = ['smoking links not founded'];
             }
-            if($obj->smoking_links->passed){
-                //smoking download
-                $obj->smoking_download = new \StdClass();
+            if ($obj->smoking_links->passed) {
+                // smoking download
+                $obj->smoking_download = new \StdClass;
                 $smoking_files = $this->download_smoking_files($smoking_links);
-                if($smoking_files){
+                if ($smoking_files) {
                     $obj->smoking_download->passed = true;
-                    $obj->smoking_download->messages = ["Files download success"];
-                }else{
+                    $obj->smoking_download->messages = ['Files download success'];
+                } else {
                     $obj->smoking_download->passed = false;
-                    $obj->smoking_download->messages = ["Files download failed (view action log for more infos)"];
+                    $obj->smoking_download->messages = ['Files download failed (view action log for more infos)'];
                 }
-                if($obj->smoking_download->passed){
-                    //smoking validation
-                    $obj->smoking_validation = new \StdClass();
-                    $smoking_validation = $this->validate_smoking_file($smoking_files);
-                    if($smoking_validation){
+                if ($obj->smoking_download->passed) {
+                    // smoking validation
+                    $obj->smoking_validation = new \StdClass;
+                    if ($this->validate_smoking_file($smoking_files)) {
                         $obj->smoking_validation->passed = true;
-                        $obj->smoking_validation->messages = ["File validation success"];
-                    }else{
+                        $obj->smoking_validation->messages = ['File validation success'];
+                    } else {
                         $obj->smoking_validation->passed = false;
-                        $obj->smoking_validation->messages = ["File validation failed (view action log for more infos)"];
+                        $obj->smoking_validation->messages = ['File validation failed (view action log for more infos)'];
                     }
                 }
             }
         }
+
         return json_encode($obj);
     }
 
-    public function download_betting_blacklist(Request $request){
-        $list = \App\ADM\BettingBlacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
-        $content = implode("\n",$list);
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","FQDN betting adm blacklist pulled by ".$request->ip());
+    public function download_betting_blacklist(Request $request)
+    {
+        $list = BettingBlacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
+        $content = implode("\n", $list);
+        ActionLogController::log(0, 'adm_system', 'FQDN betting adm blacklist pulled by '.$request->ip());
         $headers = [
-            'Content-type' => 'text/plain', 
-            'Content-Disposition' => sprintf('attachment; filename="%s"', "betting_blacklist.txt")
+            'Content-type' => 'text/plain',
+            'Content-Disposition' => sprintf('attachment; filename="%s"', 'betting_blacklist.txt'),
         ];
-        return \Response::make($content, 200, $headers);
+
+        return Response::make($content, 200, $headers);
     }
 
-    public function download_smoking_blacklist(Request $request){
-        $list = \App\ADM\SmokingBlacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
-        $content = implode("\n",$list);
-        \App\Http\Controllers\Admin\ActionLogController::log(0,"adm_system","FQDN smoking adm blacklist pulled by ".$request->ip());
+    public function download_smoking_blacklist(Request $request)
+    {
+        $list = SmokingBlacklist::select('fqdn')->distinct()->pluck('fqdn')->toArray();
+        $content = implode("\n", $list);
+        ActionLogController::log(0, 'adm_system', 'FQDN smoking adm blacklist pulled by '.$request->ip());
         $headers = [
-            'Content-type' => 'text/plain', 
-            'Content-Disposition' => sprintf('attachment; filename="%s"', "smoking_blacklist.txt")
+            'Content-type' => 'text/plain',
+            'Content-Disposition' => sprintf('attachment; filename="%s"', 'smoking_blacklist.txt'),
         ];
-        return \Response::make($content, 200, $headers);
+
+        return Response::make($content, 200, $headers);
     }
 
-    public function datatable_betting_blacklist(Request $request){
-        if($request->ajax()){
-            $data = \App\ADM\BettingBlacklist::query();
+    public function datatable_betting_blacklist(Request $request)
+    {
+        if ($request->ajax()) {
+            $data = BettingBlacklist::query();
+
             return Datatables::of($data)
                 ->rawColumns(
                     ['fqdn']
@@ -461,20 +470,24 @@ class ADMController extends Controller
         }
     }
 
-    public function datatable_betting_files(Request $request){
-        if($request->ajax()){
-            $data = \App\ADM\BettingFiles::query();
+    public function datatable_betting_files(Request $request)
+    {
+        if ($request->ajax()) {
+            $data = BettingFiles::query();
+
             return Datatables::of($data)
                 ->rawColumns(
                     ['timestamp',
-                    'sha256']
+                        'sha256']
                 )->make(true);
         }
     }
 
-    public function datatable_smoking_blacklist(Request $request){
-        if($request->ajax()){
-            $data = \App\ADM\SmokingBlacklist::query();
+    public function datatable_smoking_blacklist(Request $request)
+    {
+        if ($request->ajax()) {
+            $data = SmokingBlacklist::query();
+
             return Datatables::of($data)
                 ->rawColumns(
                     ['fqdn']
@@ -482,41 +495,38 @@ class ADMController extends Controller
         }
     }
 
-    public function datatable_smoking_files(Request $request){
-        if($request->ajax()){
-            $data = \App\ADM\SmokingFiles::query();
+    public function datatable_smoking_files(Request $request)
+    {
+        if ($request->ajax()) {
+            $data = SmokingFiles::query();
+
             return Datatables::of($data)
                 ->rawColumns(
                     ['timestamp',
-                    'sha256']
+                        'sha256']
                 )->make(true);
         }
     }
 
-    private static function check_env(){
+    private static function check_env()
+    {
         $errors = [];
-        if(!env('ADM_BETTING_URL')){
-            $errors[] = "Betting URL not filled";
-        }else{
-            if(!filter_var(env('ADM_BETTING_URL'), FILTER_VALIDATE_URL)){
-                $errors[] = "Betting URL not valid";
-            }
+        if (! Settings::get(SettingKeys::ADM_BETTING_URL)) {
+            $errors[] = 'Betting URL not filled';
+        } elseif (! filter_var(Settings::get(SettingKeys::ADM_BETTING_URL), FILTER_VALIDATE_URL)) {
+            $errors[] = 'Betting URL not valid';
         }
-        if(!env('ADM_SMOKING_URL')){
-            $errors[] = "Smoking URL not filled";
-        }else{
-            if(!filter_var(env('ADM_SMOKING_URL'), FILTER_VALIDATE_URL)){
-                $errors[] = "Smoking URL not valid";
-            }
+        if (! Settings::get(SettingKeys::ADM_SMOKING_URL)) {
+            $errors[] = 'Smoking URL not filled';
+        } elseif (! filter_var(Settings::get(SettingKeys::ADM_SMOKING_URL), FILTER_VALIDATE_URL)) {
+            $errors[] = 'Smoking URL not valid';
         }
-        if(!env('ADM_DNS_REDIRECT_IP')){
-            $errors[] = "DNS redirect IP not filled";
-        }else{
-            if(!filter_var(env('ADM_DNS_REDIRECT_IP'), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)){
-                $errors[] = "DNS redirect IP not valid";
-            }
+        if (! Settings::get(SettingKeys::ADM_DNS_REDIRECT_IP)) {
+            $errors[] = 'DNS redirect IP not filled';
+        } elseif (! filter_var(Settings::get(SettingKeys::ADM_DNS_REDIRECT_IP), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            $errors[] = 'DNS redirect IP not valid';
         }
+
         return $errors;
     }
-
 }

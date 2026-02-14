@@ -1,0 +1,81 @@
+<?php
+
+namespace App;
+
+enum SettingKeys : string
+{
+    case ADM_BETTING_URL = 'adm_betting_url';
+    case ADM_DNS_REDIRECT_IP = 'adm_dns_redirect_ip';
+    case ADM_ENABLED = 'adm_enabled';
+    case ADM_SMOKING_URL = 'adm_smoking_url';
+    case BGP_ASN = 'bgp_asn';
+    case BGP_LOCAL_GATEWAY = 'bgp_local_gateway';
+    case BGP_LOCAL_IP = 'bgp_local_ip';
+    case BGP_LOCAL_MASK = 'bgp_local_mask';
+    case BGP_ROUTER_IP = 'bgp_router_ip';
+    case CNCPO_DNS_REDIRECT_IP = 'cncpo_dns_redirect_ip';
+    case CNCPO_ENABLED = 'cncpo_enabled';
+    case CNCPO_FROM_EMAIL = 'cncpo_from_email';
+    case CNCPO_GPG_PRIVATE_KEY = 'cncpo_gpg_private_key';
+    case CNCPO_GPG_PRIVATE_KEY_PASSWORD = 'cncpo_gpg_private_key_password';
+    case CNCPO_PEC_EMAIL = 'cncpo_pec_email';
+    case CNCPO_PEC_IMAP_ARCHIVE_FOLDER = 'cncpo_pec_imap_archive_folder';
+    case CNCPO_PEC_IMAP_HOST = 'cncpo_pec_imap_host';
+    case CNCPO_PEC_IMAP_PASSWORD = 'cncpo_pec_imap_password';
+    case CNCPO_PEC_IMAP_PORT = 'cncpo_pec_imap_port';
+    case CNCPO_PEC_IMAP_USERNAME = 'cncpo_pec_imap_username';
+    case CNCPO_PEC_SMTP_HOST = 'cncpo_pec_smtp_host';
+    case CNCPO_PEC_SMTP_PASSWORD = 'cncpo_pec_smtp_password';
+    case CNCPO_PEC_SMTP_PORT = 'cncpo_pec_smtp_port';
+    case CNCPO_PEC_SMTP_USERNAME = 'cncpo_pec_smtp_username';
+    case CNCPO_REPLY_ENABLED = 'cncpo_reply_enabled';
+    case CNCPO_REPLY_SAVE_SENT = 'cncpo_reply_save_sent';
+    case CNCPO_REPLY_SENT_FOLDER = 'cncpo_reply_sent_folder';
+    case CNCPO_REPLY_SIGNATURE = 'cncpo_reply_signature';
+    case DNS_SERVER_PRIMARY_IP = 'dns_server_primary_ip';
+    case DNS_SERVER_PRIMARY_PATH = 'dns_server_primary_path';
+    case DNS_SERVER_PRIMARY_PORT = 'dns_server_primary_port';
+    case DNS_SERVER_PRIMARY_PSW = 'dns_server_primary_psw';
+    case DNS_SERVER_PRIMARY_RELOAD = 'dns_server_primary_reload';
+    case DNS_SERVER_PRIMARY_USER = 'dns_server_primary_user';
+    case DNS_SERVER_SECONDARY_IP = 'dns_server_secondary_ip';
+    case DNS_SERVER_SECONDARY_PATH = 'dns_server_secondary_path';
+    case DNS_SERVER_SECONDARY_PORT = 'dns_server_secondary_port';
+    case DNS_SERVER_SECONDARY_PSW = 'dns_server_secondary_psw';
+    case DNS_SERVER_SECONDARY_RELOAD = 'dns_server_secondary_reload';
+    case DNS_SERVER_SECONDARY_USER = 'dns_server_secondary_user';
+    case EXTERNAL_DNS_SERVERS = 'external_dns_servers';
+    case MAIL_ENCRYPTION = 'mail.mailers.smtp.encryption';
+    case MAIL_FROM_ADDRESS = 'mail.mailers.smtp.from_address';
+    case MAIL_FROM_NAME = 'mail.mailers.smtp.from_name';
+    case MAIL_HOST = 'mail.mailers.smtp.host';
+    case MAIL_PASSWORD = 'mail.mailers.smtp.password';
+    case MAIL_PORT = 'mail.mailers.smtp.port';
+    case MAIL_TO_ADDRESSES = 'mail_to_addresses';
+    case MAIL_USERNAME = 'mail.mailers.smtp.username';
+    case MANUAL_DNS_REDIRECT_IP = 'manual_dns_redirect_ip';
+    case MANUAL_ENABLED = 'manual_enabled';
+    case NET_GATEWAY = 'net_gateway';
+    case NET_IP = 'net_ip';
+    case NET_MASK = 'net_mask';
+    case PIRACY_SHIELD_API_URL = 'piracy_shield_api_url';
+    case PIRACY_SHIELD_DNS_REDIRECT_IP = 'piracy_shield_dns_redirect_ip';
+    case PIRACY_SHIELD_ENABLED = 'piracy_shield_enabled';
+    //case PIRACY_SHIELD_ITEMS_VALIDITY_MONTHS = 'piracy_shield_items_validity_months';
+    case PIRACY_SHIELD_MAIL = 'piracy_shield_mail';
+    case PIRACY_SHIELD_PSW = 'piracy_shield_psw';
+    case PIRACY_SHIELD_VPN_LOCAL_LAN_IP = 'piracy_shield_vpn_local_lan_ip';
+    case PIRACY_SHIELD_VPN_PEER_IP = 'piracy_shield_vpn_peer_ip';
+    case PIRACY_SHIELD_VPN_PSK = 'piracy_shield_vpn_psk';
+    case PIRACY_SHIELD_VPN_REMOTE_LAN_IP = 'piracy_shield_vpn_remote_lan_ip';
+    case DNS_SERVER_PRIMARY_EXPORT_PLAIN = 'dns_server_primary_export_plain';
+    case DNS_SERVER_SECONDARY_EXPORT_PLAIN = 'dns_server_secondary_export_plain';
+    case LOGS_DAYS_ACTION = 'logs_days_action';
+    case LOGS_DAYS_AUTHENTICATION = 'logs_days_authentication';
+    case LOGS_DAYS_PS_API = 'logs_days_ps_api';
+    case LOGS_DAYS_PS_API_ACCESS_TOKENS = 'logs_days_ps_api_access_tokens';
+    case LOGS_DAYS_PS_API_REFRESH_TOKENS = 'logs_days_ps_api_refresh_tokens';
+
+    case DNS_SERVER_PRIMARY_PRIVKEY = 'dns_server_primary_privkey';
+    case DNS_SERVER_SECONDARY_PRIVKEY = 'dns_server_secondary_privkey';
+}

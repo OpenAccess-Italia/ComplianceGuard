@@ -15,7 +15,7 @@
                 </a>
                 <!--end::Aside header-->
                 <!--begin::Aside Title-->
-                <p class="font-size-h1 text-center text-white">{{env("APP_NAME")}}</p>
+                <p class="font-size-h1 text-center text-white">{{config('app.name')}}</p>
                 <!--end::Aside Title-->
             </div>
             <!--end::Aside Top-->

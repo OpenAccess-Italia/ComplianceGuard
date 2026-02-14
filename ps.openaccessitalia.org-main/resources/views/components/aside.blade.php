@@ -36,7 +36,7 @@
                         <span class="menu-text text-light">Dashboard</span>
                     </a>
                 </li>
-                @if(\Auth::user()->piracy && env("PIRACY_SHIELD_ENABLED") == "1")
+                @if(\Auth::user()->piracy && \Settings::get(\App\SettingKeys::PIRACY_SHIELD_ENABLED) == "1")
                 <li class="menu-item  menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
                     <a href="javascript:;" class="menu-link menu-toggle">
                         <i class="menu-icon text-light fas fa-shield-alt"></i>
@@ -97,7 +97,7 @@
                     </div>
                 </li>
                 @endif
-                @if(\Auth::user()->cncpo && env("CNCPO_ENABLED") == "1")
+                @if(\Auth::user()->cncpo && \Settings::get(\App\SettingKeys::CNCPO_ENABLED) == "1")
                 <li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
                     <a href="javascript:;" class="menu-link menu-toggle">
                         <i class="menu-icon text-light fas fa-child"></i>
@@ -123,7 +123,7 @@
                     </div>
                 </li>
                 @endif
-                @if(\Auth::user()->adm && env("ADM_ENABLED") == "1")
+                @if(\Auth::user()->adm && \Settings::get(\App\SettingKeys::ADM_ENABLED) == "1")
                 <li class="menu-item  menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
                     <a href="javascript:;" class="menu-link menu-toggle">
                         <i class="menu-icon text-light fas fa-user-secret"></i>
@@ -190,7 +190,7 @@
                     </div>
                 </li>
                 @endif
-                @if(\Auth::user()->manual && env("MANUAL_ENABLED") == "1")
+                @if(\Auth::user()->manual && \Settings::get(\App\SettingKeys::MANUAL_ENABLED) == "1")
                 <li class="menu-item  menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
                     <a href="javascript:;" class="menu-link menu-toggle">
                         <i class="menu-icon text-light fas fa-hand-scissors"></i>
@@ -349,7 +349,7 @@
 
 <script>
 	$(document).ready(function(){
-		var href = window.location.href.replaceAll('{{ env('APP_URL', '') }}','');
+		var href = window.location.href.replaceAll('{{ config('app.url', '') }}','');
         $($($($('[href="'+href+'"]').closest('li').closest('ul')).closest('li').closest('ul')).closest('li').closest('ul')).closest('li').addClass('menu-item-open');
 		$($($('[href="'+href+'"]').closest('li').closest('ul')).closest('li').closest('ul')).closest('li').addClass('menu-item-open');
 		$($('[href="'+href+'"]').closest('li').closest('ul')).closest('li').addClass('menu-item-open');
